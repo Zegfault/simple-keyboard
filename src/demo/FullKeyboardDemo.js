@@ -43,11 +43,16 @@ class Demo {
        * Layout by:
        * Sterling Butters (https://github.com/SterlingButters)
        */
+      /*
+           ,Lat2CJ ={Q:'手',W:'田',E:'水',R:'口',T:'廿',Y:'卜',U:'山',I:'戈',O:'人',P:'心',
+                     A:'日',S:'尸',D:'木',F:'火',G:'土',H:'竹',J:'十',K:'大',L:'中',
+                     Z:'重',X:'難',C:'金',V:'女',B:'月',N:'弓',M:'一','0':'0'}
+      */
       layout: {
         default: [
           "{escape} {f1} {f2} {f3} {f4} {f5} {f6} {f7} {f8} {f9} {f10} {f11} {f12}",
           "` 1 2 3 4 5 6 7 8 9 0 - = {backspace}",
-          "{tab} q w e r t y u i o p [ ] \\",
+          "{tab} 手 田 水 口 t y u i o p [ ] \\",
           "{capslock} a s d f g h j k l ; ' {enter}",
           "{shiftleft} z x c v b n m , . / {shiftright}",
           "{controlleft} {altleft} {metaleft} {space} {metaright} {altright}"
@@ -55,12 +60,30 @@ class Demo {
         shift: [
           "{escape} {f1} {f2} {f3} {f4} {f5} {f6} {f7} {f8} {f9} {f10} {f11} {f12}",
           "~ ! @ # $ % ^ & * ( ) _ + {backspace}",
-          "{tab} Q W E R T Y U I O P { } |",
+          "{tab} 手 田 水 口 T Y U I O P { } |",
           '{capslock} A S D F G H J K L : " {enter}',
           "{shiftleft} Z X C V B N M < > ? {shiftright}",
           "{controlleft} {altleft} {metaleft} {space} {metaright} {altright}"
         ]
       },
+      //  layout: {
+      //   default: [
+      //     "{escape} {f1} {f2} {f3} {f4} {f5} {f6} {f7} {f8} {f9} {f10} {f11} {f12}",
+      //     "` 1 2 3 4 5 6 7 8 9 0 - = {backspace}",
+      //     "{tab} q w e r t y u i o p [ ] \\",
+      //     "{capslock} a s d f g h j k l ; ' {enter}",
+      //     "{shiftleft} z x c v b n m , . / {shiftright}",
+      //     "{controlleft} {altleft} {metaleft} {space} {metaright} {altright}"
+      //   ],
+      //   shift: [
+      //     "{escape} {f1} {f2} {f3} {f4} {f5} {f6} {f7} {f8} {f9} {f10} {f11} {f12}",
+      //     "~ ! @ # $ % ^ & * ( ) _ + {backspace}",
+      //     "{tab} Q W E R T Y U I O P { } |",
+      //     '{capslock} A S D F G H J K L : " {enter}',
+      //     "{shiftleft} Z X C V B N M < > ? {shiftright}",
+      //     "{controlleft} {altleft} {metaleft} {space} {metaright} {altright}"
+      //   ]
+      // },
       display: {
         "{escape}": "esc ⎋",
         "{tab}": "tab ⇥",

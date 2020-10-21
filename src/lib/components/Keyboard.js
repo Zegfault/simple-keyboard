@@ -1,3 +1,4 @@
+import _ from "lodash";
 import "./Keyboard.css";
 
 // Services
@@ -21,6 +22,7 @@ class SimpleKeyboard {
     const { keyboardDOMClass, keyboardDOM, options = {} } = this.handleParams(
       params
     );
+    this.currentWord = "";
 
     /**
      * Initializing Utilities
@@ -1263,6 +1265,39 @@ class SimpleKeyboard {
     return keyboardClasses.join(" ");
   };
 
+  setSuggestions(suggestions) {
+    const suggestionsList = this.suggestionAreaDOM.firstElementChild;
+    suggestionsList.innerHTML = "";
+    _.forEach(suggestions, suggestion => {
+      const suggestionElem = document.createElement("li");
+      suggestionElem.innerHTML = suggestion;
+      suggestionElem.onclick = () => {
+        console.warn("word clicked !", suggestion);
+        this.enterSuggestedWord(suggestion);
+      };
+      suggestionsList.appendChild(suggestionElem);
+    });
+  }
+
+  showSuggestions() {
+    this.suggestionAreaDOM.classList.remove("hidden");
+  }
+
+  hideSuggestions() {
+    this.suggestionAreaDOM.classList.add("hidden");
+  }
+
+  enterSuggestedWord(suggestion) {
+    // this.clearInput();
+    // console.warn(`test lol: ${suggestion}`, this.getInput());
+    if (typeof this.options.onSuggestedWordClicked === "function") {
+      this.options.onSuggestedWordClicked(suggestion);
+    }
+    this.setSuggestions();
+    this.currentWord = "";
+    this.clearInput();
+  }
+
   /**
    * Renders rows and buttons as per options
    */
@@ -1300,6 +1335,10 @@ class SimpleKeyboard {
       this.keyboardPluginClasses,
       useTouchEventsClass
     );
+    this.suggestionAreaDOM = document.createElement("div");
+    this.suggestionAreaDOM.appendChild(document.createElement("ul"));
+    this.suggestionAreaDOM.className = "suggestion-area";
+    this.keyboardDOM.appendChild(this.suggestionAreaDOM);
 
     /**
      * Iterating through each row

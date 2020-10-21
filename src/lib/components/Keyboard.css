@@ -118,3 +118,34 @@
 .hg-theme-default .hg-button.hg-standardBtn[data-skbtn="@"] {
   max-width: 60px;
 }
+
+.mgto-keyboard-theme .suggestion-area ul {
+  height: 50px;
+  width: 100%;
+  padding: 0;
+  margin: 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+
+.mgto-keyboard-theme .suggestion-area ul li {
+  padding: 10px;
+  display: inline-block;
+  line-height: 1;
+}
+.mgto-keyboard-theme .suggestion-area ul li:not(:first-child) {
+  padding-left: 0px;
+}
+.mgto-keyboard-theme .suggestion-area ul li:not(:last-child):after {
+  content: "";
+  width: 2px;
+  height: 10px;
+  position: relative;
+  display: inline-block;
+  margin-left: 10px;
+  background-color: grey;
+}
+
+.mgto-keyboard-theme .suggestion-area ul li:last-child:after {
+  display: none;
+}
