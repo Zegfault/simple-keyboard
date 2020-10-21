@@ -1,3 +1,4 @@
+import _ from "lodash";
 import Keyboard from "../lib";
 import CNSuggestions from "./CNSuggestions";
 import "./css/BasicDemo.css";
@@ -59,7 +60,7 @@ class Demo {
   }
 
   onSuggestedWordClicked(suggestedWord) {
-    console.warn("onSuggestedWordClicked - ", suggestedWord);
+    // console.warn("onSuggestedWordClicked - ", suggestedWord);
     document.querySelector(".input").value = `${
       document.querySelector(".input").value
     }${suggestedWord}`;
@@ -69,15 +70,14 @@ class Demo {
     CNSuggestions.events.on(`displaySuggestionBox`, suggestions => {
       console.warn(`received event: displaySuggestionBox with: `, suggestions);
       if (!suggestions) {
+        this.keyboard.setSuggestions([]);
         return this.keyboard.hideSuggestions();
       }
       this.keyboard.setSuggestions(suggestions);
       this.keyboard.showSuggestions();
-      // TODO: hugo - show suggestion box with the received suggestions in it
     });
     CNSuggestions.events.on(`setSuggestions`, suggestions => {
       console.warn(`received event: setSuggestions with: `, suggestions);
-      // TODO: hugo - set suggestions in the box
       this.keyboard.setSuggestions(suggestions);
     });
   }
@@ -85,8 +85,12 @@ class Demo {
   onChange(input) {
     // TODO: hugo - instead of getting the input like this, would need to add some classes to the inputs
     if (this.inputLanguage === "EN") {
+      console.log(
+        "Input changed - before",
+        document.querySelector(".input").value
+      );
       document.querySelector(".input").value = input;
-      console.log("Input changed", input);
+      console.log("Input changed - after", input);
     } else if (this.inputLanguage === "CN") {
       this.keyboard.currentWord = input;
     }
@@ -94,6 +98,30 @@ class Demo {
 
   toggleLanguage() {
     this.inputLanguage = this.inputLanguage === "EN" ? "CN" : "EN";
+  }
+
+  handleSpaceKey(button = false) {
+    if (
+      this.keyboard.suggestionAreaDOM.firstElementChild &&
+      this.keyboard.suggestionAreaDOM.firstElementChild.firstElementChild
+    ) {
+      console.warn(`Should add to input the first suggestion`);
+      return this.keyboard.enterSuggestedWord(
+        this.keyboard.suggestionAreaDOM.firstElementChild.firstElementChild
+          .innerHTML
+      );
+    }
+    if (button && button !== `{space}`) {
+      this.keyboard.previewPinyin.innerHTML = `${this.keyboard.previewPinyin.innerHTML}${button}`;
+    }
+    if (this.keyboard.previewPinyin.innerHTML.length > 0) {
+      // console.log("will add the first suggested word");
+      this.keyboard.enterSuggestedWord(this.keyboard.previewPinyin.innerHTML);
+    } else {
+      // console.log("will add a space");
+      this.keyboard.enterSuggestedWord(" ");
+    }
+    return this.keyboard.setPinyinPreview("");
   }
 
   onKeyPress(button) {
@@ -108,19 +136,29 @@ class Demo {
     } else if (button === "{shift}" || button === "{lock}") {
       this.handleShift();
     } else if (this.inputLanguage === "CN") {
-      if (button === "{space}") {
-        console.warn(`Should add to input the first suggestion`);
-        this.keyboard.enterSuggestedWord(
-          this.keyboard.suggestionAreaDOM.firstElementChild.firstElementChild
-        );
-        return;
+      if (
+        button !== `{bksp}` &&
+        (button === "{space}" || !this.keyboard.isAlphabetical(button))
+      ) {
+        return this.handleSpaceKey(button);
       }
-      // TODO: hugo - find a way to get the current word
       const foundSuggestions = CNSuggestions.charProcessor(
         button,
-        this.keyboard.currentWord
+        _.trim(this.keyboard.currentWord)
       );
-      console.warn(foundSuggestions);
+      if (
+        button === `{bksp}` &&
+        this.keyboard.previewPinyin.innerHTML.length === 0
+      ) {
+        // NOTE: backspace
+        // TODO: hugo - delete the last pinyin preview char or char in the input
+        document.querySelector(".input").value = document
+          .querySelector(".input")
+          .value.slice(0, -1);
+        return;
+      }
+      this.keyboard.setPinyinPreview(_.trim(_.first(foundSuggestions)));
+      console.warn("beep", foundSuggestions);
     }
   }
 

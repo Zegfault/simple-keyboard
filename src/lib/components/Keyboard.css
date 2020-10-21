@@ -119,6 +119,7 @@
   max-width: 60px;
 }
 
+/* NOTE: added css for MGTO */
 .mgto-keyboard-theme .suggestion-area ul {
   height: 50px;
   width: 100%;
@@ -148,4 +149,8 @@
 
 .mgto-keyboard-theme .suggestion-area ul li:last-child:after {
   display: none;
+}
+
+html {
+  background-color: black;
 }

@@ -23,7 +23,6 @@ class SimpleKeyboard {
       params
     );
     this.currentWord = "";
-
     /**
      * Initializing Utilities
      */
@@ -1265,6 +1264,18 @@ class SimpleKeyboard {
     return keyboardClasses.join(" ");
   };
 
+  setPinyinPreview(pinyin) {
+    this.previewPinyin.innerHTML = pinyin;
+    if (pinyin.length === 0) {
+      this.setSuggestions([]);
+      this.hideSuggestions();
+    }
+  }
+
+  isAlphabetical(char) {
+    return char.match(/^[a-zA-Z]+$/);
+  }
+
   setSuggestions(suggestions) {
     const suggestionsList = this.suggestionAreaDOM.firstElementChild;
     suggestionsList.innerHTML = "";
@@ -1296,6 +1307,7 @@ class SimpleKeyboard {
     this.setSuggestions();
     this.currentWord = "";
     this.clearInput();
+    this.setPinyinPreview("");
   }
 
   /**
@@ -1339,6 +1351,9 @@ class SimpleKeyboard {
     this.suggestionAreaDOM.appendChild(document.createElement("ul"));
     this.suggestionAreaDOM.className = "suggestion-area";
     this.keyboardDOM.appendChild(this.suggestionAreaDOM);
+    this.previewPinyin = document.createElement("div");
+    this.previewPinyin.className = "preview-pinyin";
+    this.keyboardDOM.appendChild(this.previewPinyin);
 
     /**
      * Iterating through each row

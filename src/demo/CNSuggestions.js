@@ -22,7 +22,6 @@ class CNSuggestions {
 
   charProcessor(chr, buf) {
     let num, str, arr;
-    console.warn("charProcessor - ", buf);
     if (chr == `{bksp}`) {
       // backspace
       if (buf && (str = buf.slice(0, -1))) {
@@ -49,6 +48,7 @@ class CNSuggestions {
       return [str, str.length];
     }
     if (!this.getSuggestions().length) {
+      this.events.emit(`displaySuggestionBox`, false);
       return [buf + chr, 0]; //non-chinese talk
     }
     if (isFinite((num = parseInt(chr)))) {
