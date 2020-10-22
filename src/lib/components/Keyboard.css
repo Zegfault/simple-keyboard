@@ -120,23 +120,53 @@
 }
 
 /* NOTE: added css for MGTO */
+.mgto-keyboard-theme .suggestion-area {
+  position: relative;
+}
+
 .mgto-keyboard-theme .suggestion-area ul {
-  height: 50px;
+  height: 36px;
   width: 100%;
   padding: 0;
   margin: 0;
   overflow-x: auto;
   overflow-y: hidden;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  align-content: flex-start;
+  justify-content: flex-start;
 }
+.mgto-keyboard-theme .suggestion-area.has-more ul {
+  max-width: 95%;
+}
+
+.mgto-keyboard-theme .suggestion-area.expanded ul {
+  height: auto;
+  max-height: 144px;
+}
+.mgto-keyboard-theme .suggestion-area .expand-btn {
+  height: 36px;
+  width: 36px;
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+.mgto-keyboard-theme .suggestion-area .expand-btn.displayed {
+  opacity: 1;
+}
+
 .mgto-keyboard-theme .suggestion-area ul li {
-  padding: 10px;
+  flex: 1 0 10%;
+  padding: 10px 0;
   display: inline-block;
   line-height: 1;
+  text-align: center;
+  /* width: 8%; */
 }
 .mgto-keyboard-theme .suggestion-area ul li:not(:first-child) {
   padding-left: 0px;
 }
-.mgto-keyboard-theme .suggestion-area ul li:not(:last-child):after {
+/* .mgto-keyboard-theme .suggestion-area ul li:not(:last-child):after {
   content: "";
   width: 2px;
   height: 10px;
@@ -147,11 +177,41 @@
 }
 .mgto-keyboard-theme .suggestion-area ul li:last-child:after {
   display: none;
-}
+} */
 .hg-button.hg-functionBtn.hg-button-ctrl {
   max-width: 10%;
 }
 
 html {
   background-color: black;
+}
+
+.suggestions-menu {
+  position: absolute;
+  right: 0;
+  top: 0;
+  width: 5%;
+  height: 100%;
+  text-align: center;
+}
+
+.suggestions-menu > div {
+  height: 36px;
+  width: 100%;
+  line-height: 36px;
+}
+
+.suggestion-area .suggestions-menu .prev,
+.suggestion-area .suggestions-menu .next,
+.suggestion-area .suggestions-menu .pagination {
+  display: none;
+}
+.suggestion-area.expanded .suggestions-menu .prev,
+.suggestion-area.expanded .suggestions-menu .next,
+.suggestion-area.expanded .suggestions-menu .pagination {
+  display: block;
+}
+
+.suggestions-menu .disabled {
+  color: grey;
 }

@@ -102,9 +102,9 @@ class Demo {
     const inputElem = document.querySelector(".input");
     const currentInputMethod = this.keyboard.getCurrentInputMethod();
     if (currentInputMethod === "EN") {
-      console.log("Input changed - before", inputElem.value);
+      // console.log("Input changed - before", inputElem.value);
       inputElem.value = input;
-      console.log("Input changed - after", inputElem.value);
+      // console.log("Input changed - after", inputElem.value);
     } else {
       if (input.length > 1 && this.keyboard.isAlphabetical(_.last(input))) {
         this.keyboard.setCurrentWord(input);
@@ -170,7 +170,7 @@ class Demo {
       return;
     }
     this.keyboard.setPinyinPreview(_.trim(_.first(foundSuggestions)));
-    console.warn("beep", foundSuggestions);
+    // console.warn("beep", foundSuggestions);
   }
 
   onKeyPress(button) {

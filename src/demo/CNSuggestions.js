@@ -12,11 +12,10 @@ class CNSuggestions {
   getSuggestions(idx) {
     return _.isNumber(idx) ? this.suggestions[idx] : this.suggestions;
   }
+
   getChar(n) {
     n = --n < 0 ? 9 : n;
     return this.suggestions[n];
-    // TODO: hugo - might need to handle the paging of the suggestions
-    // return this.suggestions[self.getPage()*10+n]
   }
 
   charProcessor(chr, buf) {

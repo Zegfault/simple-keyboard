@@ -23,6 +23,9 @@ class SimpleKeyboard {
       params
     );
     this.currentWord = "";
+    this.numberOfSuggestionsPerLine = 10;
+    this.currentSuggestionPage = 1;
+    this.numberOfSuggestionsPages = 1;
     /**
      * Initializing Utilities
      */
@@ -1270,11 +1273,10 @@ class SimpleKeyboard {
       this.setSuggestions([]);
       this.hideSuggestions();
       console.warn("will empty the pinyin preview");
-      this.currentWord = "";
     } else {
       console.warn(`setPinyinPreview - `, pinyin);
-      this.setCurrentWord(pinyin);
     }
+    this.setCurrentWord(pinyin);
   }
 
   isAlphabetical(char) {
@@ -1308,6 +1310,9 @@ class SimpleKeyboard {
 
   toggleLanguage() {
     this.inputLanguage = this.inputLanguage === "EN" ? "CN" : "EN";
+    this.clearInput();
+    this.setCurrentWord("");
+    this.setPinyinPreview("");
   }
 
   handleLangKey() {
@@ -1339,13 +1344,53 @@ class SimpleKeyboard {
       _.filter(word, char => this.isAlphabetical(char)),
       ""
     );
-    console.log(`current word is now: ${this.currentWord}`);
+    // console.log(`current word is now: ${this.currentWord}`);
+  }
+
+  toggleExpandSuggestionsBtn(display) {
+    if (display) {
+      this.expandSuggestionsBtn.classList.add(`displayed`);
+      this.suggestionAreaDOM.classList.add(`has-more`);
+    } else {
+      this.expandSuggestionsBtn.classList.remove(`displayed`);
+      this.suggestionAreaDOM.classList.remove(`has-more`);
+    }
+  }
+
+  toggleMoreSuggestionsArea() {
+    if (_.includes(this.suggestionAreaDOM.classList, `expanded`)) {
+      this.suggestionAreaDOM.classList.remove(`expanded`);
+      return;
+    }
+    if (this.suggestions.length > this.numberOfSuggestionsPerLine) {
+      this.suggestionAreaDOM.classList.add(`expanded`);
+    }
+  }
+
+  updateNumberOfSuggestionPages() {
+    this.numberOfSuggestionsPages = this.suggestions
+      ? Math.floor(this.suggestions.length / this.numberOfSuggestionsPerLine) -
+        1
+      : 1;
   }
 
   setSuggestions(suggestions) {
     const suggestionsList = this.suggestionAreaDOM.firstElementChild;
     suggestionsList.innerHTML = "";
-    _.forEach(suggestions, suggestion => {
+    this.suggestions = suggestions;
+    this.currentSuggestionPage = 1;
+    this.updateSuggestionPagesMenu();
+    if (
+      !suggestions ||
+      (suggestions && suggestions.length <= this.numberOfSuggestionsPerLine)
+    ) {
+      this.toggleExpandSuggestionsBtn(false);
+    } else if (suggestions) {
+      this.toggleExpandSuggestionsBtn(
+        suggestionsList.length > this.numberOfSuggestionsPerLine
+      );
+    }
+    _.forEach(suggestions, (suggestion, key) => {
       const suggestionElem = document.createElement("li");
       suggestionElem.innerHTML = suggestion;
       suggestionElem.onclick = () => {
@@ -1353,7 +1398,26 @@ class SimpleKeyboard {
         this.enterSuggestedWord(suggestion);
       };
       suggestionsList.appendChild(suggestionElem);
+      if (key === this.numberOfSuggestionsPerLine) {
+        this.toggleExpandSuggestionsBtn(true);
+      }
     });
+    if (suggestions) {
+      this.nbSuggestionsPages =
+        suggestions.length / this.numberOfSuggestionsPerLine;
+      if (suggestions.length > this.numberOfSuggestionsPerLine) {
+        // TODO: hugo - show the suggestions paging
+      } else {
+        // TODO: hugo - hide the suggestions paging
+      }
+      let missingElementsOnLastLine =
+        this.numberOfSuggestionsPerLine -
+        (suggestions.length % this.numberOfSuggestionsPerLine);
+      while (missingElementsOnLastLine > 0) {
+        suggestionsList.appendChild(document.createElement("li"));
+        missingElementsOnLastLine -= 1;
+      }
+    }
   }
 
   showSuggestions() {
@@ -1371,9 +1435,44 @@ class SimpleKeyboard {
       this.options.onSuggestedWordClicked(suggestion);
     }
     this.setSuggestions();
-    this.currentWord = "";
     this.clearInput();
     this.setPinyinPreview("");
+    if (_.includes(this.suggestionAreaDOM.classList, `expanded`)) {
+      this.suggestionAreaDOM.classList.remove(`expanded`);
+      return;
+    }
+  }
+
+  scrollToSuggestionPage(page) {
+    const suggestionsList = this.suggestionAreaDOM.firstElementChild;
+    suggestionsList.scroll(0, (page - 1) * 36);
+  }
+
+  changeSuggestionsPage(changePage) {
+    const potentialNextPage = this.currentSuggestionPage + changePage;
+    if (
+      potentialNextPage >= 1 &&
+      potentialNextPage <= this.numberOfSuggestionsPages
+    ) {
+      this.currentSuggestionPage = potentialNextPage;
+    }
+    this.updateSuggestionPagesMenu();
+    this.scrollToSuggestionPage(this.currentSuggestionPage);
+  }
+
+  updateSuggestionPagesMenu() {
+    this.updateNumberOfSuggestionPages();
+    this.suggestionsPagination.innerHTML = `${this.currentSuggestionPage} / ${this.numberOfSuggestionsPages}`;
+    if (this.currentSuggestionPage - 1 <= 0) {
+      this.previousSuggestionPageBtn.classList.add("disabled");
+    } else {
+      this.previousSuggestionPageBtn.classList.remove("disabled");
+    }
+    if (this.currentSuggestionPage + 1 > this.numberOfSuggestionsPages) {
+      this.nextSuggestionPageBtn.classList.add("disabled");
+    } else {
+      this.nextSuggestionPageBtn.classList.remove("disabled");
+    }
   }
 
   /**
@@ -1420,6 +1519,35 @@ class SimpleKeyboard {
     this.previewPinyin = document.createElement("div");
     this.previewPinyin.className = "preview-pinyin";
     this.keyboardDOM.appendChild(this.previewPinyin);
+    this.suggestionsMenu = document.createElement("div");
+    this.suggestionsMenu.className = "suggestions-menu";
+    this.expandSuggestionsBtn = document.createElement("div");
+    this.previousSuggestionPageBtn = document.createElement("div");
+    this.previousSuggestionPageBtn.innerHTML = "prev";
+    this.previousSuggestionPageBtn.className = "prev";
+    this.previousSuggestionPageBtn.onclick = () => {
+      this.changeSuggestionsPage(-1);
+    };
+    this.nextSuggestionPageBtn = document.createElement("div");
+    this.nextSuggestionPageBtn.innerHTML = "next";
+    this.nextSuggestionPageBtn.className = "next";
+    this.nextSuggestionPageBtn.onclick = () => {
+      this.changeSuggestionsPage(1);
+    };
+    this.suggestionsPagination = document.createElement("div");
+    this.suggestionsPagination.className = "pagination";
+    this.suggestionsPagination.innerHTML = "1 / 1";
+    this.expandSuggestionsBtn.classList.add(`expand-btn`);
+    this.expandSuggestionsBtn.innerHTML = "MORE";
+    this.expandSuggestionsBtn.display = "none";
+    this.expandSuggestionsBtn.onclick = () => {
+      this.toggleMoreSuggestionsArea();
+    };
+    this.suggestionsMenu.appendChild(this.expandSuggestionsBtn);
+    this.suggestionsMenu.appendChild(this.previousSuggestionPageBtn);
+    this.suggestionsMenu.appendChild(this.nextSuggestionPageBtn);
+    this.suggestionsMenu.appendChild(this.suggestionsPagination);
+    this.suggestionAreaDOM.appendChild(this.suggestionsMenu);
 
     /**
      * Iterating through each row
