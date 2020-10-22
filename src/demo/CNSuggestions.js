@@ -5,8 +5,7 @@ class CNSuggestions {
   constructor() {
     this.events = new events.EventEmitter();
     this.events.setMaxListeners(100);
-
-    console.warn("Will init the CN suggestions");
+    console.log("Will init the CN suggestions");
     this.suggestions = suggestionData;
   }
 

@@ -1273,6 +1273,7 @@ class SimpleKeyboard {
       this.currentWord = "";
     } else {
       console.warn(`setPinyinPreview - `, pinyin);
+      this.setCurrentWord(pinyin);
     }
   }
 
@@ -1334,11 +1335,11 @@ class SimpleKeyboard {
   }
 
   setCurrentWord(word) {
-    // TODO: hugo - filter the characters to be only a-z
     this.currentWord = _.join(
       _.filter(word, char => this.isAlphabetical(char)),
       ""
     );
+    console.log(`current word is now: ${this.currentWord}`);
   }
 
   setSuggestions(suggestions) {

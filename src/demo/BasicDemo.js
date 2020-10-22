@@ -85,7 +85,6 @@ class Demo {
 
   setListeners() {
     CNSuggestions.events.on(`displaySuggestionBox`, suggestions => {
-      console.warn(`received event: displaySuggestionBox with: `, suggestions);
       if (!suggestions) {
         this.keyboard.setSuggestions([]);
         return this.keyboard.hideSuggestions();
@@ -94,7 +93,6 @@ class Demo {
       this.keyboard.showSuggestions();
     });
     CNSuggestions.events.on(`setSuggestions`, suggestions => {
-      console.warn(`received event: setSuggestions with: `, suggestions);
       this.keyboard.setSuggestions(suggestions);
     });
   }
@@ -106,6 +104,7 @@ class Demo {
     if (currentInputMethod === "EN") {
       console.log("Input changed - before", inputElem.value);
       inputElem.value = input;
+      console.log("Input changed - after", inputElem.value);
     } else {
       if (input.length > 1 && this.keyboard.isAlphabetical(_.last(input))) {
         this.keyboard.setCurrentWord(input);
@@ -155,7 +154,7 @@ class Demo {
     ) {
       return this.handleSpaceKey(button);
     }
-    console.warn("current word: ", this.keyboard.currentWord);
+    // console.log("current word: ---", this.keyboard.currentWord);
     const foundSuggestions = CNSuggestions.charProcessor(
       button,
       _.trim(this.keyboard.currentWord)
