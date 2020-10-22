@@ -108,17 +108,14 @@ class Demo {
       inputElem.value = input;
     } else {
       if (input.length > 1 && this.keyboard.isAlphabetical(_.last(input))) {
-        console.warn("TAMER PD - ", input);
         this.keyboard.setCurrentWord(input);
         this.keyboard.setPinyinPreview(this.keyboard.currentWord);
-        console.warn("TAMER PD - AFTER - ", this.keyboard.currentWord);
       }
     }
   }
 
   handleSpaceKey(button = false) {
     if (button === `{enter}`) {
-      console.warn("tamer ------------", this.keyboard.previewPinyin.innerHTML);
       this.keyboard.enterSuggestedWord(this.keyboard.previewPinyin.innerHTML);
     } else if (
       this.keyboard.suggestionAreaDOM.firstElementChild &&
