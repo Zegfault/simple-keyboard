@@ -88,6 +88,7 @@ class SimpleKeyboard {
      * @property {array} modules Module classes to be loaded by simple-keyboard.
      */
     this.options = options;
+    this.inputLanguage = _.get(this.options, "defaultLanguage", "CN");
     this.options.layoutName = this.options.layoutName || "default";
     this.options.theme = this.options.theme || "hg-theme-default";
     this.options.inputName = this.options.inputName || "default";
@@ -244,7 +245,6 @@ class SimpleKeyboard {
    */
   handleButtonClicked(button) {
     const debug = this.options.debug;
-
     /**
      * Ignoring placeholder buttons
      */
@@ -1274,6 +1274,59 @@ class SimpleKeyboard {
 
   isAlphabetical(char) {
     return char.match(/^[a-zA-Z]+$/);
+  }
+
+  convertInputToKeyboardKey(input) {
+    if (input === " " || input === "") {
+      return `{space}`;
+    }
+    if (input === "Backspace" || input === "Delete") {
+      return `{bksp}`;
+    }
+    if (input === "Control") {
+      return `{ctrl}`;
+    }
+    if (input === "Shift") {
+      return `{shift}`;
+    }
+    if (input === "CapsLock") {
+      return `{lock}`;
+    }
+    if (input === "Enter") {
+      return `{enter}`;
+    }
+    if (input === "Alt") {
+      return `{alt}`;
+    }
+    return input;
+  }
+
+  toggleLanguage() {
+    this.inputLanguage = this.inputLanguage === "EN" ? "CN" : "EN";
+  }
+
+  handleLangKey() {
+    this.toggleLanguage();
+    this.setOptions({
+      display: {
+        "{lang}": this.inputLanguage
+      }
+    });
+  }
+
+  handleShift() {
+    const currentLayout = this.options.layoutName;
+    this.setOptions({
+      layoutName: currentLayout === "default" ? "shift" : "default"
+    });
+  }
+
+  getCurrentInputMethod() {
+    // NOTE: If we are in EN or in CN but with the caps lock active
+    return this.inputLanguage === "EN" ||
+      (this.inputLanguage === "CN" && this.options.layoutName === "shift")
+      ? "EN"
+      : "CN";
   }
 
   setSuggestions(suggestions) {

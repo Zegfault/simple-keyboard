@@ -128,7 +128,6 @@
   overflow-x: auto;
   overflow-y: hidden;
 }
-
 .mgto-keyboard-theme .suggestion-area ul li {
   padding: 10px;
   display: inline-block;
@@ -146,9 +145,11 @@
   margin-left: 10px;
   background-color: grey;
 }
-
 .mgto-keyboard-theme .suggestion-area ul li:last-child:after {
   display: none;
+}
+.hg-button.hg-functionBtn.hg-button-ctrl {
+  max-width: 10%;
 }
 
 html {
