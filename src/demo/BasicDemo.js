@@ -107,20 +107,31 @@ class Demo {
       console.log("Input changed - before", inputElem.value);
       inputElem.value = input;
     } else {
-      this.keyboard.currentWord = input;
+      if (input.length > 1 && this.keyboard.isAlphabetical(_.last(input))) {
+        console.warn("TAMER PD - ", input);
+        this.keyboard.setCurrentWord(input);
+        this.keyboard.setPinyinPreview(this.keyboard.currentWord);
+        console.warn("TAMER PD - AFTER - ", this.keyboard.currentWord);
+      }
     }
   }
 
   handleSpaceKey(button = false) {
-    if (
+    if (button === `{enter}`) {
+      console.warn("tamer ------------", this.keyboard.previewPinyin.innerHTML);
+      this.keyboard.enterSuggestedWord(this.keyboard.previewPinyin.innerHTML);
+    } else if (
       this.keyboard.suggestionAreaDOM.firstElementChild &&
       this.keyboard.suggestionAreaDOM.firstElementChild.firstElementChild
     ) {
       console.warn(`Should add to input the first suggestion`);
-      return this.keyboard.enterSuggestedWord(
+      this.keyboard.enterSuggestedWord(
         this.keyboard.suggestionAreaDOM.firstElementChild.firstElementChild
           .innerHTML
       );
+      if (button === `{space}`) {
+        return;
+      }
     }
     if (button && button !== `{space}` && button !== `{enter}`) {
       this.keyboard.previewPinyin.innerHTML = `${this.keyboard.previewPinyin.innerHTML}${button}`;
@@ -128,8 +139,8 @@ class Demo {
     if (this.keyboard.previewPinyin.innerHTML.length > 0) {
       // console.log("will add the first suggested word");
       this.keyboard.enterSuggestedWord(this.keyboard.previewPinyin.innerHTML);
-    } else {
-      // console.log("will add a space");
+    } else if (button !== `{enter}`) {
+      console.log("will add a space");
       this.keyboard.enterSuggestedWord(" ");
     }
     return this.keyboard.setPinyinPreview("");
@@ -147,6 +158,7 @@ class Demo {
     ) {
       return this.handleSpaceKey(button);
     }
+    console.warn("current word: ", this.keyboard.currentWord);
     const foundSuggestions = CNSuggestions.charProcessor(
       button,
       _.trim(this.keyboard.currentWord)
@@ -162,7 +174,7 @@ class Demo {
       return;
     }
     this.keyboard.setPinyinPreview(_.trim(_.first(foundSuggestions)));
-    // console.warn("beep", foundSuggestions);
+    console.warn("beep", foundSuggestions);
   }
 
   onKeyPress(button) {

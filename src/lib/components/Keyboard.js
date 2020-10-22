@@ -1269,6 +1269,10 @@ class SimpleKeyboard {
     if (pinyin.length === 0) {
       this.setSuggestions([]);
       this.hideSuggestions();
+      console.warn("will empty the pinyin preview");
+      this.currentWord = "";
+    } else {
+      console.warn(`setPinyinPreview - `, pinyin);
     }
   }
 
@@ -1327,6 +1331,14 @@ class SimpleKeyboard {
       (this.inputLanguage === "CN" && this.options.layoutName === "shift")
       ? "EN"
       : "CN";
+  }
+
+  setCurrentWord(word) {
+    // TODO: hugo - filter the characters to be only a-z
+    this.currentWord = _.join(
+      _.filter(word, char => this.isAlphabetical(char)),
+      ""
+    );
   }
 
   setSuggestions(suggestions) {
