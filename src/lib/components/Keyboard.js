@@ -5,6 +5,7 @@ import "./Keyboard.css";
 import { getDefaultLayout } from "../services/KeyboardLayout";
 import PhysicalKeyboard from "../services/PhysicalKeyboard";
 import Utilities from "../services/Utilities";
+import CNSuggestions from "./CNSuggestions";
 
 /**
  * Root class for simple-keyboard
@@ -23,6 +24,7 @@ class SimpleKeyboard {
       params
     );
     this.currentWord = "";
+    this.selectedInput = false;
     this.numberOfSuggestionsPerLine = 10;
     this.currentSuggestionPage = 1;
     this.numberOfSuggestionsPages = 1;
@@ -996,6 +998,10 @@ class SimpleKeyboard {
     }
   }
 
+  getSelectedInput() {
+    return this.selectedInput || ".input";
+  }
+
   onTouchDeviceDetected() {
     /**
      * Processing autoTouchEvents
@@ -1370,8 +1376,109 @@ class SimpleKeyboard {
   updateNumberOfSuggestionPages() {
     this.numberOfSuggestionsPages = this.suggestions
       ? Math.floor(this.suggestions.length / this.numberOfSuggestionsPerLine) -
-        1
+        2
       : 1;
+  }
+
+  setCNSuggestionsListeners() {
+    CNSuggestions.events.on(`displaySuggestionBox`, suggestions => {
+      if (!suggestions) {
+        this.setSuggestions([]);
+        return this.hideSuggestions();
+      }
+      this.setSuggestions(suggestions);
+      this.showSuggestions();
+    });
+    CNSuggestions.events.on(`setSuggestions`, suggestions => {
+      this.setSuggestions(suggestions);
+    });
+  }
+
+  initKeydownListener() {
+    document.addEventListener("keydown", event => {
+      // NOTE: If we are in CN or if a special key has been typed
+      if (
+        (this.getCurrentInputMethod() === "CN" || event.key.length > 1) &&
+        event.preventDefault
+      ) {
+        event.preventDefault();
+        this.handleButtonClicked(
+          this.convertInputToKeyboardKey(event.key || `{bksp}`)
+        );
+        return false;
+      }
+    });
+  }
+
+  handleSpaceKey(button = false) {
+    const buttonIsANumberKey = _.isNumber(_.toNumber(button));
+    if (button === `{enter}`) {
+      this.enterSuggestedWord(this.previewPinyin.innerHTML);
+    } else if (
+      this.suggestionAreaDOM.firstElementChild &&
+      this.suggestionAreaDOM.firstElementChild.firstElementChild &&
+      !buttonIsANumberKey
+    ) {
+      this.enterSuggestedWord(
+        this.suggestionAreaDOM.firstElementChild.firstElementChild.innerHTML
+      );
+      if (button === `{space}`) {
+        return;
+      }
+    }
+    if (button && button !== `{space}` && button !== `{enter}`) {
+      this.previewPinyin.innerHTML = `${this.previewPinyin.innerHTML}${button}`;
+    }
+    if (this.previewPinyin.innerHTML.length > 0) {
+      if (button === `{space}`) {
+        if (
+          this.suggestionAreaDOM.firstElementChild.firstElementChild.innerHTML
+            .length > 0
+        ) {
+          console.warn("tamer");
+          this.enterSuggestedWord(
+            this.suggestionAreaDOM.firstElementChild.firstElementChild.innerHTML
+          );
+        } else {
+          console.warn("pd");
+          this.enterSuggestedWord(`${this.previewPinyin.innerHTML} `);
+        }
+      } else {
+        this.enterSuggestedWord(
+          this.previewPinyin.innerHTML,
+          buttonIsANumberKey ? button : false
+        );
+      }
+    } else if (button !== `{enter}`) {
+      console.log("will add a space");
+      this.enterSuggestedWord(" ");
+    }
+    return this.setPinyinPreview("");
+  }
+
+  findSuggestions(button) {
+    return CNSuggestions.charProcessor(button, _.trim(this.currentWord));
+  }
+
+  inputEventListener(event) {
+    console.warn("received input event -", event);
+    event.target.readOnly = this.keyboard.getCurrentInputMethod() === "CN";
+    if (event.target.readOnly) {
+      this.keyboard.handleButtonClicked(event.data || `{bksp}`);
+      if (event.preventDefault) {
+        event.preventDefault();
+      }
+      return false;
+    }
+
+    this.keyboard.setInput(event.target.value, event.target.id);
+  }
+
+  onInputFocus(event) {
+    this.selectedInput = `#${event.target.id}`;
+    this.setOptions({
+      inputName: event.target.id
+    });
   }
 
   setSuggestions(suggestions) {
@@ -1405,11 +1512,6 @@ class SimpleKeyboard {
     if (suggestions) {
       this.nbSuggestionsPages =
         suggestions.length / this.numberOfSuggestionsPerLine;
-      if (suggestions.length > this.numberOfSuggestionsPerLine) {
-        // TODO: hugo - show the suggestions paging
-      } else {
-        // TODO: hugo - hide the suggestions paging
-      }
       let missingElementsOnLastLine =
         this.numberOfSuggestionsPerLine -
         (suggestions.length % this.numberOfSuggestionsPerLine);

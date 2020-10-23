@@ -161,6 +161,7 @@
   display: inline-block;
   line-height: 1;
   text-align: center;
+  color: white;
   /* width: 8%; */
 }
 .mgto-keyboard-theme .suggestion-area ul li:not(:first-child) {
@@ -193,6 +194,7 @@ html {
   width: 5%;
   height: 100%;
   text-align: center;
+  color: white;
 }
 
 .suggestions-menu > div {
@@ -213,5 +215,22 @@ html {
 }
 
 .suggestions-menu .disabled {
+  color: grey;
+}
+
+.mgto-keyboard-theme {
+  background-color: #0a164c;
+  border-radius: 0;
+  width: 100vw;
+}
+
+.mgto-keyboard-theme .hg-row .hg-button {
+  background-color: #001969;
+  border: none;
+  border-radius: 0;
+  color: white;
+}
+
+.mgto-keyboard-theme .preview-pinyin {
   color: grey;
 }
