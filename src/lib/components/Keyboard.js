@@ -1428,9 +1428,11 @@ class SimpleKeyboard {
     this.suggestionAreaDOM.classList.add("hidden");
   }
 
-  enterSuggestedWord(suggestion) {
+  enterSuggestedWord(suggestion, nthWord = false) {
     // this.clearInput();
-    // console.warn(`test lol: ${suggestion}`, this.getInput());
+    if (nthWord) {
+      suggestion = _.get(this.suggestions, `[${nthWord - 1}]`, nthWord);
+    }
     if (typeof this.options.onSuggestedWordClicked === "function") {
       this.options.onSuggestedWordClicked(suggestion);
     }

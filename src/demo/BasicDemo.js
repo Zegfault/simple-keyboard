@@ -105,22 +105,25 @@ class Demo {
       // console.log("Input changed - before", inputElem.value);
       inputElem.value = input;
       // console.log("Input changed - after", inputElem.value);
-    } else {
-      if (input.length > 1 && this.keyboard.isAlphabetical(_.last(input))) {
-        this.keyboard.setCurrentWord(input);
-        this.keyboard.setPinyinPreview(this.keyboard.currentWord);
-      }
+    } else if (
+      input.length > 1 &&
+      this.keyboard.isAlphabetical(_.last(input))
+    ) {
+      this.keyboard.setCurrentWord(input);
+      this.keyboard.setPinyinPreview(this.keyboard.currentWord);
     }
   }
 
   handleSpaceKey(button = false) {
+    // TODO: hugo - handle "when having a suggestion and then typing a number -> should take the Nth suggestion if available"
+    const buttonIsANumberKey = _.isNumber(_.toNumber(button));
     if (button === `{enter}`) {
       this.keyboard.enterSuggestedWord(this.keyboard.previewPinyin.innerHTML);
     } else if (
       this.keyboard.suggestionAreaDOM.firstElementChild &&
-      this.keyboard.suggestionAreaDOM.firstElementChild.firstElementChild
+      this.keyboard.suggestionAreaDOM.firstElementChild.firstElementChild &&
+      !buttonIsANumberKey
     ) {
-      console.warn(`Should add to input the first suggestion`);
       this.keyboard.enterSuggestedWord(
         this.keyboard.suggestionAreaDOM.firstElementChild.firstElementChild
           .innerHTML
@@ -133,8 +136,10 @@ class Demo {
       this.keyboard.previewPinyin.innerHTML = `${this.keyboard.previewPinyin.innerHTML}${button}`;
     }
     if (this.keyboard.previewPinyin.innerHTML.length > 0) {
-      // console.log("will add the first suggested word");
-      this.keyboard.enterSuggestedWord(this.keyboard.previewPinyin.innerHTML);
+      this.keyboard.enterSuggestedWord(
+        this.keyboard.previewPinyin.innerHTML,
+        buttonIsANumberKey ? button : false
+      );
     } else if (button !== `{enter}`) {
       console.log("will add a space");
       this.keyboard.enterSuggestedWord(" ");
