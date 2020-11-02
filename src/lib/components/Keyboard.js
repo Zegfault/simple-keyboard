@@ -1278,9 +1278,9 @@ class SimpleKeyboard {
     if (pinyin.length === 0) {
       this.setSuggestions([]);
       this.hideSuggestions();
-      console.warn("will empty the pinyin preview");
-    } else {
-      console.warn(`setPinyinPreview - `, pinyin);
+      // console.warn("will empty the pinyin preview");
+    // } else {
+    //   console.warn(`setPinyinPreview - `, pinyin);
     }
     this.setCurrentWord(pinyin);
   }
@@ -1435,12 +1435,10 @@ class SimpleKeyboard {
           this.suggestionAreaDOM.firstElementChild.firstElementChild.innerHTML
             .length > 0
         ) {
-          console.warn("tamer");
           this.enterSuggestedWord(
             this.suggestionAreaDOM.firstElementChild.firstElementChild.innerHTML
           );
         } else {
-          console.warn("pd");
           this.enterSuggestedWord(`${this.previewPinyin.innerHTML} `);
         }
       } else {
