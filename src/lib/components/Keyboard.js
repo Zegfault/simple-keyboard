@@ -258,8 +258,11 @@ class SimpleKeyboard {
     /**
      * Calling onKeyPress
      */
-    if (typeof this.options.onKeyPress === "function")
+    if (typeof this.options.onKeyPress === "function") {
       this.options.onKeyPress(button);
+    } else {
+      this.onKeyPress(button);
+    }
 
     if (!this.input[this.options.inputName])
       this.input[this.options.inputName] = "";
@@ -1479,6 +1482,65 @@ class SimpleKeyboard {
     });
   }
 
+  onKeyPress(button) {
+    console.log("Button pressed", button);
+    if (button === "{lang}") {
+      return this.handleLangKey();
+    }
+    if (button === "{shift}" || button === "{lock}") {
+      return this.handleShift();
+    }
+    if (this.getCurrentInputMethod() === "CN") {
+      this.handleCNKeyPress(button);
+    }
+  }
+
+  onSuggestedWordClicked(suggestedWord) {
+    // console.warn("onSuggestedWordClicked - ", suggestedWord);
+    const selectedInput = this.getSelectedInput();
+    const inputVal = document.querySelector(selectedInput).value;
+    document.querySelector(selectedInput).value = `${inputVal}${suggestedWord}`;
+  }
+
+  onChange(input) {
+    const inputElem = document.querySelector(this.getSelectedInput());
+    const currentInputMethod = this.getCurrentInputMethod();
+    if (currentInputMethod === "EN") {
+      // console.log("Input changed - before", inputElem.value);
+      inputElem.value = input;
+      // console.log("Input changed - after", inputElem.value);
+    } else if (input.length > 1 && this.isAlphabetical(_.last(input))) {
+      this.setCurrentWord(input);
+      this.setPinyinPreview(this.currentWord);
+    }
+  }
+
+  handleCNKeyPress(button) {
+    if (button === `{ctrl}` || button === `{alt}`) {
+      return console.log(`Key ignored`);
+    }
+    if (
+      button !== `{bksp}` &&
+      (button === "{space}" ||
+        button === "{enter}" ||
+        !this.isAlphabetical(button))
+    ) {
+      return this.handleSpaceKey(button);
+    }
+    // console.log("current word: ---", this.currentWord);
+    const foundSuggestions = this.findSuggestions(button);
+    if (button === `{bksp}` && this.previewPinyin.innerHTML.length === 0) {
+      // NOTE: backspace
+      const selectedInput = this.getSelectedInput();
+
+      document.querySelector(selectedInput).value = document
+        .querySelector(selectedInput)
+        .value.slice(0, -1);
+      return;
+    }
+    this.setPinyinPreview(_.trim(_.first(foundSuggestions)));
+  }
+
   setSuggestions(suggestions) {
     const suggestionsList = this.suggestionAreaDOM.firstElementChild;
     suggestionsList.innerHTML = "";
@@ -1535,6 +1597,8 @@ class SimpleKeyboard {
     }
     if (typeof this.options.onSuggestedWordClicked === "function") {
       this.options.onSuggestedWordClicked(suggestion);
+    } else {
+      this.onSuggestedWordClicked(suggestion);
     }
     this.setSuggestions();
     this.clearInput();
