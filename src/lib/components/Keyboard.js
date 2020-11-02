@@ -1603,7 +1603,6 @@ class SimpleKeyboard {
   }
 
   enterSuggestedWord(suggestion, nthWord = false) {
-    // this.clearInput();
     if (nthWord) {
       suggestion = _.get(this.suggestions, `[${nthWord - 1}]`, nthWord);
     }
@@ -1617,8 +1616,11 @@ class SimpleKeyboard {
     this.setPinyinPreview("");
     if (_.includes(this.suggestionAreaDOM.classList, `expanded`)) {
       this.suggestionAreaDOM.classList.remove(`expanded`);
-      return;
     }
+    const customOnChangeEvent = new Event("change", { bubbles: true });
+    document
+      .querySelector(this.getSelectedInput())
+      .dispatchEvent(customOnChangeEvent);
   }
 
   scrollToSuggestionPage(page) {
