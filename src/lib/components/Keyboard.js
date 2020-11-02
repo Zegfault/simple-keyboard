@@ -1529,6 +1529,7 @@ class SimpleKeyboard {
     document.querySelector(selectedInput).value = document
       .querySelector(selectedInput)
       .value.slice(0, -1);
+    this.triggerOnChangeEvent();
     return;
   }
 
@@ -1602,6 +1603,12 @@ class SimpleKeyboard {
     this.suggestionAreaDOM.classList.remove("displayed");
   }
 
+  triggerOnChangeEvent() {
+    document
+      .querySelector(this.getSelectedInput())
+      .dispatchEvent(new Event("change", { bubbles: true }));
+  }
+
   enterSuggestedWord(suggestion, nthWord = false) {
     if (nthWord) {
       suggestion = _.get(this.suggestions, `[${nthWord - 1}]`, nthWord);
@@ -1617,10 +1624,7 @@ class SimpleKeyboard {
     if (_.includes(this.suggestionAreaDOM.classList, `expanded`)) {
       this.suggestionAreaDOM.classList.remove(`expanded`);
     }
-    const customOnChangeEvent = new Event("change", { bubbles: true });
-    document
-      .querySelector(this.getSelectedInput())
-      .dispatchEvent(customOnChangeEvent);
+    this.triggerOnChangeEvent();
   }
 
   scrollToSuggestionPage(page) {
