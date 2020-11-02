@@ -1496,6 +1496,9 @@ class SimpleKeyboard {
     if (button === `{space}`) {
       return this.enterSuggestedWord(" ");
     }
+    if (button === `{bksp}`) {
+      return this.handleBackspace();
+    }
     this.enterSuggestedWord(button);
   }
 
@@ -1519,6 +1522,14 @@ class SimpleKeyboard {
     }
   }
 
+  handleBackspace() {
+    const selectedInput = this.getSelectedInput();
+    document.querySelector(selectedInput).value = document
+      .querySelector(selectedInput)
+      .value.slice(0, -1);
+    return;
+  }
+
   handleCNKeyPress(button) {
     if (button === `{ctrl}` || button === `{alt}`) {
       return console.log(`Key ignored`);
@@ -1534,12 +1545,7 @@ class SimpleKeyboard {
     // console.log("current word: ---", this.currentWord);
     const foundSuggestions = this.findSuggestions(button);
     if (button === `{bksp}` && this.previewPinyin.innerHTML.length === 0) {
-      // NOTE: backspace
-      const selectedInput = this.getSelectedInput();
-
-      document.querySelector(selectedInput).value = document
-        .querySelector(selectedInput)
-        .value.slice(0, -1);
+      this.handleBackspace();
       return;
     }
     this.setPinyinPreview(_.trim(_.first(foundSuggestions)));
