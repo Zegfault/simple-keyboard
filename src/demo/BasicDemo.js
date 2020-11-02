@@ -4,7 +4,7 @@ import "./css/BasicDemo.css";
 
 const setDOM = () => {
   document.querySelector("#root").innerHTML = `
-    <input class="input" placeholder="Tap on the virtual keyboard to start" />
+    <input class="input" id="input-test" placeholder="Tap on the virtual keyboard to start" />
     <div class="simple-keyboard"></div>
   `;
 };

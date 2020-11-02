@@ -1463,16 +1463,16 @@ class SimpleKeyboard {
 
   inputEventListener(event) {
     console.warn("received input event -", event);
-    event.target.readOnly = this.keyboard.getCurrentInputMethod() === "CN";
+    event.target.readOnly = this.getCurrentInputMethod() === "CN";
     if (event.target.readOnly) {
-      this.keyboard.handleButtonClicked(event.data || `{bksp}`);
+      this.handleButtonClicked(event.data || `{bksp}`);
       if (event.preventDefault) {
         event.preventDefault();
       }
       return false;
     }
 
-    this.keyboard.setInput(event.target.value, event.target.id);
+    this.setInput(event.target.value, event.target.id);
   }
 
   onInputFocus(event) {
@@ -1491,8 +1491,12 @@ class SimpleKeyboard {
       return this.handleShift();
     }
     if (this.getCurrentInputMethod() === "CN") {
-      this.handleCNKeyPress(button);
+      return this.handleCNKeyPress(button);
     }
+    if (button === `{space}`) {
+      return this.enterSuggestedWord(" ");
+    }
+    this.enterSuggestedWord(button);
   }
 
   onSuggestedWordClicked(suggestedWord) {
