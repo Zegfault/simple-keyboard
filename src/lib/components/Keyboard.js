@@ -1397,20 +1397,22 @@ class SimpleKeyboard {
     });
   }
 
+  keydownListener(event) {
+    // NOTE: If we are in CN or if a special key has been typed
+    if (
+      (this.getCurrentInputMethod() === "CN" || event.key.length > 1) &&
+      event.preventDefault
+    ) {
+      event.preventDefault();
+      this.handleButtonClicked(
+        this.convertInputToKeyboardKey(event.key || `{bksp}`)
+      );
+      return false;
+    }
+  }
+
   initKeydownListener() {
-    document.addEventListener("keydown", event => {
-      // NOTE: If we are in CN or if a special key has been typed
-      if (
-        (this.getCurrentInputMethod() === "CN" || event.key.length > 1) &&
-        event.preventDefault
-      ) {
-        event.preventDefault();
-        this.handleButtonClicked(
-          this.convertInputToKeyboardKey(event.key || `{bksp}`)
-        );
-        return false;
-      }
-    });
+    document.addEventListener("keydown", this.keydownListener);
   }
 
   handleSpaceKey(button = false) {
