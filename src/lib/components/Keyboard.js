@@ -1279,8 +1279,8 @@ class SimpleKeyboard {
       this.setSuggestions([]);
       this.hideSuggestions();
       // console.warn("will empty the pinyin preview");
-    // } else {
-    //   console.warn(`setPinyinPreview - `, pinyin);
+      // } else {
+      //   console.warn(`setPinyinPreview - `, pinyin);
     }
     this.setCurrentWord(pinyin);
   }
@@ -1521,11 +1521,11 @@ class SimpleKeyboard {
   }
 
   showSuggestions() {
-    this.suggestionAreaDOM.classList.remove("displayed");
+    this.suggestionAreaDOM.classList.add("displayed");
   }
 
   hideSuggestions() {
-    this.suggestionAreaDOM.classList.add("displayed");
+    this.suggestionAreaDOM.classList.remove("displayed");
   }
 
   enterSuggestedWord(suggestion, nthWord = false) {

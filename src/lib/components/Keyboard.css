@@ -134,7 +134,7 @@ html {
   width: 5%;
   height: 100%;
   text-align: center;
-  color: white;
+  color: black;
 }
 
 .suggestions-menu > div {
@@ -156,4 +156,64 @@ html {
 
 .suggestions-menu .disabled {
   color: grey;
+}
+
+.suggestion-area {
+  position: relative;
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+.suggestion-area ul {
+  height: 36px;
+  width: 100%;
+  padding: 0;
+  margin: 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  align-content: flex-start;
+  justify-content: flex-start;
+}
+.suggestion-area.has-more ul {
+  max-width: 95%;
+}
+.suggestion-area.expanded ul {
+  height: auto;
+  max-height: 144px;
+}
+.suggestion-area .expand-btn {
+  height: 36px;
+  width: 36px;
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+.suggestion-area .expand-btn.displayed {
+  opacity: 1;
+}
+.suggestion-area ul li {
+  flex: 1 0 10%;
+  padding: 10px 0;
+  display: inline-block;
+  line-height: 1;
+  text-align: center;
+  color: black;
+  /* width: 8%;
+	 */
+}
+.suggestion-area.displayed.has-more.expanded {
+  height: 144px;
+}
+.suggestion-area ul li:not(:first-child) {
+  padding-left: 0px;
+}
+.suggestion-area.displayed {
+  opacity: 1;
+}
+
+.preview-pinyin {
+  color: grey;
+  min-height: 18px;
+  font-size: 15px;
 }
