@@ -1521,11 +1521,11 @@ class SimpleKeyboard {
   }
 
   showSuggestions() {
-    this.suggestionAreaDOM.classList.remove("hidden");
+    this.suggestionAreaDOM.classList.remove("displayed");
   }
 
   hideSuggestions() {
-    this.suggestionAreaDOM.classList.add("hidden");
+    this.suggestionAreaDOM.classList.add("displayed");
   }
 
   enterSuggestedWord(suggestion, nthWord = false) {
