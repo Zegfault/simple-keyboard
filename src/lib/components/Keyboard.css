@@ -217,3 +217,22 @@ html {
   min-height: 18px;
   font-size: 15px;
 }
+.hg-button.hg-functionBtn.hg-button-lang {
+  max-width: 10vw;
+}
+.hg-button.hg-standardBtn {
+  position: relative;
+}
+.hg-button.hg-standardBtn .accents-overlay {
+  position: absolute;
+  top: -80%;
+  left: 0;
+  z-index: 2;
+  display: flex;
+}
+.hg-button.hg-standardBtn .accents-overlay .accent-key {
+  display: inline-block;
+  padding: 15px;
+  line-height: 15px;
+  background-color: white;
+}

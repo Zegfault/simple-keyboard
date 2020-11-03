@@ -23,6 +23,20 @@ class Demo {
           "{shift} z x c v b n m , . /",
           "{lang} @ {space}"
         ],
+        zhHT: [
+          "` 1 2 3 4 5 6 7 8 9 0 - = {bksp}",
+          "{tab} q W e r t y u i o p [ ] \\",
+          "{lock} a s d f g h j k l ; ' {enter}",
+          "{shift} z x c v b n m , . /",
+          "{lang} @ {space}"
+        ],
+        ptPT: [
+          "` 1 2 3 4 5 6 7 8 9 0 - = {bksp}",
+          "{tab} Q w e r t y u i o p [ ] \\",
+          "{lock} a s d f g h j k l ç o {enter}",
+          "{shift} z x c v b n m , . /",
+          "{lang} @ {space}"
+        ],
         shift: [
           "~ ! @ # $ % ^ & * ( ) _ + {bksp}",
           "{tab} Q W E R T Y U I O P { } |",

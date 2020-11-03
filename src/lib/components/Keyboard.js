@@ -23,6 +23,16 @@ class SimpleKeyboard {
     const { keyboardDOMClass, keyboardDOM, options = {} } = this.handleParams(
       params
     );
+    this.currentAccentOverlay = false;
+    this.ptPTAccentsMapping = {
+      a: ["á", "ã", "â", "à", "ä", "æ"],
+      e: ["é", "ê", "è", "ë"],
+      i: ["í", "î", "ì", "ï"],
+      o: ["ó", "õ", "ô", "ò", "ö"],
+      u: ["ú", "û", "ù", "ü"],
+      y: ["ý", "ÿ"],
+      n: ["ñ"]
+    };
     this.currentWord = "";
     this.selectedInput = false;
     this.numberOfSuggestionsPerLine = 10;
@@ -426,6 +436,58 @@ class SimpleKeyboard {
     if (this.options.preventMouseDownDefault) e.preventDefault();
   }
 
+  keyHasAccents(button) {
+    if (this.inputLanguage !== "POR" || this.options.layoutName !== "ptPT") {
+      console.warn(`not in ptPT`, this.inputLanguage, this.options.layoutName);
+      return false;
+    }
+    return _.get(this.ptPTAccentsMapping, button, false);
+  }
+
+  removeAccentsOverlay() {
+    // console.warn("removeAccentsOverlay");
+    if (this.currentAccentOverlay) {
+      this.currentAccentOverlay.remove();
+      this.currentAccentOverlay = false;
+    }
+  }
+
+  handleAccentKey(accent) {
+    this.enterSuggestedWord(accent);
+    this.removeAccentsOverlay();
+  }
+
+  createAccentsOverlay(button, accents) {
+    if (this.currentAccentOverlay) {
+      this.removeAccentsOverlay();
+    }
+    const keyButton = document.querySelector(
+      `.hg-button.hg-standardBtn[data-skbtn="${button}"]`
+    );
+    this.currentAccentOverlay = document.createElement("div");
+    this.currentAccentOverlay.className = "accents-overlay";
+    // TODO: hugo - for each accent -> create a div with onclick event
+    _.forEach(accents, accent => {
+      const accentKey = document.createElement("div");
+      accentKey.className = "accent-key";
+      accentKey.innerHTML = `${accent}`;
+      accentKey.onclick = () => {
+        this.handleAccentKey(accent);
+      };
+      this.currentAccentOverlay.appendChild(accentKey);
+    });
+    keyButton.appendChild(this.currentAccentOverlay);
+  }
+
+  displayAccentsOverlay(button, display, accents = false) {
+    // console.warn(
+    //   `Will display:${display} accents overlay for button ${button}`
+    // );
+    return display
+      ? this.createAccentsOverlay(button, accents)
+      : this.removeAccentsOverlay();
+  }
+
   /**
    * Handles button hold
    */
@@ -438,6 +500,14 @@ class SimpleKeyboard {
      */
     this.holdInteractionTimeout = setTimeout(() => {
       if (this.isMouseHold) {
+        // console.warn("MOUSE HOLD", button);
+        const accents = this.keyHasAccents(button);
+        if (accents) {
+          // console.warn(`${button} key has accents !`, accents);
+          return this.displayAccentsOverlay(button, true, accents);
+        }
+        // console.warn("key has no accents");
+        this.removeAccentsOverlay();
         this.handleButtonClicked(button);
         this.handleButtonHold(button);
       } else {
@@ -1318,7 +1388,13 @@ class SimpleKeyboard {
   }
 
   toggleLanguage() {
-    this.inputLanguage = this.inputLanguage === "EN" ? "CN" : "EN";
+    if (this.inputLanguage === "ENG") {
+      this.setLayoutName("zhHT");
+    } else if (this.inputLanguage === "CN") {
+      this.setLayoutName("ptPT");
+    } else {
+      this.setLayoutName("default");
+    }
     this.clearInput();
     this.setCurrentWord("");
     this.setPinyinPreview("");
@@ -1333,18 +1409,28 @@ class SimpleKeyboard {
     });
   }
 
+  setLayoutName(layoutName) {
+    if (layoutName === "default") {
+      this.inputLanguage = "ENG";
+    } else if (layoutName === "ptPT") {
+      this.inputLanguage = "POR";
+    } else if (layoutName === "zhHT") {
+      this.inputLanguage = "CN";
+    }
+    this.setOptions({ layoutName });
+  }
+
   handleShift() {
     const currentLayout = this.options.layoutName;
-    this.setOptions({
-      layoutName: currentLayout === "default" ? "shift" : "default"
-    });
+    this.setLayoutName(currentLayout === "default" ? "shift" : "default");
   }
 
   getCurrentInputMethod() {
-    // NOTE: If we are in EN or in CN but with the caps lock active
-    return this.inputLanguage === "EN" ||
+    // NOTE: If we are in EN or PT or in CN but with the caps lock active
+    return this.inputLanguage === "ENG" ||
+      this.inputLanguage === "POR" ||
       (this.inputLanguage === "CN" && this.options.layoutName === "shift")
-      ? "EN"
+      ? "ENG"
       : "CN";
   }
 
@@ -1514,7 +1600,7 @@ class SimpleKeyboard {
   onChange(input) {
     const inputElem = document.querySelector(this.getSelectedInput());
     const currentInputMethod = this.getCurrentInputMethod();
-    if (currentInputMethod === "EN") {
+    if (currentInputMethod === "ENG") {
       // console.log("Input changed - before", inputElem.value);
       inputElem.value = input;
       // console.log("Input changed - after", inputElem.value);
@@ -1835,10 +1921,19 @@ class SimpleKeyboard {
            * Handle PointerEvents
            */
           buttonDOM.onpointerdown = e => {
-            this.handleButtonClicked(button);
-            this.handleButtonMouseDown(button, e);
+            // console.warn("down", e);
+            if (!_.includes(_.get(e, "target.classList", []), "accent-key")) {
+              this.removeAccentsOverlay();
+              // this.handleButtonClicked(button);
+              this.handleButtonMouseDown(button, e);
+            }
           };
           buttonDOM.onpointerup = e => {
+            // console.warn("up", button, e);
+            if (!this.currentAccentOverlay) {
+              this.handleButtonClicked(button);
+            }
+            // this.handleButtonMouseDown(button, e);
             this.handleButtonMouseUp(button, e);
           };
           buttonDOM.onpointercancel = e => {
