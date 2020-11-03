@@ -116,7 +116,7 @@ class SimpleKeyboard {
      * @property {array} modules Module classes to be loaded by simple-keyboard.
      */
     this.options = options;
-    this.inputLanguage = _.get(this.options, "defaultLanguage", "CN");
+    this.inputLanguage = _.get(this.options, "defaultLanguage", "ENG");
     this.options.layoutName = this.options.layoutName || "default";
     this.options.theme = this.options.theme || "hg-theme-default";
     this.options.inputName = this.options.inputName || "default";
@@ -1423,17 +1423,51 @@ class SimpleKeyboard {
     this.setPinyinPreview("");
   }
 
-  handleLangKey() {
-    this.toggleLanguage();
+  updateLangKeyDisplayName() {
+    console.warn("dawjkhawdjkdawhjkawd ");
     this.setOptions({
       display: {
-        "{lang}": this.inputLanguage
+        "{lang}": this.options.layoutName.includes("zhHT")
+          ? "繁體"
+          : this.inputLanguage
       }
     });
   }
 
+  getLangKeyDisplayName() {
+    return this.options.layoutName.includes("zhHT")
+      ? "繁體"
+      : this.inputLanguage;
+  }
+
+  getNumbersKeyDisplayName() {
+    let numbersKeyDisplayName = `&123`;
+    if (this.options.layoutName.includes("numbers")) {
+      if (this.options.layoutName.includes(`zhHT`)) {
+        numbersKeyDisplayName = `拼音`;
+      } else {
+        numbersKeyDisplayName = `ABC`;
+      }
+    }
+    return numbersKeyDisplayName;
+  }
+
+  setKeysDisplayNames() {
+    this.setOptions({
+      display: _.merge(this.options.display, {
+        "{lang}": this.getLangKeyDisplayName(),
+        "{numbers}": this.getNumbersKeyDisplayName()
+      })
+    });
+  }
+
+  handleLangKey() {
+    this.toggleLanguage();
+    this.setKeysDisplayNames();
+  }
+
   setLayoutName(layoutName) {
-    console.warn("SET LAYOUT NAME: ", layoutName);
+    console.log(`Will change layout to: ${layoutName}`);
     if (layoutName === "default") {
       this.inputLanguage = "ENG";
     } else if (layoutName === "ptPT") {
@@ -1442,6 +1476,7 @@ class SimpleKeyboard {
       this.inputLanguage = "CN";
     }
     this.setOptions({ layoutName });
+    this.setKeysDisplayNames();
   }
 
   handleShift() {
@@ -1451,6 +1486,11 @@ class SimpleKeyboard {
       if (currentLayout.includes("shift")) {
         return this.setLayoutName(
           currentLayout.substring(0, currentLayout.length - 5)
+        );
+      }
+      if (currentLayout.includes("numbers")) {
+        return this.setLayoutName(
+          `${currentLayout.substring(0, currentLayout.length - 7)}shift`
         );
       }
       // NOTE: else we switch to the shifted layout
@@ -1605,10 +1645,37 @@ class SimpleKeyboard {
     });
   }
 
+  handleNumbersKey() {
+    // console.warn(`this.options.layoutName = ${this.options.layoutName}`);
+    let newLayout = "numbers";
+    if (_.includes(["default", "shift"], this.options.layoutName)) {
+      return this.setLayoutName(newLayout);
+    }
+    if (this.options.layoutName === "numbers") {
+      newLayout = "default";
+    } else if (this.options.layoutName.includes("numbers")) {
+      newLayout = this.options.layoutName.substring(
+        0,
+        this.options.layoutName.length - 7
+      );
+    } else if (this.options.layoutName.includes("shift")) {
+      newLayout = `${this.options.layoutName.substring(
+        0,
+        this.options.layoutName.length - 5
+      )}numbers`;
+    } else {
+      newLayout = `${this.options.layoutName}numbers`;
+    }
+    this.setLayoutName(newLayout);
+  }
+
   onKeyPress(button) {
     console.log("Button pressed", button);
     if (button === "{lang}") {
       return this.handleLangKey();
+    }
+    if (button === "{numbers}") {
+      return this.handleNumbersKey();
     }
     if (button === "{shift}" || button === "{lock}") {
       return this.handleShift();
@@ -1698,7 +1765,7 @@ class SimpleKeyboard {
       const suggestionElem = document.createElement("li");
       suggestionElem.innerHTML = suggestion;
       suggestionElem.onclick = () => {
-        console.warn("word clicked !", suggestion);
+        // console.warn("word clicked !", suggestion);
         this.enterSuggestedWord(suggestion);
       };
       suggestionsList.appendChild(suggestionElem);

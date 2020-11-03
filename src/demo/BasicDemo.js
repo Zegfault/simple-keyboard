@@ -17,53 +17,69 @@ class Demo {
       theme: "hg-theme-default mgto-keyboard-theme",
       layout: {
         default: [
-          "` 1 2 3 4 5 6 7 8 9 0 - = {bksp}",
-          "{tab} q w e r t y u i o p [ ] \\",
-          "{lock} a s d f g h j k l ; ' {enter}",
-          "{shift} z x c v b n m , . /",
-          "{lang} @ {space}"
-        ],
-        zhHT: [
-          "` 1 2 3 4 5 6 7 8 9 0 - = {bksp}",
-          "{tab} q W e r t y u i o p [ ] \\",
-          "{lock} a s d f g h j k l ; ' {enter}",
-          "{shift} z x c v b n m , . /",
-          "{lang} @ {space}"
-        ],
-        ptPT: [
-          "` 1 2 3 4 5 6 7 8 9 0 - = {bksp}",
-          "{tab} Q w e r t y u i o p [ ] \\",
-          "{lock} a s d f g h j k l ç o {enter}",
-          "{shift} z x c v b n m , . /",
-          "{lang} @ {space}"
+          "q w e r t y u i o p {bksp}",
+          "a s d f g h j k l ' {enter}",
+          "{shift} z x c v b n m , . ? {shift}",
+          "{numbers} {space} @ {lang}"
         ],
         shift: [
-          "~ ! @ # $ % ^ & * ( ) _ + {bksp}",
-          "{tab} Q W E R T Y U I O P { } |",
-          '{lock} A S D F G H J K L : " {enter}',
-          "{shift} Z X C V B N M < > ?",
-          "{lang} @ {space}"
+          "Q W E R T Y U I O P {bksp}",
+          'A S D F G H J K L " {enter}',
+          "{shift} Z X C V B N M ; : ! {shift}",
+          "{numbers} {space} @ {lang}"
         ],
-        ptPTshift: [
-          "~ ! @ # $ % ^ & * ( ) _ + {bksp}",
-          "{tab} Q w E R T Y U I O P { } |",
-          '{lock} A S D F G H J K L : " {enter}',
-          "{shift} Z X C V B N M < > ?",
-          "{lang} @ {space}"
+        numbers: [
+          "1 2 3 4 5 6 7 8 9 0 {bksp}",
+          "! # $ ¥ % ^ & * ( )",
+          "- _ = + [ ] { } < > {enter}",
+          "\\ | ~ ` ' \" ; : , . ? /",
+          "{numbers} {space} @ {lang}"
+        ],
+        zhHT: [
+          "q w e r t y u i o p {bksp}",
+          "a s d f g h j k l ' {enter}",
+          "{shift} z x c v b n m , . ? {shift}",
+          "{numbers} {space} @ {lang}"
         ],
         zhHTshift: [
-          "~ ! @ # $ % ^ & * ( ) _ + {bksp}",
-          "{tab} q W E R T Y U I O P { } |",
-          '{lock} A S D F G H J K L : " {enter}',
-          "{shift} Z X C V B N M < > ?",
-          "{lang} @ {space}"
+          "Q W E R T Y U I O P {bksp}",
+          'A S D F G H J K L " {enter}',
+          "{shift} Z X C V B N M ; : ! {shift}",
+          "{numbers} {space} @ {lang}"
+        ],
+        zhHTnumbers: [
+          "1 2 3 4 5 6 7 8 9 0 {bksp}",
+          "! # $ ¥ % ^ & * ( )",
+          "- _ = + [ ] { } < > {enter}",
+          "\\ | ~ ` ' \" ; : , . ? /",
+          "{numbers} {space} @ {lang}"
+        ],
+        ptPT: [
+          "q w e r t y u i o p {bksp}",
+          "a s d f g h j k l ç {enter}",
+          '{shift} z x c v b n m , . " {shift}',
+          "{numbers} {space} @ {lang}"
+        ],
+        ptPTshift: [
+          "Q W E R T Y U I O P {bksp}",
+          "A S D F G H J K L Ç {enter}",
+          "{shift} Z X C V B N M ; : ' {shift}",
+          "{numbers} {space} @ {lang}"
+        ],
+        ptPTnumbers: [
+          "1 2 3 4 5 6 7 8 9 0 {bksp}",
+          "! # $ ¥ % ^ & * ( )",
+          "- _ = + [ ] { } < > {enter}",
+          "\\ | ~ ` ' \" ; : , . ? /",
+          "{numbers} {space} @ {lang}"
         ]
       },
       mergeDisplay: true,
       display: {
         "{enter}": "enter",
         "{bksp}": "delete",
-        "{lang}": "CN"
+        "{lang}": "ENG",
+        "{numbers}": "&123"
       },
       physicalKeyboardHighlight: true
     });
