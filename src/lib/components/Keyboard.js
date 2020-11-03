@@ -24,14 +24,27 @@ class SimpleKeyboard {
       params
     );
     this.currentAccentOverlay = false;
-    this.ptPTAccentsMapping = {
-      a: ["á", "ã", "â", "à", "ä", "æ"],
-      e: ["é", "ê", "è", "ë"],
-      i: ["í", "î", "ì", "ï"],
-      o: ["ó", "õ", "ô", "ò", "ö"],
-      u: ["ú", "û", "ù", "ü"],
-      y: ["ý", "ÿ"],
-      n: ["ñ"]
+    this.accentsMapping = {
+      lowercase: {
+        a: ["á", "ã", "â", "à", "ä", "æ"],
+        e: ["é", "ê", "è", "ë"],
+        i: ["í", "î", "ì", "ï"],
+        o: ["ó", "õ", "ô", "ò", "ö", "œ"],
+        u: ["ú", "û", "ù", "ü"],
+        y: ["ý", "ÿ"],
+        n: ["ñ"],
+        c: ["ç"]
+      },
+      uppercase: {
+        A: ["Á", "Ã", "Â", "À", "Ä", "Æ"],
+        E: ["É", "Ê", "È", "Ë"],
+        I: ["Í", "Î", "Ì", "Ï"],
+        O: ["Ó", "Õ", "Ô", "Ò", "Ö", "Œ"],
+        U: ["Ú", "Û", "Ù", "Ü"],
+        Y: ["Ý", "Ÿ"],
+        N: ["Ñ"],
+        C: ["Ç"]
+      }
     };
     this.currentWord = "";
     this.selectedInput = false;
@@ -437,11 +450,21 @@ class SimpleKeyboard {
   }
 
   keyHasAccents(button) {
-    if (this.inputLanguage !== "POR" || this.options.layoutName !== "ptPT") {
-      console.warn(`not in ptPT`, this.inputLanguage, this.options.layoutName);
+    if (this.options.layoutName === "zhHT") {
+      console.warn(
+        `in zhHT, will not take accents in consideration`,
+        this.inputLanguage,
+        this.options.layoutName
+      );
       return false;
     }
-    return _.get(this.ptPTAccentsMapping, button, false);
+    return _.get(
+      this.accentsMapping,
+      `${
+        this.options.layoutName.includes("shift") ? "uppercase" : "lowercase"
+      }.${button}`,
+      false
+    );
   }
 
   removeAccentsOverlay() {
@@ -1410,6 +1433,7 @@ class SimpleKeyboard {
   }
 
   setLayoutName(layoutName) {
+    console.warn("SET LAYOUT NAME: ", layoutName);
     if (layoutName === "default") {
       this.inputLanguage = "ENG";
     } else if (layoutName === "ptPT") {
@@ -1422,6 +1446,17 @@ class SimpleKeyboard {
 
   handleShift() {
     const currentLayout = this.options.layoutName;
+    if (currentLayout !== "default" && currentLayout !== "shift") {
+      // NOTE: if already on the shifted layout, switch the normal layout for that language
+      if (currentLayout.includes("shift")) {
+        return this.setLayoutName(
+          currentLayout.substring(0, currentLayout.length - 5)
+        );
+      }
+      // NOTE: else we switch to the shifted layout
+      return this.setLayoutName(`${currentLayout}shift`);
+    }
+    // NOTE: handles EN by default
     this.setLayoutName(currentLayout === "default" ? "shift" : "default");
   }
 
@@ -1578,7 +1613,10 @@ class SimpleKeyboard {
     if (button === "{shift}" || button === "{lock}") {
       return this.handleShift();
     }
-    if (this.getCurrentInputMethod() === "CN") {
+    if (
+      this.getCurrentInputMethod() === "CN" &&
+      this.options.layoutName === "zhHT"
+    ) {
       return this.handleCNKeyPress(button);
     }
     if (button === `{space}`) {

@@ -43,6 +43,20 @@ class Demo {
           '{lock} A S D F G H J K L : " {enter}',
           "{shift} Z X C V B N M < > ?",
           "{lang} @ {space}"
+        ],
+        ptPTshift: [
+          "~ ! @ # $ % ^ & * ( ) _ + {bksp}",
+          "{tab} Q w E R T Y U I O P { } |",
+          '{lock} A S D F G H J K L : " {enter}',
+          "{shift} Z X C V B N M < > ?",
+          "{lang} @ {space}"
+        ],
+        zhHTshift: [
+          "~ ! @ # $ % ^ & * ( ) _ + {bksp}",
+          "{tab} q W E R T Y U I O P { } |",
+          '{lock} A S D F G H J K L : " {enter}',
+          "{shift} Z X C V B N M < > ?",
+          "{lang} @ {space}"
         ]
       },
       mergeDisplay: true,
