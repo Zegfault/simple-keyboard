@@ -159,7 +159,10 @@ html {
 }
 
 .suggestion-area {
-  position: relative;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
   opacity: 0;
   transition: opacity 0.3s;
 }
@@ -181,7 +184,7 @@ html {
 }
 .suggestion-area.expanded ul {
   height: auto;
-  max-height: 144px;
+  max-height: 100%;
 }
 .suggestion-area .expand-btn {
   height: 36px;
@@ -199,11 +202,14 @@ html {
   line-height: 1;
   text-align: center;
   color: black;
-  /* width: 8%;
-	 */
+}
+.suggestion-area.displayed.has-more {
+  height: 5vw;
+  overflow: hidden;
+  transition: height ease 0.3s;
 }
 .suggestion-area.displayed.has-more.expanded {
-  height: 144px;
+  height: 100%;
 }
 .suggestion-area ul li:not(:first-child) {
   padding-left: 0px;
@@ -273,4 +279,16 @@ html {
 .hg-button.hg-functionBtn.hg-button-lang.zhHT {
   background-image: url(../../demo/images/lang-switch-chn.svg);
   background-size: 30.2% 30%;
+}
+.keyboard-wrapper {
+  position: relative;
+}
+.keyboard-wrapper .suggestion-area + .hg-row {
+  padding-top: 5vw;
+}
+
+.keyboard-wrapper .suggestion-area {
+  z-index: 2;
+  background-color: white;
+  height: 100%;
 }

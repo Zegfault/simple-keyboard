@@ -1913,10 +1913,13 @@ class SimpleKeyboard {
     this.previewPinyin = document.createElement("div");
     this.previewPinyin.className = "preview-pinyin";
     this.keyboardDOM.appendChild(this.previewPinyin);
+    this.keyboardWrapper = document.createElement("div");
+    this.keyboardWrapper.className = "keyboard-wrapper";
+    this.keyboardDOM.appendChild(this.keyboardWrapper);
     this.suggestionAreaDOM = document.createElement("div");
     this.suggestionAreaDOM.appendChild(document.createElement("ul"));
     this.suggestionAreaDOM.className = "suggestion-area";
-    this.keyboardDOM.appendChild(this.suggestionAreaDOM);
+    this.keyboardWrapper.appendChild(this.suggestionAreaDOM);
     this.suggestionsMenu = document.createElement("div");
     this.suggestionsMenu.className = "suggestions-menu";
     this.expandSuggestionsBtn = document.createElement("div");
@@ -2147,7 +2150,7 @@ class SimpleKeyboard {
       /**
        * Appending row to keyboard
        */
-      this.keyboardDOM.appendChild(rowDOM);
+      this.keyboardWrapper.appendChild(rowDOM);
     });
 
     /**
