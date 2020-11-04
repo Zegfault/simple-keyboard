@@ -15,63 +15,35 @@ class Demo {
     // Demo Start
     this.keyboard = new Keyboard({
       theme: "hg-theme-default mgto-keyboard-theme",
+      defaultLanguage: "ENG",
       layout: {
         default: [
-          "q w e r t y u i o p {bksp}",
-          "a s d f g h j k l ' {enter}",
-          "{shift} z x c v b n m , . ? {shift}",
-          "{numbers} {space} @ {lang}"
+          "1 2 3 4 5 6 7 8 9 0",
+          "q w e r t y u i o p",
+          "a s d f g h j k l -",
+          "{shift} z x c v b n m . _",
+          "{lang} @ {space} {bksp}"
         ],
         shift: [
-          "Q W E R T Y U I O P {bksp}",
-          'A S D F G H J K L " {enter}',
-          "{shift} Z X C V B N M ; : ! {shift}",
-          "{numbers} {space} @ {lang}"
-        ],
-        numbers: [
-          "1 2 3 4 5 6 7 8 9 0 {bksp}",
-          "! # $ ¥ % ^ & * ( )",
-          "- _ = + [ ] { } < > {enter}",
-          "\\ | ~ ` ' \" ; : , . ? /",
-          "{numbers} {space} @ {lang}"
+          "1 2 3 4 5 6 7 8 9 0",
+          "Q W E R T Y U I O P",
+          "A S D F G H J K L -",
+          "{shift} Z X C V B N M . _",
+          "{lang} @ {space} {bksp}"
         ],
         zhHT: [
-          "q w e r t y u i o p {bksp}",
-          "a s d f g h j k l ' {enter}",
-          "{shift} z x c v b n m , . ? {shift}",
-          "{numbers} {space} @ {lang}"
+          "1 2 3 4 5 6 7 8 9 0",
+          "q w e r t y u i o p",
+          "a s d f g h j k l -",
+          "{shift} z x c v b n m . _",
+          "{lang} @ {space} {bksp}"
         ],
         zhHTshift: [
-          "Q W E R T Y U I O P {bksp}",
-          'A S D F G H J K L " {enter}',
-          "{shift} Z X C V B N M ; : ! {shift}",
-          "{numbers} {space} @ {lang}"
-        ],
-        zhHTnumbers: [
-          "1 2 3 4 5 6 7 8 9 0 {bksp}",
-          "! # $ ¥ % ^ & * ( )",
-          "- _ = + [ ] { } < > {enter}",
-          "\\ | ~ ` ' \" ; : , . ? /",
-          "{numbers} {space} @ {lang}"
-        ],
-        ptPT: [
-          "q w e r t y u i o p {bksp}",
-          "a s d f g h j k l ç {enter}",
-          '{shift} z x c v b n m , . " {shift}',
-          "{numbers} {space} @ {lang}"
-        ],
-        ptPTshift: [
-          "Q W E R T Y U I O P {bksp}",
-          "A S D F G H J K L Ç {enter}",
-          "{shift} Z X C V B N M ; : ' {shift}",
-          "{numbers} {space} @ {lang}"
-        ],
-        ptPTnumbers: [
-          "1 2 3 4 5 6 7 8 9 0 {bksp}",
-          "! # $ ¥ % ^ & * ( )",
-          "- _ = + [ ] { } < > {enter}",
-          "\\ | ~ ` ' \" ; : , . ? /",
-          "{numbers} {space} @ {lang}"
+          "1 2 3 4 5 6 7 8 9 0",
+          "Q W E R T Y U I O P",
+          "A S D F G H J K L -",
+          "{shift} Z X C V B N M . _",
+          "{lang} @ {space} {bksp}"
         ]
       },
       mergeDisplay: true,
@@ -79,7 +51,33 @@ class Demo {
         "{enter}": "enter",
         "{bksp}": "delete",
         "{lang}": "ENG",
-        "{numbers}": "&123"
+        "{space}": "Space / barra de espaço"
+      },
+      accentsMapping: {
+        lowercase: {
+          a: ["á", "ã", "â", "à", "ä", "æ", "å"],
+          e: ["é", "ê", "è", "ë"],
+          i: ["í", "î", "ì", "ï"],
+          o: ["ó", "õ", "ô", "ò", "ö", "œ", "ø"],
+          u: ["ú", "û", "ù", "ü"],
+          y: ["ý", "ÿ"],
+          n: ["ñ"],
+          d: ["ð"],
+          s: ["ß"],
+          c: ["ç"]
+        },
+        uppercase: {
+          A: ["Á", "Ã", "Â", "À", "Ä", "Æ", "Å"],
+          E: ["É", "Ê", "È", "Ë"],
+          I: ["Í", "Î", "Ì", "Ï"],
+          O: ["Ó", "Õ", "Ô", "Ò", "Ö", "Œ", "Ø"],
+          U: ["Ú", "Û", "Ù", "Ü"],
+          Y: ["Ý", "Ÿ"],
+          N: ["Ñ"],
+          D: ["Ð"],
+          S: ["ß"],
+          C: ["Ç"]
+        }
       },
       physicalKeyboardHighlight: true
     });

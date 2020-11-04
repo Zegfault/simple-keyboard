@@ -117,6 +117,11 @@ class SimpleKeyboard {
      */
     this.options = options;
     this.inputLanguage = _.get(this.options, "defaultLanguage", "ENG");
+    this.accentsMapping = _.get(
+      this.options,
+      "accentsMapping",
+      this.accentsMapping
+    );
     this.options.layoutName = this.options.layoutName || "default";
     this.options.theme = this.options.theme || "hg-theme-default";
     this.options.inputName = this.options.inputName || "default";
@@ -1152,7 +1157,9 @@ class SimpleKeyboard {
      */
     this.setEventListeners();
 
-    if (typeof this.options.onInit === "function") this.options.onInit();
+    if (typeof this.options.onInit === "function") {
+      this.options.onInit();
+    }
   }
 
   /**
@@ -1414,24 +1421,11 @@ class SimpleKeyboard {
     if (this.inputLanguage === "ENG") {
       this.setLayoutName("zhHT");
     } else if (this.inputLanguage === "CN") {
-      this.setLayoutName("ptPT");
-    } else {
       this.setLayoutName("default");
     }
     this.clearInput();
     this.setCurrentWord("");
     this.setPinyinPreview("");
-  }
-
-  updateLangKeyDisplayName() {
-    console.warn("dawjkhawdjkdawhjkawd ");
-    this.setOptions({
-      display: {
-        "{lang}": this.options.layoutName.includes("zhHT")
-          ? "繁體"
-          : this.inputLanguage
-      }
-    });
   }
 
   getLangKeyDisplayName() {
@@ -1452,18 +1446,49 @@ class SimpleKeyboard {
     return numbersKeyDisplayName;
   }
 
-  setKeysDisplayNames() {
-    this.setOptions({
-      display: _.merge(this.options.display, {
-        "{lang}": this.getLangKeyDisplayName(),
-        "{numbers}": this.getNumbersKeyDisplayName()
-      })
+  getSpaceKeyDisplayName() {
+    return this.options.layoutName.includes("zhHT")
+      ? "空格"
+      : "Space / barra de espaço";
+  }
+
+  // NOTE: Forces the update of space key's text since it doesn't work properly with the setOptions sometimes
+  forceUpdateSpaceKey() {
+    document.querySelector(
+      ".hg-button.hg-functionBtn.hg-button-space"
+    ).innerHTML = this.getSpaceKeyDisplayName();
+  }
+
+  updateLangKeyIcon() {
+    const langKey = document.querySelector(
+      ".hg-button.hg-functionBtn.hg-button-lang"
+    );
+    if (this.options.layoutName.includes("zhHT")) {
+      if (!_.includes(langKey.classList, "zhHT")) {
+        langKey.classList.add("zhHT");
+      }
+    } else {
+      langKey.classList.remove("zhHT");
+    }
+  }
+
+  setKeysDisplayNames(layoutName = false) {
+    const display = _.merge(this.options.display, {
+      "{lang}": this.getLangKeyDisplayName(),
+      "{numbers}": this.getNumbersKeyDisplayName(),
+      "{space}": this.getSpaceKeyDisplayName()
     });
+    if (layoutName) {
+      this.setOptions({ layoutName, display });
+    } else {
+      this.setOptions({ display });
+    }
+    this.updateLangKeyIcon();
+    this.forceUpdateSpaceKey();
   }
 
   handleLangKey() {
     this.toggleLanguage();
-    this.setKeysDisplayNames();
   }
 
   setLayoutName(layoutName) {
@@ -1475,8 +1500,7 @@ class SimpleKeyboard {
     } else if (layoutName === "zhHT") {
       this.inputLanguage = "CN";
     }
-    this.setOptions({ layoutName });
-    this.setKeysDisplayNames();
+    this.setKeysDisplayNames(layoutName);
   }
 
   handleShift() {

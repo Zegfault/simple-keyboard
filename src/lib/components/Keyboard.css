@@ -241,6 +241,7 @@ html {
 }
 
 .hg-button.hg-functionBtn.hg-button-bksp,
+.hg-button.hg-functionBtn.hg-button-lang,
 .hg-button.hg-functionBtn.hg-button-enter,
 .hg-button.hg-functionBtn.hg-button-shift {
   background-repeat: no-repeat;
@@ -257,9 +258,19 @@ html {
 .hg-button.hg-functionBtn.hg-button-bksp {
   background-image: url(../../demo/images/delete.svg);
   background-size: 30% 32%;
+  max-width: 10vw;
 }
 
 .hg-button.hg-functionBtn.hg-button-shift {
   background-image: url(../../demo/images/shift.svg);
+  background-size: 30.2% 30%;
+}
+
+.hg-button.hg-functionBtn.hg-button-lang {
+  background-image: url(../../demo/images/lang-switch-latin.svg);
+  background-size: 30.2% 30%;
+}
+.hg-button.hg-functionBtn.hg-button-lang.zhHT {
+  background-image: url(../../demo/images/lang-switch-chn.svg);
   background-size: 30.2% 30%;
 }
