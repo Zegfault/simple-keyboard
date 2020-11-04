@@ -494,7 +494,6 @@ class SimpleKeyboard {
     );
     this.currentAccentOverlay = document.createElement("div");
     this.currentAccentOverlay.className = "accents-overlay";
-    // TODO: hugo - for each accent -> create a div with onclick event
     _.forEach(accents, accent => {
       const accentKey = document.createElement("div");
       accentKey.className = "accent-key";
