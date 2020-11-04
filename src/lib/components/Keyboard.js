@@ -1911,13 +1911,13 @@ class SimpleKeyboard {
       this.keyboardPluginClasses,
       useTouchEventsClass
     );
+    this.previewPinyin = document.createElement("div");
+    this.previewPinyin.className = "preview-pinyin";
+    this.keyboardDOM.appendChild(this.previewPinyin);
     this.suggestionAreaDOM = document.createElement("div");
     this.suggestionAreaDOM.appendChild(document.createElement("ul"));
     this.suggestionAreaDOM.className = "suggestion-area";
     this.keyboardDOM.appendChild(this.suggestionAreaDOM);
-    this.previewPinyin = document.createElement("div");
-    this.previewPinyin.className = "preview-pinyin";
-    this.keyboardDOM.appendChild(this.previewPinyin);
     this.suggestionsMenu = document.createElement("div");
     this.suggestionsMenu.className = "suggestions-menu";
     this.expandSuggestionsBtn = document.createElement("div");
