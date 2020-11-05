@@ -1663,9 +1663,11 @@ class SimpleKeyboard {
 
   onInputFocus(event) {
     this.selectedInput = `#${event.target.id}`;
-    this.setOptions({
-      inputName: event.target.id
-    });
+    this.setOptions(
+      _.merge(this.options, {
+        inputName: event.target.id
+      })
+    );
   }
 
   handleNumbersKey() {
