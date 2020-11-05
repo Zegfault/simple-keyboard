@@ -185,5 +185,8 @@
         "@babel/plugin-proposal-class-properties"
       ]
     ]
+  },
+  "dependencies": {
+    "scrollbooster": "^3.0.2"
   }
 }

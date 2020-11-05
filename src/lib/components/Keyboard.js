@@ -1,4 +1,5 @@
 import _ from "lodash";
+import ScrollBooster from "scrollbooster";
 import "./Keyboard.css";
 
 // Services
@@ -23,6 +24,8 @@ class SimpleKeyboard {
     const { keyboardDOMClass, keyboardDOM, options = {} } = this.handleParams(
       params
     );
+    this.touchMoveTimeout = false;
+    this.canSelectSuggestedWord = true;
     this.currentAccentOverlay = false;
     this.accentsMapping = {
       lowercase: {
@@ -1150,7 +1153,6 @@ class SimpleKeyboard {
     if (this.options.debug) {
       console.log(`${this.keyboardDOMClass} Initialized`);
     }
-
     /**
      * setEventListeners
      */
@@ -1541,22 +1543,40 @@ class SimpleKeyboard {
   }
 
   toggleExpandSuggestionsBtn(display) {
+    // NOTE: expandSuggestionsBtn not displayed anymore since we have another one on top
     if (display) {
-      this.expandSuggestionsBtn.classList.add(`displayed`);
+      // this.expandSuggestionsBtn.classList.add(`displayed`);
+      this.expandSuggestionsBtn2.classList.add(`displayed`);
       this.suggestionAreaDOM.classList.add(`has-more`);
     } else {
-      this.expandSuggestionsBtn.classList.remove(`displayed`);
+      // this.expandSuggestionsBtn.classList.remove(`displayed`);
+      this.expandSuggestionsBtn2.classList.remove(`displayed`);
       this.suggestionAreaDOM.classList.remove(`has-more`);
     }
   }
 
   toggleMoreSuggestionsArea() {
     if (_.includes(this.suggestionAreaDOM.classList, `expanded`)) {
+      this.keyboardWrapper.classList.remove(`expanded`);
       this.suggestionAreaDOM.classList.remove(`expanded`);
+      this.scrollBooster.destroy();
       return;
     }
     if (this.suggestions.length > this.numberOfSuggestionsPerLine) {
       this.suggestionAreaDOM.classList.add(`expanded`);
+      this.keyboardWrapper.classList.add(`expanded`);
+      this.scrollBooster = new ScrollBooster({
+        viewport: document.querySelector(".suggestion-area"),
+        content: document.querySelector(".suggestion-area ul"),
+        scrollMode: "native",
+        direction: "vertical",
+        onPointerUp: state => {
+          return (this.canSelectSuggestedWord = !state.isMoving);
+        },
+        onPointerMove: state => {
+          this.canSelectSuggestedWord = !state.isDragging;
+        }
+      });
     }
   }
 
@@ -1826,6 +1846,10 @@ class SimpleKeyboard {
   }
 
   enterSuggestedWord(suggestion, nthWord = false) {
+    // NOTE: can't select a suggestion when scrolling through the suggestions area
+    if (!this.canSelectSuggestedWord) {
+      return;
+    }
     if (nthWord) {
       suggestion = _.get(this.suggestions, `[${nthWord - 1}]`, nthWord);
     }
@@ -1838,6 +1862,7 @@ class SimpleKeyboard {
     this.clearInput();
     this.setPinyinPreview("");
     if (_.includes(this.suggestionAreaDOM.classList, `expanded`)) {
+      this.keyboardWrapper.classList.remove(`expanded`);
       this.suggestionAreaDOM.classList.remove(`expanded`);
     }
     this.triggerOnChangeEvent();
@@ -1940,12 +1965,24 @@ class SimpleKeyboard {
     this.suggestionsPagination = document.createElement("div");
     this.suggestionsPagination.className = "pagination";
     this.suggestionsPagination.innerHTML = "1 / 1";
+
     this.expandSuggestionsBtn.classList.add(`expand-btn`);
     this.expandSuggestionsBtn.innerHTML = "MORE";
     this.expandSuggestionsBtn.display = "none";
     this.expandSuggestionsBtn.onclick = () => {
       this.toggleMoreSuggestionsArea();
     };
+    // this.expandSuggestionsBtnWrapper = document.createElement("div");
+    // this.expandSuggestionsBtnWrapper.className = "expand-btn-wrapper";
+    this.expandSuggestionsBtn2 = document.createElement("div");
+    this.expandSuggestionsBtn2.className = `expand-btn top-right`;
+    this.expandSuggestionsBtn2.innerHTML = "MORE";
+    this.expandSuggestionsBtn2.display = "none";
+    this.expandSuggestionsBtn2.onclick = () => {
+      this.toggleMoreSuggestionsArea();
+    };
+    // this.expandSuggestionsBtnWrapper.appendChild(this.expandSuggestionsBtn2);
+    this.keyboardWrapper.appendChild(this.expandSuggestionsBtn2);
     this.suggestionsMenu.appendChild(this.expandSuggestionsBtn);
     this.suggestionsMenu.appendChild(this.previousSuggestionPageBtn);
     this.suggestionsMenu.appendChild(this.nextSuggestionPageBtn);
