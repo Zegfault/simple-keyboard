@@ -433,7 +433,23 @@ class SimpleKeyboard {
     /**
      * Remove active class
      */
-    if (this.currentAccentOverlayButton !== button && !_.isNull(button)) {
+    if (
+      this.currentAccentOverlayButton &&
+      this.currentAccentOverlayButton !== button
+    ) {
+      if (!_.isNull(button)) {
+        this.recurseButtons(buttonElement => {
+          if (buttonElement.dataset.skbtn !== this.currentAccentOverlayButton) {
+            buttonElement.classList.remove(this.activeButtonClass);
+          }
+        });
+      } else {
+        _.forEach(this.currentAccentOverlay.children, childElement => {
+          childElement.classList.remove(this.activeButtonClass);
+        });
+        // this.displayAccentsOverlay(false, false, false);
+      }
+    } else if (!this.currentAccentOverlayButton) {
       this.recurseButtons(buttonElement => {
         buttonElement.classList.remove(this.activeButtonClass);
       });
