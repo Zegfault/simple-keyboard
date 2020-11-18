@@ -433,9 +433,11 @@ class SimpleKeyboard {
     /**
      * Remove active class
      */
-    this.recurseButtons(buttonElement => {
-      buttonElement.classList.remove(this.activeButtonClass);
-    });
+    if (this.currentAccentOverlayButton !== button && !_.isNull(button)) {
+      this.recurseButtons(buttonElement => {
+        buttonElement.classList.remove(this.activeButtonClass);
+      });
+    }
 
     this.isMouseHold = false;
     if (this.holdInteractionTimeout) clearTimeout(this.holdInteractionTimeout);
@@ -480,6 +482,7 @@ class SimpleKeyboard {
     if (this.currentAccentOverlay) {
       this.currentAccentOverlay.remove();
       this.currentAccentOverlay = false;
+      this.currentAccentOverlayButton = false;
     }
   }
 
@@ -495,14 +498,22 @@ class SimpleKeyboard {
     const keyButton = document.querySelector(
       `.hg-button.hg-standardBtn[data-skbtn="${button}"]`
     );
+    this.currentAccentOverlayButton = button;
     this.currentAccentOverlay = document.createElement("div");
     this.currentAccentOverlay.className = "accents-overlay";
     _.forEach(accents, accent => {
       const accentKey = document.createElement("div");
       accentKey.className = "accent-key";
       accentKey.innerHTML = `${accent}`;
-      accentKey.onclick = () => {
+      accentKey.onmousedown = event => {
+        event.target.classList.add("hg-activeButton");
+      };
+      accentKey.onclick = event => {
         this.handleAccentKey(accent);
+        event.target.classList.remove("hg-activeButton");
+        this.recurseButtons(buttonElement => {
+          buttonElement.classList.remove(this.activeButtonClass);
+        });
       };
       this.currentAccentOverlay.appendChild(accentKey);
     });

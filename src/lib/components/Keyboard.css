@@ -74,7 +74,11 @@
   -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
 }
 
-.hg-theme-default .hg-button.hg-activeButton {
+.hg-theme-default .hg-button.hg-activeButton,
+.hg-theme-default
+  .hg-button.hg-standardBtn
+  .accents-overlay
+  .accent-key.hg-activeButton {
   background: #efefef;
 }
 
