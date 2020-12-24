@@ -1767,22 +1767,59 @@ class SimpleKeyboard {
     this.enterSuggestedWord(button);
   }
 
+  getRegexForFielType(fieldType) {
+    if (fieldType === "alpha") {
+      return /[a-z]|[A-Z]|[\u4E00-\u9FCC\u3400-\u4DB5\uFA0E\uFA0F\uFA11\uFA13\uFA14\uFA1F\uFA21\uFA23\uFA24\uFA27-\uFA29]|[\ud840-\ud868][\udc00-\udfff]|\ud869[\udc00-\uded6\udf00-\udfff]|[\ud86a-\ud86c][\udc00-\udfff]|\ud86d[\udc00-\udf34\udf40-\udfff]|\ud86e[\udc00-\udc1d]/;
+    } else if (fieldType === "alphanumeric") {
+      return /[a-z]|[A-Z]|[0-9]|[\u4E00-\u9FCC\u3400-\u4DB5\uFA0E\uFA0F\uFA11\uFA13\uFA14\uFA1F\uFA21\uFA23\uFA24\uFA27-\uFA29]|[\ud840-\ud868][\udc00-\udfff]|\ud869[\udc00-\uded6\udf00-\udfff]|[\ud86a-\ud86c][\udc00-\udfff]|\ud86d[\udc00-\udf34\udf40-\udfff]|\ud86e[\udc00-\udc1d]/gi;
+    } else if (fieldType === "numeric") {
+      return /[0-9]/gi;
+    }
+    return "";
+  }
+
+  sanitizeInput(input, newInputVal) {
+    const inputElem = document.querySelector(input);
+    const fieldType = inputElem.getAttribute("field-type");
+    if (_.isNull(fieldType)) {
+      return newInputVal;
+    }
+    const regex = this.getRegexForFielType(fieldType);
+    // TODO: hugo - fix the filtering here to remove the commas separating the chars
+    let newVal = [];
+    _.forEach(newInputVal, char => {
+      if (char.match(regex)) {
+        newVal.push(char);
+      }
+    });
+    newVal = _.join(newVal, "");
+    console.warn(`sanitize input: ${newInputVal} - ${newVal}`);
+    return newVal;
+  }
+
   onSuggestedWordClicked(suggestedWord) {
     // console.warn("onSuggestedWordClicked - ", suggestedWord);
     const selectedInput = this.getSelectedInput();
     const inputVal = document.querySelector(selectedInput).value;
-    document.querySelector(selectedInput).value = `${inputVal}${suggestedWord}`;
+    document.querySelector(selectedInput).value = this.sanitizeInput(
+      selectedInput,
+      `${inputVal}${suggestedWord}`
+    );
   }
 
   onChange(input) {
     const inputElem = document.querySelector(this.getSelectedInput());
     const currentInputMethod = this.getCurrentInputMethod();
+    const sanitizedInput = this.sanitizeInput(inputElem, input);
     if (currentInputMethod === "ENG") {
       // console.log("Input changed - before", inputElem.value);
-      inputElem.value = input;
+      inputElem.value = sanitizedInput;
       // console.log("Input changed - after", inputElem.value);
-    } else if (input.length > 1 && this.isAlphabetical(_.last(input))) {
-      this.setCurrentWord(input);
+    } else if (
+      sanitizedInput.length > 1 &&
+      this.isAlphabetical(_.last(sanitizedInput))
+    ) {
+      this.setCurrentWord(sanitizedInput);
       this.setPinyinPreview(this.currentWord);
     }
   }
