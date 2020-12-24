@@ -1785,7 +1785,6 @@ class SimpleKeyboard {
       return newInputVal;
     }
     const regex = this.getRegexForFielType(fieldType);
-    // TODO: hugo - fix the filtering here to remove the commas separating the chars
     let newVal = [];
     _.forEach(newInputVal, char => {
       if (char.match(regex)) {
@@ -1793,7 +1792,6 @@ class SimpleKeyboard {
       }
     });
     newVal = _.join(newVal, "");
-    console.warn(`sanitize input: ${newInputVal} - ${newVal}`);
     return newVal;
   }
 
