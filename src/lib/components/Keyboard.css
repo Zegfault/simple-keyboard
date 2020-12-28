@@ -385,3 +385,9 @@ html {
   max-width: 9.325%;
   z-index: 2;
 }
+
+.hg-theme-default .hg-button.disabled {
+  background-color: lightgrey;
+  pointer-events: none;
+  touch-action: none;
+}

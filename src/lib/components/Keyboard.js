@@ -119,6 +119,93 @@ class SimpleKeyboard {
      * @property {array} modules Module classes to be loaded by simple-keyboard.
      */
     this.options = options;
+    // NOTE: specifies which keys should be enabled
+    this.fieldTypes = this.options.fieldTypes || {
+      alpha: [
+        "a",
+        "b",
+        "c",
+        "d",
+        "e",
+        "f",
+        "g",
+        "h",
+        "i",
+        "j",
+        "k",
+        "l",
+        "m",
+        "n",
+        "o",
+        "p",
+        "q",
+        "r",
+        "s",
+        "t",
+        "u",
+        "v",
+        "w",
+        "x",
+        "y",
+        "z",
+        "A",
+        "B",
+        "C",
+        "D",
+        "E",
+        "F",
+        "G",
+        "H",
+        "I",
+        "J",
+        "K",
+        "L",
+        "M",
+        "N",
+        "O",
+        "P",
+        "Q",
+        "R",
+        "S",
+        "T",
+        "U",
+        "V",
+        "W",
+        "X",
+        "Y",
+        "Z",
+        "-",
+        "{bksp}",
+        "{space}",
+        "{shift}",
+        "{lang}"
+      ],
+      numeric: [
+        "1",
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7",
+        "8",
+        "9",
+        "0",
+        "{bksp}",
+        "{space}",
+        "{lang}"
+      ],
+      alphanumeric: []
+    };
+    this.fieldTypes.alphanumeric = _.uniq(
+      _.concat(this.fieldTypes.alpha, this.fieldTypes.numeric)
+    );
+    this.fieldTypes.email = _.concat(this.fieldTypes.alphanumeric, [
+      "@",
+      ".",
+      "_"
+    ]);
+
     this.inputLanguage = _.get(this.options, "defaultLanguage", "ENG");
     this.accentsMapping = _.get(
       this.options,
@@ -1513,6 +1600,7 @@ class SimpleKeyboard {
     }
     this.updateLangKeyIcon();
     this.forceUpdateSpaceKey();
+    this.disableKeysBasedOnFieldType();
   }
 
   handleLangKey() {
@@ -1708,6 +1796,33 @@ class SimpleKeyboard {
     this.setInput(event.target.value, event.target.id);
   }
 
+  disableKeysBasedOnFieldType() {
+    if (!this.selectedInput) {
+      return;
+    }
+    this.selectedInputType = this.getFieldTypeForInput(this.selectedInput);
+    console.warn(`disableKeysBasedOnFieldType - ${this.selectedInputType}`);
+    const fieldTypeEnabledBtns = _.get(
+      this.fieldTypes,
+      this.selectedInputType,
+      []
+    );
+    console.warn(
+      `only those buttons should be enabled: `,
+      fieldTypeEnabledBtns
+    );
+    const btnElems = document.querySelectorAll(`.hg-button`);
+    _.forEach(btnElems, btnElem => {
+      btnElem.classList.remove("disabled");
+    });
+    _.forEach(btnElems, btnElem => {
+      const btnKey = btnElem.getAttribute("data-skbtn");
+      if (!_.includes(fieldTypeEnabledBtns, btnKey)) {
+        btnElem.classList.add("disabled");
+      }
+    });
+  }
+
   onInputFocus(event) {
     this.selectedInput = `#${event.target.id}`;
     this.setOptions(
@@ -1715,6 +1830,7 @@ class SimpleKeyboard {
         inputName: event.target.id
       })
     );
+    this.disableKeysBasedOnFieldType();
   }
 
   handleNumbersKey() {
@@ -1778,10 +1894,16 @@ class SimpleKeyboard {
     return "";
   }
 
-  sanitizeInput(input, newInputVal) {
+  getFieldTypeForInput(input) {
     const inputElem = document.querySelector(input);
     const fieldType = inputElem.getAttribute("field-type");
-    if (_.isNull(fieldType)) {
+    return _.isNull(fieldType) ? false : fieldType;
+  }
+
+  sanitizeInput(input, newInputVal) {
+    const fieldType = this.getFieldTypeForInput(input);
+    this.disableKeysBasedOnFieldType();
+    if (!fieldType) {
       return newInputVal;
     }
     const regex = this.getRegexForFielType(fieldType);
