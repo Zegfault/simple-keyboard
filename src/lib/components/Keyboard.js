@@ -192,7 +192,6 @@ class SimpleKeyboard {
         "9",
         "0",
         "{bksp}",
-        "{space}",
         "{lang}"
       ],
       alphanumeric: []
@@ -1801,16 +1800,16 @@ class SimpleKeyboard {
       return;
     }
     this.selectedInputType = this.getFieldTypeForInput(this.selectedInput);
-    console.warn(`disableKeysBasedOnFieldType - ${this.selectedInputType}`);
+    // console.warn(`disableKeysBasedOnFieldType - ${this.selectedInputType}`);
     const fieldTypeEnabledBtns = _.get(
       this.fieldTypes,
       this.selectedInputType,
       []
     );
-    console.warn(
-      `only those buttons should be enabled: `,
-      fieldTypeEnabledBtns
-    );
+    // console.warn(
+    //   `only those buttons should be enabled: `,
+    //   fieldTypeEnabledBtns
+    // );
     const btnElems = document.querySelectorAll(`.hg-button`);
     _.forEach(btnElems, btnElem => {
       btnElem.classList.remove("disabled");
