@@ -1618,6 +1618,21 @@ class SimpleKeyboard {
     this.setKeysDisplayNames(layoutName);
   }
 
+  resetToNonShiftedLayout() {
+    const currentLayout = this.options.layoutName;
+    if (currentLayout === "default") {
+      return;
+    }
+    if (currentLayout === "shift") {
+      return this.setLayoutName("default");
+    }
+    if (currentLayout.includes("shift")) {
+      return this.setLayoutName(
+        currentLayout.substring(0, currentLayout.length - 5)
+      );
+    }
+  }
+
   handleShift() {
     const currentLayout = this.options.layoutName;
     if (currentLayout !== "default" && currentLayout !== "shift") {
@@ -1829,6 +1844,7 @@ class SimpleKeyboard {
         inputName: event.target.id
       })
     );
+    this.resetToNonShiftedLayout();
     this.disableKeysBasedOnFieldType();
   }
 
