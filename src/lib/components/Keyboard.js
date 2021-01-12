@@ -2064,6 +2064,12 @@ class SimpleKeyboard {
       this.keyboardWrapper.classList.remove(`expanded`);
       this.suggestionAreaDOM.classList.remove(`expanded`);
     }
+    if (this.options.layoutName.search("shift") !== -1) {
+      // console.info(
+      //   `Current language is: ${this.inputLanguage}, will reset to non-shift layout`
+      // );
+      this.handleShift();
+    }
     this.triggerOnChangeEvent();
   }
 
