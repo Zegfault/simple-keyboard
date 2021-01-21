@@ -1845,6 +1845,13 @@ class SimpleKeyboard {
       })
     );
     this.resetToNonShiftedLayout();
+    const forceLayout = this.getForceLayoutForInput(this.selectedInput);
+    if (forceLayout) {
+      console.info(
+        `Field ${this.selectedInput} has a force-layout option '${forceLayout}', will change the layout accordingly`
+      );
+      this.setLayoutName(forceLayout);
+    }
     this.disableKeysBasedOnFieldType();
   }
 
@@ -1909,10 +1916,18 @@ class SimpleKeyboard {
     return "";
   }
 
-  getFieldTypeForInput(input) {
+  getFieldAttribute(input, attribute) {
     const inputElem = document.querySelector(input);
-    const fieldType = inputElem.getAttribute("field-type");
-    return _.isNull(fieldType) ? false : fieldType;
+    const fieldAttribute = inputElem.getAttribute(attribute);
+    return _.isNull(fieldAttribute) ? false : fieldAttribute;
+  }
+
+  getFieldTypeForInput(input) {
+    return this.getFieldAttribute(input, "field-type");
+  }
+
+  getForceLayoutForInput(input) {
+    return this.getFieldAttribute(input, "force-layout");
   }
 
   sanitizeInput(input, newInputVal) {

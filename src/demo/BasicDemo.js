@@ -7,7 +7,7 @@ const setDOM = () => {
     <input class="input" id="input-test" field-type="alpha" placeholder="alpha" />
     <input class="input" id="input-test2" field-type="numeric" placeholder="numeric" />
     <input class="input" id="input-test3" field-type="alphanumeric" placeholder="alphanumeric" />
-    <input class="input" id="input-test4" field-type="email" placeholder="email" />
+    <input class="input" id="input-test4" field-type="email" placeholder="email" force-layout="default"/>
     <div class="simple-keyboard"></div>
   `;
 };
