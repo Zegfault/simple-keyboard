@@ -1532,10 +1532,15 @@ class SimpleKeyboard {
   }
 
   toggleLanguage() {
+    const selectedInput = this.getSelectedInput();
+    const selectedInputValue = document.querySelector(selectedInput).value;
+    const forceLayout = this.getForceLayoutForInput(selectedInput);
     if (this.inputLanguage === "ENG") {
       this.setLayoutName("zhHT");
     } else if (this.inputLanguage === "CN") {
-      this.setLayoutName("default");
+      selectedInputValue.length === 0 && forceLayout === "shift"
+        ? this.setLayoutName("shift")
+        : this.setLayoutName("default");
     }
     this.clearInput();
     this.setCurrentWord("");
