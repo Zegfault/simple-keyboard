@@ -1845,8 +1845,9 @@ class SimpleKeyboard {
       })
     );
     this.resetToNonShiftedLayout();
+    const selectedInputValue = document.querySelector(this.selectedInput).value;
     const forceLayout = this.getForceLayoutForInput(this.selectedInput);
-    if (forceLayout) {
+    if (forceLayout && selectedInputValue.length === 0) {
       console.info(
         `Field ${this.selectedInput} has a force-layout option '${forceLayout}', will change the layout accordingly`
       );
@@ -1976,9 +1977,13 @@ class SimpleKeyboard {
 
   handleBackspace() {
     const selectedInput = this.getSelectedInput();
-    document.querySelector(selectedInput).value = document
-      .querySelector(selectedInput)
-      .value.slice(0, -1);
+    const forceLayout = this.getForceLayoutForInput(selectedInput);
+    const selectedInputEle = document.querySelector(selectedInput);
+    const selectedInputValue = selectedInputEle.value.slice(0, -1);
+    selectedInputEle.value = selectedInputValue;
+    if (selectedInputValue.length === 0 && forceLayout) {
+      this.setLayoutName("shift");
+    }
     this.triggerOnChangeEvent();
     return;
   }
