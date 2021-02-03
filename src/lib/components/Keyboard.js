@@ -1982,11 +1982,10 @@ class SimpleKeyboard {
 
   handleBackspace() {
     const selectedInput = this.getSelectedInput();
-    const forceLayout = this.getForceLayoutForInput(selectedInput);
     const selectedInputEle = document.querySelector(selectedInput);
-    const selectedInputValue = selectedInputEle.value.slice(0, -1);
-    selectedInputEle.value = selectedInputValue;
-    if (selectedInputValue.length === 0 && forceLayout) {
+    selectedInputEle.value = selectedInputEle.value.slice(0, -1);
+    const forceLayout = this.getForceLayoutForInput(selectedInput);
+    if (selectedInputEle.value.length === 0 && forceLayout === "shift") {
       this.setLayoutName("shift");
     }
     this.triggerOnChangeEvent();
