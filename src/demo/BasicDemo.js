@@ -36,9 +36,9 @@ class Demo {
         ],
         zhHT: [
           "1 2 3 4 5 6 7 8 9 0",
-          "q w e r t y u i o p",
-          "a s d f g h j k l -",
-          "{shift} z x c v b n m . _",
+          "手 田 水 口 廿 卜 山 戈 人 心",
+          "日 尸 木 火 土 竹 十 大 中",
+          "{shift} 重 難 金 女 月 弓 一 , .",
           "{lang} @ {space} {bksp}"
         ],
         zhHTshift: [

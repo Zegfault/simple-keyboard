@@ -6,7 +6,8 @@ import "./Keyboard.css";
 import { getDefaultLayout } from "../services/KeyboardLayout";
 import PhysicalKeyboard from "../services/PhysicalKeyboard";
 import Utilities from "../services/Utilities";
-import CNSuggestions from "./CNSuggestions";
+// import CNSuggestions from "./CNSuggestions";
+import CangjieSuggestions from "./CangjieSuggestions";
 
 /**
  * Root class for simple-keyboard
@@ -175,6 +176,31 @@ class SimpleKeyboard {
         "Y",
         "Z",
         "-",
+        "手",
+        "田",
+        "水",
+        "口",
+        "廿",
+        "卜",
+        "山",
+        "戈",
+        "人",
+        "心",
+        "日",
+        "尸",
+        "木",
+        "火",
+        "土",
+        "竹",
+        "十",
+        "大",
+        "中",
+        "重",
+        "難",
+        "金",
+        "女",
+        "月",
+        "弓",
         "{bksp}",
         "{space}",
         "{shift}",
@@ -1506,6 +1532,10 @@ class SimpleKeyboard {
     return char.match(/^[a-zA-Z]+$/);
   }
 
+  isSymbolOrNumber(char) {
+    return char.match(/^[-!$%^&*()_+|~=`{}[\]:";'<>?,./0-9]/);
+  }
+
   convertInputToKeyboardKey(input) {
     if (input === " " || input === "") {
       return `{space}`;
@@ -1669,8 +1699,12 @@ class SimpleKeyboard {
   }
 
   setCurrentWord(word) {
+    // this.currentWord = _.join(
+    //   _.filter(word, char => this.isAlphabetical(char)),
+    //   ""
+    // );
     this.currentWord = _.join(
-      _.filter(word, char => this.isAlphabetical(char)),
+      _.filter(word, char => !this.isSymbolOrNumber(char)),
       ""
     );
     // console.log(`current word is now: ${this.currentWord}`);
@@ -1722,17 +1756,24 @@ class SimpleKeyboard {
   }
 
   setCNSuggestionsListeners() {
-    CNSuggestions.events.on(`displaySuggestionBox`, suggestions => {
+    const onDisplaySuggestionBox = suggestions => {
       if (!suggestions) {
         this.setSuggestions([]);
         return this.hideSuggestions();
       }
       this.setSuggestions(suggestions);
       this.showSuggestions();
-    });
-    CNSuggestions.events.on(`setSuggestions`, suggestions => {
+    };
+    const onSetSuggestions = suggestions => {
       this.setSuggestions(suggestions);
-    });
+    };
+    // CNSuggestions.events.on(`displaySuggestionBox`, onDisplaySuggestionBox);
+    CangjieSuggestions.events.on(
+      `displaySuggestionBox`,
+      onDisplaySuggestionBox
+    );
+    // CNSuggestions.events.on(`setSuggestions`, onSetSuggestions);
+    CangjieSuggestions.events.on(`setSuggestions`, onSetSuggestions);
   }
 
   keydownListener(event) {
@@ -1798,7 +1839,8 @@ class SimpleKeyboard {
   }
 
   findSuggestions(button) {
-    return CNSuggestions.charProcessor(button, _.trim(this.currentWord));
+    // TODO: hugo - change the charProcessor depending on the current language input
+    return CangjieSuggestions.charProcessor(button, _.trim(this.currentWord));
   }
 
   inputEventListener(event) {
@@ -1896,11 +1938,18 @@ class SimpleKeyboard {
     if (button === "{shift}" || button === "{lock}") {
       return this.handleShift();
     }
+    // if (
+    //   this.getCurrentInputMethod() === "CN" &&
+    //   this.options.layoutName === "zhHT"
+    // ) {
+    //   return this.handleCNKeyPress(button);
+    // }
+    // TODO: hugo - make sure that when in cangjie it goes in this block
     if (
       this.getCurrentInputMethod() === "CN" &&
       this.options.layoutName === "zhHT"
     ) {
-      return this.handleCNKeyPress(button);
+      return this.handleCangjieKeyPress(button);
     }
     if (button === `{space}`) {
       return this.enterSuggestedWord(" ");
@@ -1913,9 +1962,9 @@ class SimpleKeyboard {
 
   getRegexForFielType(fieldType) {
     if (fieldType === "alpha") {
-      return /[a-z]|[A-Z]|[\u4E00-\u9FCC\u3400-\u4DB5\uFA0E\uFA0F\uFA11\uFA13\uFA14\uFA1F\uFA21\uFA23\uFA24\uFA27-\uFA29]|[\ud840-\ud868][\udc00-\udfff]|\ud869[\udc00-\uded6\udf00-\udfff]|[\ud86a-\ud86c][\udc00-\udfff]|\ud86d[\udc00-\udf34\udf40-\udfff]|\ud86e[\udc00-\udc1d]/;
+      return /[a-z]|[A-Z]|^[\p{Han}{2,10}+$]+|[\u4E00-\u9FCC\u3400-\u4DB5\uFA0E\uFA0F\uFA11\uFA13\uFA14\uFA1F\uFA21\uFA23\uFA24\uFA27-\uFA29]|[\ud840-\ud868][\udc00-\udfff]|\ud869[\udc00-\uded6\udf00-\udfff]|[\ud86a-\ud86c][\udc00-\udfff]|\ud86d[\udc00-\udf34\udf40-\udfff]|\ud86e[\udc00-\udc1d]/;
     } else if (fieldType === "alphanumeric") {
-      return /[a-z]|[A-Z]|[0-9]|[\u4E00-\u9FCC\u3400-\u4DB5\uFA0E\uFA0F\uFA11\uFA13\uFA14\uFA1F\uFA21\uFA23\uFA24\uFA27-\uFA29]|[\ud840-\ud868][\udc00-\udfff]|\ud869[\udc00-\uded6\udf00-\udfff]|[\ud86a-\ud86c][\udc00-\udfff]|\ud86d[\udc00-\udf34\udf40-\udfff]|\ud86e[\udc00-\udc1d]/gi;
+      return /[a-z]|[A-Z]|[0-9]|^[\p{Han}{2,10}+$]+|[\u4E00-\u9FCC\u3400-\u4DB5\uFA0E\uFA0F\uFA11\uFA13\uFA14\uFA1F\uFA21\uFA23\uFA24\uFA27-\uFA29]|[\ud840-\ud868][\udc00-\udfff]|\ud869[\udc00-\uded6\udf00-\udfff]|[\ud86a-\ud86c][\udc00-\udfff]|\ud86d[\udc00-\udf34\udf40-\udfff]|\ud86e[\udc00-\udc1d]/gi;
     } else if (fieldType === "numeric") {
       return /[0-9]/gi;
     }
@@ -1973,7 +2022,8 @@ class SimpleKeyboard {
       // console.log("Input changed - after", inputElem.value);
     } else if (
       sanitizedInput.length > 1 &&
-      this.isAlphabetical(_.last(sanitizedInput))
+      // this.isAlphabetical(_.last(sanitizedInput))
+      !this.isSymbolOrNumber(_.last(sanitizedInput))
     ) {
       this.setCurrentWord(sanitizedInput);
       this.setPinyinPreview(this.currentWord);
@@ -2000,7 +2050,29 @@ class SimpleKeyboard {
       button !== `{bksp}` &&
       (button === "{space}" ||
         button === "{enter}" ||
-        !this.isAlphabetical(button))
+        // !this.isAlphabetical(button))
+        this.isSymbolOrNumber(button))
+    ) {
+      return this.handleSpaceKey(button);
+    }
+    // console.log("current word: ---", this.currentWord);
+    const foundSuggestions = this.findSuggestions(button);
+    if (button === `{bksp}` && this.previewPinyin.innerHTML.length === 0) {
+      this.handleBackspace();
+      return;
+    }
+    this.setPinyinPreview(_.trim(_.first(foundSuggestions)));
+  }
+
+  handleCangjieKeyPress(button) {
+    if (button === `{ctrl}` || button === `{alt}`) {
+      return console.log(`Key ignored`);
+    }
+    if (
+      button !== `{bksp}` &&
+      (button === "{space}" ||
+        button === "{enter}" ||
+        this.isSymbolOrNumber(button))
     ) {
       return this.handleSpaceKey(button);
     }
