@@ -1961,9 +1961,9 @@ class SimpleKeyboard {
 
   getRegexForFielType(fieldType) {
     if (fieldType === "alpha") {
-      return /[a-z ]|[A-Z]|^[\p{Han}{2,10}+$]+|[\u4E00-\u9FCC\u3400-\u4DB5\uFA0E\uFA0F\uFA11\uFA13\uFA14\uFA1F\uFA21\uFA23\uFA24\uFA27-\uFA29]|[\ud840-\ud868][\udc00-\udfff]|\ud869[\udc00-\uded6\udf00-\udfff]|[\ud86a-\ud86c][\udc00-\udfff]|\ud86d[\udc00-\udf34\udf40-\udfff]|\ud86e[\udc00-\udc1d]/;
+      return /[a-z ]|[áãâàäæéêèëíîìïóõôòöœúûùüýÿñçÁÃÂÀÄÆÉÊÈËÍÎÌÏÓÕÔÒÖŒÚÛÙÜÝŸÑÇ]|[A-Z]|^[\p{Han}{2,10}+$]+|[\u4E00-\u9FCC\u3400-\u4DB5\uFA0E\uFA0F\uFA11\uFA13\uFA14\uFA1F\uFA21\uFA23\uFA24\uFA27-\uFA29]|[\ud840-\ud868][\udc00-\udfff]|\ud869[\udc00-\uded6\udf00-\udfff]|[\ud86a-\ud86c][\udc00-\udfff]|\ud86d[\udc00-\udf34\udf40-\udfff]|\ud86e[\udc00-\udc1d]/;
     } else if (fieldType === "alphanumeric") {
-      return /[a-z ]|[A-Z]|[0-9]|^[\p{Han}{2,10}+$]+|[\u4E00-\u9FCC\u3400-\u4DB5\uFA0E\uFA0F\uFA11\uFA13\uFA14\uFA1F\uFA21\uFA23\uFA24\uFA27-\uFA29]|[\ud840-\ud868][\udc00-\udfff]|\ud869[\udc00-\uded6\udf00-\udfff]|[\ud86a-\ud86c][\udc00-\udfff]|\ud86d[\udc00-\udf34\udf40-\udfff]|\ud86e[\udc00-\udc1d]/gi;
+      return /[a-z ]|[áãâàäæéêèëíîìïóõôòöœúûùüýÿñçÁÃÂÀÄÆÉÊÈËÍÎÌÏÓÕÔÒÖŒÚÛÙÜÝŸÑÇ]|[A-Z]|[0-9]|^[\p{Han}{2,10}+$]+|[\u4E00-\u9FCC\u3400-\u4DB5\uFA0E\uFA0F\uFA11\uFA13\uFA14\uFA1F\uFA21\uFA23\uFA24\uFA27-\uFA29]|[\ud840-\ud868][\udc00-\udfff]|\ud869[\udc00-\uded6\udf00-\udfff]|[\ud86a-\ud86c][\udc00-\udfff]|\ud86d[\udc00-\udf34\udf40-\udfff]|\ud86e[\udc00-\udc1d]/gi;
     } else if (fieldType === "numeric") {
       return /[0-9]/gi;
     }
