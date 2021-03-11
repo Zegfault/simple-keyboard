@@ -1,41 +1,42 @@
 import events from "events";
 import _ from "lodash";
 import suggestionData from "./CangjieSuggestionsData";
-suggestionData.simpList = suggestionData.simpList.split("");
-suggestionData.cjList = suggestionData.cjList.split(" ");
+// suggestionData.simpList = suggestionData.simpList.split("");
+// suggestionData.cjList = suggestionData.cjList.split(" ");
 class CNSuggestions {
   constructor() {
     this.events = new events.EventEmitter();
     this.events.setMaxListeners(100);
     console.log("Will init the CN trad suggestions");
-    this.suggestions = suggestionData.simpList;
+    this.suggestions = _.uniq(suggestionData);
+    console.warn(`test hugo - `, this.suggestions);
     this.lat2CJ = {
-      Q: "手",
-      W: "田",
-      E: "水",
-      R: "口",
-      T: "廿",
-      Y: "卜",
-      U: "山",
-      I: "戈",
-      O: "人",
-      P: "心",
-      A: "日",
-      S: "尸",
-      D: "木",
-      F: "火",
-      G: "土",
-      H: "竹",
-      J: "十",
-      K: "大",
-      L: "中",
-      Z: "重",
-      X: "難",
-      C: "金",
-      V: "女",
-      B: "月",
-      N: "弓",
-      M: "一"
+      q: "手",
+      w: "田",
+      e: "水",
+      r: "口",
+      t: "廿",
+      y: "卜",
+      u: "山",
+      i: "戈",
+      o: "人",
+      p: "心",
+      a: "日",
+      s: "尸",
+      d: "木",
+      f: "火",
+      g: "土",
+      h: "竹",
+      j: "十",
+      k: "大",
+      l: "中",
+      z: "重",
+      x: "難",
+      c: "金",
+      v: "女",
+      b: "月",
+      n: "弓",
+      m: "一"
     };
     this.lat2CJKeys = _.keys(this.lat2CJ);
     this.lat2CJValues = _.values(this.lat2CJ);
@@ -75,11 +76,19 @@ class CNSuggestions {
     }
     // non backspace
     str = buf + chr;
+    str = str.toLowerCase();
     const arr = [];
     const suggestion2Search = this.convertCNTrad2Latin(str);
-    _.forEach(suggestionData.cjList, (val, i) => {
-      if (_.startsWith(val, suggestion2Search)) {
-        arr.push(suggestionData.simpList[i]);
+    _.forEach(suggestionData, (val, i) => {
+      if (_.startsWith(i, suggestion2Search)) {
+        if (val.length > 1) {
+          const tmp = val.split("");
+          _.forEach(tmp, char => {
+            arr.push(char);
+          });
+        } else {
+          arr.push(val);
+        }
       }
     });
     // arr = this.suggestions[_.get(this.lat2CJ, suggestion2Search, [])] || [];
