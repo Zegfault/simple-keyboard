@@ -201,6 +201,7 @@ class SimpleKeyboard {
         "女",
         "月",
         "弓",
+        "一",
         "{bksp}",
         "{space}",
         "{shift}",
