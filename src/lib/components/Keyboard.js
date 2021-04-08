@@ -208,7 +208,11 @@ class SimpleKeyboard {
         "{bksp}",
         "{space}",
         "{shift}",
-        "{lang}"
+        "{lang}",
+        "{clear}",
+        "{undo}",
+        "{canvas}",
+        "{suggest}"
       ],
       numeric: [
         "1",
@@ -978,7 +982,6 @@ class SimpleKeyboard {
     if (inputPatternRaw instanceof RegExp) {
       inputPattern = inputPatternRaw;
     } else {
-      console.log(666, inputPatternRaw, this.options.inputName);
       inputPattern = inputPatternRaw[this.options.inputName];
     }
 
@@ -2401,7 +2404,7 @@ class SimpleKeyboard {
          */
         /* istanbul ignore next */
         if (
-          !_.includes(["{canvas}", "{undo}", "{clear}", "{sugguest}"], button)
+          !_.includes(["{canvas}", "{undo}", "{clear}", "{suggest}"], button)
         ) {
           if (
             this.utilities.pointerEventsSupported() &&
@@ -2474,14 +2477,14 @@ class SimpleKeyboard {
               );
               break;
             case "{undo}":
-              $(buttonDOM).click(evt => {
+              $(buttonDOM).click(() => {
                 this.drawingBoard.undoStroke();
                 this.drawingBoard.redraw();
                 this.lookup();
               });
               break;
             case "{clear}":
-              $(buttonDOM).click(evt => {
+              $(buttonDOM).click(() => {
                 this.drawingBoard.clearCanvas();
                 this.drawingBoard.redraw();
                 this.lookup();
@@ -2505,7 +2508,7 @@ class SimpleKeyboard {
         /**
          * Adding button label to button
          */
-        if (!_.includes(["{canvas}", "{sugguest}"], button)) {
+        if (!_.includes(["{canvas}", "{suggest}"], button)) {
           const buttonSpanDOM = document.createElement("span");
           buttonSpanDOM.innerHTML = buttonDisplayName;
           buttonDOM.appendChild(buttonSpanDOM);
@@ -2596,7 +2599,7 @@ class SimpleKeyboard {
     // Look up with original HanziLookup data
     var matcherOrig = new HanziLookup.Matcher("orig");
     matcherOrig.match(analyzedChar, 8, matches => {
-      this.showResults($(".hg-button-sugguest"), matches);
+      this.showResults($(".hg-button-suggest"), matches);
     });
     // // Look up with MMAH data
     // var matcherMMAH = new HanziLookup.Matcher("mmah");
@@ -2612,10 +2615,16 @@ class SimpleKeyboard {
       const character = matches[i].character;
       charHtml.innerHTML = character;
       charHtml.onclick = () => {
-        console.log(111, this.options.onChange);
-        this.inputPatternIsValid(character);
+        if (typeof this.options.onSuggestedWordClicked === "function") {
+          this.options.onSuggestedWordClicked(character);
+        } else {
+          this.onSuggestedWordClicked(character);
+        }
+        this.triggerOnChangeEvent();
+        this.drawingBoard.clearCanvas();
+        this.drawingBoard.redraw();
+        elmHost.html("");
       };
-
       elmHost.append(charHtml);
     }
   }

@@ -48,14 +48,16 @@ class Demo {
           "{shift} Z X C V B N M . _",
           "{lang} @ {space} {bksp}"
         ],
-        hand: ["{sugguest}", "{canvas}", "{lang} {clear} {undo}"]
+        hand: ["{suggest}", "{canvas}", "{lang} {clear} {undo} {space} {bksp}"]
       },
       mergeDisplay: true,
       display: {
         "{enter}": "enter",
         "{bksp}": "delete",
         "{lang}": "ENG",
-        "{space}": "Space / barra de espaço"
+        "{space}": "Space / barra de espaço",
+        "{clear}": "Clear",
+        "{undo}": "Undo"
       },
       accentsMapping: {
         lowercase: {

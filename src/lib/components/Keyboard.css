@@ -417,10 +417,10 @@ html {
   display: none;
 }
 
-.hg-layout-hand .hg-button-sugguest {
+.hg-layout-hand .hg-button-suggest {
   justify-content: left;
 }
 
-.hg-layout-hand .hg-button-sugguest div {
+.hg-layout-hand .hg-button-suggest div {
   margin-left: 20px;
 }
