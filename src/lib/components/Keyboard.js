@@ -1,4 +1,5 @@
 import _ from "lodash";
+import $ from "jquery";
 import ScrollBooster from "scrollbooster";
 import "./Keyboard.css";
 
@@ -8,6 +9,7 @@ import PhysicalKeyboard from "../services/PhysicalKeyboard";
 import Utilities from "../services/Utilities";
 // import CNSuggestions from "./CNSuggestions";
 import CangjieSuggestions from "./CangjieSuggestions";
+import HanziLookup from "./hanzi/hanzilookup.min";
 
 /**
  * Root class for simple-keyboard
@@ -50,6 +52,7 @@ class SimpleKeyboard {
         C: ["Ç"]
       }
     };
+    this.drawingBoard = null;
     this.currentWord = "";
     this.selectedInput = false;
     this.numberOfSuggestionsPerLine = 10;
@@ -321,6 +324,12 @@ class SimpleKeyboard {
      */
     this.modules = {};
     this.loadModules();
+    this.initHanzi();
+  }
+
+  initHanzi() {
+    HanziLookup.init("mmah", require("./hanzi/mmah.json"));
+    HanziLookup.init("orig", require("./hanzi/orig.json"));
   }
 
   /**
@@ -969,6 +978,7 @@ class SimpleKeyboard {
     if (inputPatternRaw instanceof RegExp) {
       inputPattern = inputPatternRaw;
     } else {
+      console.log(666, inputPatternRaw, this.options.inputName);
       inputPattern = inputPatternRaw[this.options.inputName];
     }
 
@@ -1569,6 +1579,8 @@ class SimpleKeyboard {
     if (this.inputLanguage === "ENG") {
       this.setLayoutName("zhHT");
     } else if (this.inputLanguage === "CN") {
+      this.setLayoutName("hand");
+    } else if (this.inputLanguage === "HAND") {
       selectedInputValue.length === 0 && forceLayout === "shift"
         ? this.setLayoutName("shift")
         : this.setLayoutName("default");
@@ -1604,9 +1616,12 @@ class SimpleKeyboard {
 
   // NOTE: Forces the update of space key's text since it doesn't work properly with the setOptions sometimes
   forceUpdateSpaceKey() {
-    document.querySelector(
+    const space = document.querySelector(
       ".hg-button.hg-functionBtn.hg-button-space"
-    ).innerHTML = this.getSpaceKeyDisplayName();
+    );
+    if (space) {
+      space.innerHTML = this.getSpaceKeyDisplayName();
+    }
   }
 
   updateLangKeyIcon() {
@@ -1650,6 +1665,8 @@ class SimpleKeyboard {
       this.inputLanguage = "POR";
     } else if (layoutName === "zhHT") {
       this.inputLanguage = "CN";
+    } else if (layoutName === "hand") {
+      this.inputLanguage = "HAND";
     }
     this.setKeysDisplayNames(layoutName);
   }
@@ -2384,64 +2401,92 @@ class SimpleKeyboard {
          */
         /* istanbul ignore next */
         if (
-          this.utilities.pointerEventsSupported() &&
-          !useTouchEvents &&
-          !useMouseEvents
+          !_.includes(["{canvas}", "{undo}", "{clear}", "{sugguest}"], button)
         ) {
-          /**
-           * Handle PointerEvents
-           */
-          buttonDOM.onpointerdown = e => {
-            // console.warn("down", e);
-            if (!_.includes(_.get(e, "target.classList", []), "accent-key")) {
-              this.removeAccentsOverlay();
-              // this.handleButtonClicked(button);
-              this.handleButtonMouseDown(button, e);
-            }
-          };
-          buttonDOM.onpointerup = e => {
-            // console.warn("up", button, e);
-            if (!this.currentAccentOverlay) {
-              this.handleButtonClicked(button);
-            }
-            // this.handleButtonMouseDown(button, e);
-            this.handleButtonMouseUp(button, e);
-          };
-          buttonDOM.onpointercancel = e => {
-            this.handleButtonMouseUp(button, e);
-          };
-        } else {
-          /**
-           * Fallback for browsers not supporting PointerEvents
-           */
-          if (useTouchEvents) {
+          if (
+            this.utilities.pointerEventsSupported() &&
+            !useTouchEvents &&
+            !useMouseEvents
+          ) {
             /**
-             * Handle touch events
+             * Handle PointerEvents
              */
-            buttonDOM.ontouchstart = e => {
-              this.handleButtonClicked(button);
-              this.handleButtonMouseDown(button, e);
+            buttonDOM.onpointerdown = e => {
+              // console.warn("down", e);
+              if (!_.includes(_.get(e, "target.classList", []), "accent-key")) {
+                this.removeAccentsOverlay();
+                // this.handleButtonClicked(button);
+                this.handleButtonMouseDown(button, e);
+              }
             };
-            buttonDOM.ontouchend = e => {
+            buttonDOM.onpointerup = e => {
+              // console.warn("up", button, e);
+              if (!this.currentAccentOverlay) {
+                this.handleButtonClicked(button);
+              }
+              // this.handleButtonMouseDown(button, e);
               this.handleButtonMouseUp(button, e);
             };
-            buttonDOM.ontouchcancel = e => {
+            buttonDOM.onpointercancel = e => {
               this.handleButtonMouseUp(button, e);
             };
           } else {
             /**
-             * Handle mouse events
+             * Fallback for browsers not supporting PointerEvents
              */
-            buttonDOM.onclick = () => {
-              this.isMouseHold = false;
-              this.handleButtonClicked(button);
-            };
-            buttonDOM.onmousedown = e => {
-              this.handleButtonMouseDown(button, e);
-            };
-            buttonDOM.onmouseup = e => {
-              this.handleButtonMouseUp(button, e);
-            };
+            if (useTouchEvents) {
+              /**
+               * Handle touch events
+               */
+              buttonDOM.ontouchstart = e => {
+                this.handleButtonClicked(button);
+                this.handleButtonMouseDown(button, e);
+              };
+              buttonDOM.ontouchend = e => {
+                this.handleButtonMouseUp(button, e);
+              };
+              buttonDOM.ontouchcancel = e => {
+                this.handleButtonMouseUp(button, e);
+              };
+            } else {
+              /**
+               * Handle mouse events
+               */
+              buttonDOM.onclick = () => {
+                this.isMouseHold = false;
+                this.handleButtonClicked(button);
+              };
+              buttonDOM.onmousedown = e => {
+                this.handleButtonMouseDown(button, e);
+              };
+              buttonDOM.onmouseup = e => {
+                this.handleButtonMouseUp(button, e);
+              };
+            }
+          }
+        } else {
+          // handle draing canvas
+          switch (button) {
+            case "{canvas}":
+              this.drawingBoard = HanziLookup.DrawingBoard(
+                $(buttonDOM),
+                this.lookup
+              );
+              break;
+            case "{undo}":
+              $(buttonDOM).click(evt => {
+                this.drawingBoard.undoStroke();
+                this.drawingBoard.redraw();
+                this.lookup();
+              });
+              break;
+            case "{clear}":
+              $(buttonDOM).click(evt => {
+                this.drawingBoard.clearCanvas();
+                this.drawingBoard.redraw();
+                this.lookup();
+              });
+              break;
           }
         }
 
@@ -2460,9 +2505,11 @@ class SimpleKeyboard {
         /**
          * Adding button label to button
          */
-        const buttonSpanDOM = document.createElement("span");
-        buttonSpanDOM.innerHTML = buttonDisplayName;
-        buttonDOM.appendChild(buttonSpanDOM);
+        if (!_.includes(["{canvas}", "{sugguest}"], button)) {
+          const buttonSpanDOM = document.createElement("span");
+          buttonSpanDOM.innerHTML = buttonDisplayName;
+          buttonDOM.appendChild(buttonSpanDOM);
+        }
 
         /**
          * Adding to buttonElements
@@ -2538,6 +2585,38 @@ class SimpleKeyboard {
        * Calling onInit
        */
       this.onInit();
+    }
+  }
+
+  lookup() {
+    // Decompose character from drawing board
+    var analyzedChar = new HanziLookup.AnalyzedCharacter(
+      this.drawingBoard.cloneStrokes()
+    );
+    // Look up with original HanziLookup data
+    var matcherOrig = new HanziLookup.Matcher("orig");
+    matcherOrig.match(analyzedChar, 8, matches => {
+      this.showResults($(".hg-button-sugguest"), matches);
+    });
+    // // Look up with MMAH data
+    // var matcherMMAH = new HanziLookup.Matcher("mmah");
+    // matcherMMAH.match(analyzedChar, 8, function(matches) {
+    //   // showResults($(".mmahLookupChars"), matches);
+    // });
+  }
+
+  showResults(elmHost, matches) {
+    elmHost.html("");
+    for (var i = 0; i != matches.length; ++i) {
+      const charHtml = document.createElement("div");
+      const character = matches[i].character;
+      charHtml.innerHTML = character;
+      charHtml.onclick = () => {
+        console.log(111, this.options.onChange);
+        this.inputPatternIsValid(character);
+      };
+
+      elmHost.append(charHtml);
     }
   }
 }

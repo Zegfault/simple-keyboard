@@ -47,7 +47,8 @@ class Demo {
           "A S D F G H J K L -",
           "{shift} Z X C V B N M . _",
           "{lang} @ {space} {bksp}"
-        ]
+        ],
+        hand: ["{sugguest}", "{canvas}", "{lang} {clear} {undo}"]
       },
       mergeDisplay: true,
       display: {

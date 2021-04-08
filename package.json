@@ -187,6 +187,7 @@
     ]
   },
   "dependencies": {
+    "jquery": "^3.6.0",
     "scrollbooster": "^3.0.2"
   }
 }

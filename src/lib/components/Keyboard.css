@@ -391,3 +391,36 @@ html {
   pointer-events: none;
   touch-action: none;
 }
+
+.hg-layout-hand .hg-button-canvas {
+  width: 250px;
+  height: 250px;
+  cursor: crosshair;
+  clear: both;
+  overflow: hidden;
+  background-color: #fafafa;
+  flex-grow: 0;
+}
+.hg-layout-hand .hg-button-canvas span {
+  display: none;
+}
+
+.hg-layout-hand .preview-pinyin {
+  display: none;
+}
+
+.hg-layout-hand .suggestion-area {
+  display: none;
+}
+
+.hg-layout-hand .suggestions-menu {
+  display: none;
+}
+
+.hg-layout-hand .hg-button-sugguest {
+  justify-content: left;
+}
+
+.hg-layout-hand .hg-button-sugguest div {
+  margin-left: 20px;
+}
