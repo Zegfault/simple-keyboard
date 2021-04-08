@@ -1612,7 +1612,8 @@ class SimpleKeyboard {
   }
 
   getSpaceKeyDisplayName() {
-    return this.options.layoutName.includes("zhHT")
+    return this.options.layoutName.includes("zhHT") ||
+      this.options.layoutName.includes("hand")
       ? "空格"
       : "Space / barra de espaço";
   }
