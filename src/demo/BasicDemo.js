@@ -56,8 +56,8 @@ class Demo {
         "{bksp}": "delete",
         "{lang}": "ENG",
         "{space}": "Space / barra de espaço",
-        "{clear}": "Clear",
-        "{undo}": "Undo"
+        "{clear}": "清除",
+        "{undo}": "復原"
       },
       accentsMapping: {
         lowercase: {
