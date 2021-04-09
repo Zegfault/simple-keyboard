@@ -422,6 +422,8 @@ class SimpleKeyboard {
         this.drawingBoard.redraw();
         this.lookup();
         return;
+      case "{canvas}":
+        return;
     }
 
     /**
@@ -2423,78 +2425,76 @@ class SimpleKeyboard {
          * Handle button click event
          */
         /* istanbul ignore next */
-        if (!_.includes(["{canvas}"], button)) {
-          if (
-            this.utilities.pointerEventsSupported() &&
-            !useTouchEvents &&
-            !useMouseEvents
-          ) {
+        if (
+          this.utilities.pointerEventsSupported() &&
+          !useTouchEvents &&
+          !useMouseEvents
+        ) {
+          /**
+           * Handle PointerEvents
+           */
+          buttonDOM.onpointerdown = e => {
+            // console.warn("down", e);
+            if (!_.includes(_.get(e, "target.classList", []), "accent-key")) {
+              this.removeAccentsOverlay();
+              // this.handleButtonClicked(button);
+              this.handleButtonMouseDown(button, e);
+            }
+          };
+          buttonDOM.onpointerup = e => {
+            // console.warn("up", button, e);
+            if (!this.currentAccentOverlay) {
+              this.handleButtonClicked(button);
+            }
+            // this.handleButtonMouseDown(button, e);
+            this.handleButtonMouseUp(button, e);
+          };
+          buttonDOM.onpointercancel = e => {
+            this.handleButtonMouseUp(button, e);
+          };
+        } else {
+          /**
+           * Fallback for browsers not supporting PointerEvents
+           */
+          if (useTouchEvents) {
             /**
-             * Handle PointerEvents
+             * Handle touch events
              */
-            buttonDOM.onpointerdown = e => {
-              // console.warn("down", e);
-              if (!_.includes(_.get(e, "target.classList", []), "accent-key")) {
-                this.removeAccentsOverlay();
-                // this.handleButtonClicked(button);
-                this.handleButtonMouseDown(button, e);
-              }
+            buttonDOM.ontouchstart = e => {
+              this.handleButtonClicked(button);
+              this.handleButtonMouseDown(button, e);
             };
-            buttonDOM.onpointerup = e => {
-              // console.warn("up", button, e);
-              if (!this.currentAccentOverlay) {
-                this.handleButtonClicked(button);
-              }
-              // this.handleButtonMouseDown(button, e);
+            buttonDOM.ontouchend = e => {
               this.handleButtonMouseUp(button, e);
             };
-            buttonDOM.onpointercancel = e => {
+            buttonDOM.ontouchcancel = e => {
               this.handleButtonMouseUp(button, e);
             };
           } else {
             /**
-             * Fallback for browsers not supporting PointerEvents
+             * Handle mouse events
              */
-            if (useTouchEvents) {
-              /**
-               * Handle touch events
-               */
-              buttonDOM.ontouchstart = e => {
-                this.handleButtonClicked(button);
-                this.handleButtonMouseDown(button, e);
-              };
-              buttonDOM.ontouchend = e => {
-                this.handleButtonMouseUp(button, e);
-              };
-              buttonDOM.ontouchcancel = e => {
-                this.handleButtonMouseUp(button, e);
-              };
-            } else {
-              /**
-               * Handle mouse events
-               */
-              buttonDOM.onclick = () => {
-                this.isMouseHold = false;
-                this.handleButtonClicked(button);
-              };
-              buttonDOM.onmousedown = e => {
-                this.handleButtonMouseDown(button, e);
-              };
-              buttonDOM.onmouseup = e => {
-                this.handleButtonMouseUp(button, e);
-              };
-            }
+            buttonDOM.onclick = () => {
+              this.isMouseHold = false;
+              this.handleButtonClicked(button);
+            };
+            buttonDOM.onmousedown = e => {
+              this.handleButtonMouseDown(button, e);
+            };
+            buttonDOM.onmouseup = e => {
+              this.handleButtonMouseUp(button, e);
+            };
           }
-        } else {
-          // handle draing canvas
-          switch (button) {
-            case "{canvas}":
-              this.drawingBoard = HanziLookup.DrawingBoard(
-                $(buttonDOM),
-                this.lookup
-              );
-              break;
-          }
+        }
+
+        // handle draing canvas
+        switch (button) {
+          case "{canvas}":
+            this.drawingBoard = HanziLookup.DrawingBoard(
+              $(buttonDOM),
+              this.lookup
+            );
+            break;
         }
 
         /**
