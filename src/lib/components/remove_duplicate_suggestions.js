@@ -16,5 +16,4 @@ _.forEach(keys, (val) => {
   _.set(finalFormat, val, _.get(formatted, val, false))
 });
 
-
 fs.writeFileSync('./output.js', JSON.stringify(finalFormat))
