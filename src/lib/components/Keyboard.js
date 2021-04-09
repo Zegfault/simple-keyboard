@@ -1644,7 +1644,10 @@ class SimpleKeyboard {
     const langKey = document.querySelector(
       ".hg-button.hg-functionBtn.hg-button-lang"
     );
-    if (this.options.layoutName.includes("zhHT")) {
+    if (
+      this.options.layoutName.includes("zhHT") ||
+      this.options.layoutName.includes("hand")
+    ) {
       if (!_.includes(langKey.classList, "zhHT")) {
         langKey.classList.add("zhHT");
       }
