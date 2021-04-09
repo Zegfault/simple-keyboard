@@ -48,7 +48,7 @@ class Demo {
           "{shift} Z X C V B N M . _",
           "{lang} @ {space} {bksp}"
         ],
-        hand: ["{suggest}", "{canvas}", "{lang} {clear} {undo} {space} {bksp}"]
+        hand: ["{canvas}", "{lang} {clear} {undo} {space} {bksp}"]
       },
       mergeDisplay: true,
       display: {

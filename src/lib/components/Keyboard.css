@@ -401,26 +401,3 @@ html {
   background-color: #fafafa;
   flex-grow: 0;
 }
-.hg-layout-hand .hg-button-canvas span {
-  display: none;
-}
-
-.hg-layout-hand .preview-pinyin {
-  display: none;
-}
-
-.hg-layout-hand .suggestion-area {
-  display: none;
-}
-
-.hg-layout-hand .suggestions-menu {
-  display: none;
-}
-
-.hg-layout-hand .hg-button-suggest {
-  justify-content: left;
-}
-
-.hg-layout-hand .hg-button-suggest div {
-  margin-left: 20px;
-}
