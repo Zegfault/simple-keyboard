@@ -2487,16 +2487,6 @@ class SimpleKeyboard {
           }
         }
 
-        // handle draing canvas
-        switch (button) {
-          case "{canvas}":
-            this.drawingBoard = HanziLookup.DrawingBoard(
-              $(buttonDOM),
-              this.lookup
-            );
-            break;
-        }
-
         /**
          * Adding identifier
          */
@@ -2529,6 +2519,16 @@ class SimpleKeyboard {
          * Appending button to row
          */
         rowDOM.appendChild(buttonDOM);
+
+        // handle draing canvas
+        switch (button) {
+          case "{canvas}":
+            this.drawingBoard = HanziLookup.DrawingBoard(
+              $(buttonDOM),
+              this.lookup
+            );
+            break;
+        }
       });
 
       /**
