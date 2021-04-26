@@ -211,7 +211,9 @@ class SimpleKeyboard {
         "{lang}",
         "{clear}",
         "{undo}",
-        "{canvas}"
+        "{canvas}",
+        "{arrowleft}",
+        "{arrowright}"
       ],
       numeric: [
         "1",
@@ -225,7 +227,9 @@ class SimpleKeyboard {
         "9",
         "0",
         "{bksp}",
-        "{lang}"
+        "{lang}",
+        "{arrowleft}",
+        "{arrowright}"
       ],
       alphanumeric: []
     };
@@ -424,6 +428,19 @@ class SimpleKeyboard {
         return;
       case "{canvas}":
         return;
+      case "{arrowleft}": {
+        console.log(1111, this.options);
+        // const input = document.getElementById(this.options.inputName);
+        // console.log(222, input.selectionStart);
+        // if (input.selectionStart > 0) {
+        //   input.selectionStart = input.selectionStart - 1;
+        // }
+        // console.log(333, input.selectionStart);
+        return;
+      }
+      case "{arrowright}":
+        console.log(1111, this.options);
+        return;
     }
 
     /**
@@ -541,6 +558,8 @@ class SimpleKeyboard {
             ((!button.includes("{") && !button.includes("}")) ||
               button === "{delete}" ||
               button === "{backspace}" ||
+              button === "{arrowleft}" ||
+              button === "{arrowright}" ||
               button === "{bksp}" ||
               button === "{space}" ||
               button === "{tab}")) ||

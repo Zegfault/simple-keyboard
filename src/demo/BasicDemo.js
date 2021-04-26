@@ -25,30 +25,33 @@ class Demo {
           "q w e r t y u i o p",
           "a s d f g h j k l -",
           "{shift} z x c v b n m . _",
-          "{lang} @ {space} {bksp}"
+          "{lang} @ {space} {bksp} {arrowleft} {arrowright}"
         ],
         shift: [
           "1 2 3 4 5 6 7 8 9 0",
           "Q W E R T Y U I O P",
           "A S D F G H J K L -",
           "{shift} Z X C V B N M . _",
-          "{lang} @ {space} {bksp}"
+          "{lang} @ {space} {bksp} {arrowleft} {arrowright}"
         ],
         zhHT: [
           "1 2 3 4 5 6 7 8 9 0",
           "手 田 水 口 廿 卜 山 戈 人 心",
           "日 尸 木 火 土 竹 十 大 中",
           "{shift} 重 難 金 女 月 弓 一 , .",
-          "{lang} @ {space} {bksp}"
+          "{lang} @ {space} {bksp} {arrowleft} {arrowright}"
         ],
         zhHTshift: [
           "1 2 3 4 5 6 7 8 9 0",
           "Q W E R T Y U I O P",
           "A S D F G H J K L -",
           "{shift} Z X C V B N M . _",
-          "{lang} @ {space} {bksp}"
+          "{lang} @ {space} {bksp} {arrowleft} {arrowright}"
         ],
-        hand: ["{canvas}", "{lang} {clear} {undo} {space} {bksp}"]
+        hand: [
+          "{canvas}",
+          "{lang} {clear} {undo} {space} {bksp} {arrowleft} {arrowright}"
+        ]
       },
       mergeDisplay: true,
       display: {
@@ -92,7 +95,7 @@ class Demo {
 
     // Update simple-keyboard when input is changed directly
     document.querySelectorAll(".input").forEach(input => {
-      input.addEventListener("focus", this.keyboard.onInputFocus);
+      input.addEventListener("click", this.keyboard.onInputFocus);
       // Optional: Use if you want to track input changes
       // made without simple-keyboard
       input.addEventListener("input", this.keyboard.inputEventListener);
