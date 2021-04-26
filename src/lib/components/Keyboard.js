@@ -429,18 +429,19 @@ class SimpleKeyboard {
       case "{canvas}":
         return;
       case "{arrowleft}": {
-        console.log(1111, this.options);
-        // const input = document.getElementById(this.options.inputName);
-        // console.log(222, input.selectionStart);
-        // if (input.selectionStart > 0) {
-        //   input.selectionStart = input.selectionStart - 1;
-        // }
-        // console.log(333, input.selectionStart);
+        const input = document.querySelector(this.selectedInput);
+        if (input.selectionStart > 0) {
+          input.selectionEnd = input.selectionStart = input.selectionStart - 1;
+        }
         return;
       }
-      case "{arrowright}":
-        console.log(1111, this.options);
+      case "{arrowright}": {
+        const input = document.querySelector(this.selectedInput);
+        if (input.selectionStart < input.value.length) {
+          input.selectionEnd = input.selectionStart = input.selectionStart + 1;
+        }
         return;
+      }
     }
 
     /**
@@ -503,19 +504,23 @@ class SimpleKeyboard {
       /**
        * Enforce syncInstanceInputs, if set
        */
-      if (this.options.syncInstanceInputs) this.syncInstanceInputs();
+      if (this.options.syncInstanceInputs) {
+        this.syncInstanceInputs();
+      }
 
       /**
        * Calling onChange
        */
-      if (typeof this.options.onChange === "function")
+      if (typeof this.options.onChange === "function") {
         this.options.onChange(this.input[this.options.inputName]);
+      }
 
       /**
        * Calling onChangeAll
        */
-      if (typeof this.options.onChangeAll === "function")
+      if (typeof this.options.onChangeAll === "function") {
         this.options.onChangeAll(this.input);
+      }
     }
 
     if (debug) {
@@ -1910,7 +1915,6 @@ class SimpleKeyboard {
       }
       return false;
     }
-
     this.setInput(event.target.value, event.target.id);
   }
 
@@ -1943,6 +1947,8 @@ class SimpleKeyboard {
 
   onInputFocus(event) {
     this.selectedInput = `#${event.target.id}`;
+    document.querySelector(this.selectedInput).focus();
+
     this.setOptions(
       _.merge(this.options, {
         inputName: event.target.id
@@ -1958,6 +1964,14 @@ class SimpleKeyboard {
       this.setLayoutName(forceLayout);
     }
     this.disableKeysBasedOnFieldType();
+  }
+
+  onInputBlur(event) {
+    const input = `#${event.target.id}`;
+    const inputElement = document.querySelector(this.selectedInput);
+    if (input === this.selectedInput) {
+      inputElement.focus();
+    }
   }
 
   handleNumbersKey() {
@@ -2062,10 +2076,24 @@ class SimpleKeyboard {
   onSuggestedWordClicked(suggestedWord) {
     // console.warn("onSuggestedWordClicked - ", suggestedWord);
     const selectedInput = this.getSelectedInput();
-    const inputVal = document.querySelector(selectedInput).value;
-    document.querySelector(selectedInput).value = this.sanitizeInput(
-      selectedInput,
-      `${inputVal}${suggestedWord}`
+    const inputElement = document.querySelector(selectedInput);
+    let inputVal = inputElement.value;
+
+    const index = inputElement.selectionStart;
+    if (index > 0) {
+      inputVal =
+        inputVal.substring(0, index) + suggestedWord + inputVal.substr(index);
+    } else {
+      inputVal = suggestedWord + inputVal;
+    }
+
+    const lastSelectionIndex = inputElement.selectionStart;
+
+    inputElement.value = this.sanitizeInput(selectedInput, inputVal);
+
+    inputElement.setSelectionRange(
+      lastSelectionIndex + 1,
+      lastSelectionIndex + 1
     );
   }
 

@@ -99,6 +99,8 @@ class Demo {
       // Optional: Use if you want to track input changes
       // made without simple-keyboard
       input.addEventListener("input", this.keyboard.inputEventListener);
+
+      input.addEventListener("blur", this.keyboard.onInputBlur);
     });
   }
 }
