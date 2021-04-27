@@ -77,20 +77,21 @@ class CNSuggestions {
     // non backspace
     str = buf + chr;
     str = str.toLowerCase();
-    const arr = [];
+    let arr = [];
     const suggestion2Search = this.convertCNTrad2Latin(str);
     _.forEach(suggestionData, (val, i) => {
       if (_.startsWith(i, suggestion2Search)) {
-        if (val.length > 1) {
-          const tmp = val.split("");
-          _.forEach(tmp, char => {
-            arr.push(char);
+        const tmp = val.split("");
+        _.forEach(tmp, char => {
+          arr.push({
+            key: i,
+            char
           });
-        } else {
-          arr.push(val);
-        }
+        });
       }
     });
+    arr = _.sortBy(arr, item => item.key.length);
+    arr = _.map(arr, "char");
     // arr = this.suggestions[_.get(this.lat2CJ, suggestion2Search, [])] || [];
     console.info(`Suggestion from pinyin: ${str} -> ${suggestion2Search}`, arr);
     if (arr.length) {
