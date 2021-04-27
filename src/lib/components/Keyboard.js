@@ -178,7 +178,6 @@ class SimpleKeyboard {
         "X",
         "Y",
         "Z",
-        "-",
         "手",
         "田",
         "水",
@@ -209,6 +208,9 @@ class SimpleKeyboard {
         "{space}",
         "{shift}",
         "{lang}",
+        "{lang_en}",
+        "{lang_hand}",
+        "{lang_cj}",
         "{clear}",
         "{undo}",
         "{canvas}",
@@ -228,6 +230,9 @@ class SimpleKeyboard {
         "0",
         "{bksp}",
         "{lang}",
+        "{lang_en}",
+        "{lang_hand}",
+        "{lang_cj}",
         "{arrowleft}",
         "{arrowright}"
       ],
@@ -239,7 +244,8 @@ class SimpleKeyboard {
     this.fieldTypes.email = _.concat(this.fieldTypes.alphanumeric, [
       "@",
       ".",
-      "_"
+      "_",
+      "-"
     ]);
 
     this.inputLanguage = _.get(this.options, "defaultLanguage", "ENG");
@@ -1613,18 +1619,34 @@ class SimpleKeyboard {
     return input;
   }
 
-  toggleLanguage() {
+  toggleLanguage(button) {
     const selectedInput = this.getSelectedInput();
     const selectedInputValue = document.querySelector(selectedInput).value;
     const forceLayout = this.getForceLayoutForInput(selectedInput);
-    if (this.inputLanguage === "ENG") {
-      this.setLayoutName("zhHT");
-    } else if (this.inputLanguage === "CN") {
-      this.setLayoutName("hand");
-    } else if (this.inputLanguage === "HAND") {
-      selectedInputValue.length === 0 && forceLayout === "shift"
-        ? this.setLayoutName("shift")
-        : this.setLayoutName("default");
+    if (_.isUndefined(button)) {
+      if (this.inputLanguage === "ENG") {
+        this.setLayoutName("zhHT");
+      } else if (this.inputLanguage === "CN") {
+        this.setLayoutName("hand");
+      } else if (this.inputLanguage === "HAND") {
+        selectedInputValue.length === 0 && forceLayout === "shift"
+          ? this.setLayoutName("shift")
+          : this.setLayoutName("default");
+      }
+    } else {
+      switch (button) {
+        case "{lang_en}":
+          selectedInputValue.length === 0 && forceLayout === "shift"
+            ? this.setLayoutName("shift")
+            : this.setLayoutName("default");
+          break;
+        case "{lang_hand}":
+          this.setLayoutName("hand");
+          break;
+        case "{lang_cj}":
+          this.setLayoutName("zhHT");
+          break;
+      }
     }
     this.clearInput();
     this.setCurrentWord("");
@@ -1670,15 +1692,17 @@ class SimpleKeyboard {
     const langKey = document.querySelector(
       ".hg-button.hg-functionBtn.hg-button-lang"
     );
-    if (
-      this.options.layoutName.includes("zhHT") ||
-      this.options.layoutName.includes("hand")
-    ) {
-      if (!_.includes(langKey.classList, "zhHT")) {
-        langKey.classList.add("zhHT");
+    if (langKey) {
+      if (
+        this.options.layoutName.includes("zhHT") ||
+        this.options.layoutName.includes("hand")
+      ) {
+        if (!_.includes(langKey.classList, "zhHT")) {
+          langKey.classList.add("zhHT");
+        }
+      } else {
+        langKey.classList.remove("zhHT");
       }
-    } else {
-      langKey.classList.remove("zhHT");
     }
   }
 
@@ -1698,8 +1722,8 @@ class SimpleKeyboard {
     this.disableKeysBasedOnFieldType();
   }
 
-  handleLangKey() {
-    this.toggleLanguage();
+  handleLangKey(button) {
+    this.toggleLanguage(button);
   }
 
   setLayoutName(layoutName) {
@@ -2003,6 +2027,9 @@ class SimpleKeyboard {
     if (button === "{lang}") {
       return this.handleLangKey();
     }
+    if (_.includes(["{lang_en}", "{lang_hand}", "{lang_cj}"], button)) {
+      return this.handleLangKey(button);
+    }
     if (button === "{numbers}") {
       return this.handleNumbersKey();
     }
@@ -2118,7 +2145,19 @@ class SimpleKeyboard {
   handleBackspace() {
     const selectedInput = this.getSelectedInput();
     const selectedInputEle = document.querySelector(selectedInput);
-    selectedInputEle.value = selectedInputEle.value.slice(0, -1);
+    let inputVal = selectedInputEle.value;
+
+    const index = selectedInputEle.selectionStart;
+    if (index > 0) {
+      inputVal = inputVal.substring(0, index - 1) + inputVal.substr(index);
+    }
+    selectedInputEle.value = inputVal;
+    if (index > 0) {
+      selectedInputEle.setSelectionRange(index - 1, index - 1);
+    } else {
+      selectedInputEle.setSelectionRange(0, 0);
+    }
+
     const forceLayout = this.getForceLayoutForInput(selectedInput);
     if (selectedInputEle.value.length === 0 && forceLayout === "shift") {
       this.setLayoutName("shift");

@@ -21,36 +21,37 @@ class Demo {
       defaultLanguage: "ENG",
       layout: {
         default: [
-          "1 2 3 4 5 6 7 8 9 0",
-          "q w e r t y u i o p",
-          "a s d f g h j k l -",
-          "{shift} z x c v b n m . _",
-          "{lang} @ {space} {bksp} {arrowleft} {arrowright}"
+          "{//} 1 2 3 4 5 6 7 8 9 0 {//}",
+          "{//} q w e r t y u i o p {//}",
+          "@ a s d f g h j k l - _",
+          "{shift} z x c v b n m . {arrowleft} {arrowright}",
+          "{lang_en} {lang_hand} {lang_cj} {space} {bksp}"
         ],
         shift: [
-          "1 2 3 4 5 6 7 8 9 0",
-          "Q W E R T Y U I O P",
-          "A S D F G H J K L -",
-          "{shift} Z X C V B N M . _",
-          "{lang} @ {space} {bksp} {arrowleft} {arrowright}"
+          "{//} 1 2 3 4 5 6 7 8 9 0 {//}",
+          "{//} Q W E R T Y U I O P {//}",
+          "@ A S D F G H J K L - _",
+          "{shift} Z X C V B N M . {arrowleft} {arrowright}",
+          "{lang_en} {lang_hand} {lang_cj} {space} {bksp}"
         ],
         zhHT: [
-          "1 2 3 4 5 6 7 8 9 0",
-          "手 田 水 口 廿 卜 山 戈 人 心",
-          "日 尸 木 火 土 竹 十 大 中",
-          "{shift} 重 難 金 女 月 弓 一 , .",
-          "{lang} @ {space} {bksp} {arrowleft} {arrowright}"
+          "{//} 1 2 3 4 5 6 7 8 9 0 {//}",
+          "{//} 手 田 水 口 廿 卜 山 戈 人 心 {//}",
+          "@ 日 尸 木 火 土 竹 十 大 中 - _",
+          "{shift} 重 難 金 女 月 弓 一 . {arrowleft} {arrowright}",
+          "{lang_en} {lang_hand} {lang_cj} {space} {bksp}"
         ],
         zhHTshift: [
-          "1 2 3 4 5 6 7 8 9 0",
-          "Q W E R T Y U I O P",
-          "A S D F G H J K L -",
-          "{shift} Z X C V B N M . _",
-          "{lang} @ {space} {bksp} {arrowleft} {arrowright}"
+          "{//} 1 2 3 4 5 6 7 8 9 0 {//}",
+          "{//} Q W E R T Y U I O P {//}",
+          "@ A S D F G H J K L - _",
+          "{shift} Z X C V B N M . {arrowleft} {arrowright}",
+          "{lang_en} {lang_hand} {lang_cj} {space} {bksp}"
         ],
         hand: [
+          "{undo} 1 2 3 4 5 6 7 8 9 0 {clear}",
           "{canvas}",
-          "{lang} {clear} {undo} {space} {bksp} {arrowleft} {arrowright}"
+          "{lang_en} {lang_hand} {lang_cj} {space} {arrowleft} {arrowright} {bksp}"
         ]
       },
       mergeDisplay: true,
@@ -58,6 +59,9 @@ class Demo {
         "{enter}": "enter",
         "{bksp}": "delete",
         "{lang}": "ENG",
+        "{lang_en}": "ENG",
+        "{lang_hand}": "HAND",
+        "{lang_cj}": "CJ",
         "{space}": "Space / barra de espaço",
         "{clear}": "清除",
         "{undo}": "復原"
