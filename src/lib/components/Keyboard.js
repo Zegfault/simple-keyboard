@@ -2686,17 +2686,18 @@ class SimpleKeyboard {
     var analyzedChar = new HanziLookup.AnalyzedCharacter(
       this.drawingBoard.cloneStrokes()
     );
-    // Look up with original HanziLookup data
-    var matcherOrig = new HanziLookup.Matcher("orig");
+    // // Look up with original HanziLookup data
+    // var matcherOrig = new HanziLookup.Matcher("orig");
+    // this.showResults([]);
+    // matcherOrig.match(analyzedChar, 10, matches => {
+    //   this.showResults(matches);
+    // });
+    // Look up with MMAH data
+    var matcherOrig = new HanziLookup.Matcher("mmah");
     this.showResults([]);
-    matcherOrig.match(analyzedChar, 8, matches => {
+    matcherOrig.match(analyzedChar, 10, matches => {
       this.showResults(matches);
     });
-    // // Look up with MMAH data
-    // var matcherMMAH = new HanziLookup.Matcher("mmah");
-    // matcherMMAH.match(analyzedChar, 8, function(matches) {
-    //   // showResults($(".mmahLookupChars"), matches);
-    // });
   }
 
   showResults(matches) {
