@@ -2104,6 +2104,7 @@ class SimpleKeyboard {
       this.setLayoutName(forceLayout);
     }
     this.disableKeysBasedOnFieldType();
+    this.disableKeysBasedOnLanguage();
   }
 
   onInputBlur(event) {

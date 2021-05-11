@@ -93,7 +93,7 @@ class CNSuggestions {
     arr = _.sortBy(arr, item => item.key.length);
     arr = _.map(arr, "char");
     // arr = this.suggestions[_.get(this.lat2CJ, suggestion2Search, [])] || [];
-    console.info(`Suggestion from pinyin: ${str} -> ${suggestion2Search}`, arr);
+    // console.info(`Suggestion from pinyin: ${str} -> ${suggestion2Search}`, arr);
     if (arr.length) {
       // miao
       this.events.emit(
