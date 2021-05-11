@@ -695,8 +695,9 @@ class SimpleKeyboard {
         event.target.classList.add("hg-activeButton");
       };
       accentKey.onclick = event => {
-        if (this.options.preventMouseUpDefault) event.preventDefault();
-        if (this.options.stopMouseUpPropagation) event.stopPropagation();
+        console.info(`accent clicked: ${accent}`);
+        event.preventDefault();
+        event.stopPropagation();
         this.handleAccentKey(accent);
         event.target.classList.remove("hg-activeButton");
         this.recurseButtons(buttonElement => {

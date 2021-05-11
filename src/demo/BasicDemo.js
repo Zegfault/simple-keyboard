@@ -15,6 +15,10 @@ const setDOM = () => {
 class Demo {
   constructor() {
     setDOM();
+    // const testField = document.querySelector("#input-test");
+    // testField.addEventListener("blur", event => {
+    //   console.warn(`BLUR !!!`);
+    // });
     // Demo Start
     this.keyboard = new Keyboard({
       theme: "hg-theme-default mgto-keyboard-theme",
