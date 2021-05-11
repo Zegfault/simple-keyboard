@@ -2196,17 +2196,30 @@ class SimpleKeyboard {
     let inputVal = inputElement.value;
 
     const index = inputElement.selectionStart;
+    console.warn(
+      `TEST HUGO 2 - ${index} - ${suggestedWord} - selection start = ${inputElement.selectionStart}`
+    );
     if (index > 0) {
+      console.warn(
+        `TEST HUGO - WILL ADD '${suggestedWord}' AT THE END OF THE FIELD`
+      );
       inputVal =
         inputVal.substring(0, index) + suggestedWord + inputVal.substr(index);
     } else {
+      console.warn(
+        `TEST HUGO - WILL ADD '${suggestedWord}' AT THE BEGINNING OF THE FIELD`
+      );
       inputVal = suggestedWord + inputVal;
     }
 
     const lastSelectionIndex = inputElement.selectionStart;
 
     inputElement.value = this.sanitizeInput(selectedInput, inputVal);
-
+    console.warn(
+      `TEST HUGO 3 - ${lastSelectionIndex + 1} - ${lastSelectionIndex + 1} - ${
+        inputElement.value
+      }`
+    );
     inputElement.setSelectionRange(
       lastSelectionIndex + 1,
       lastSelectionIndex + 1
