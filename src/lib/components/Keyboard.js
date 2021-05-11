@@ -687,23 +687,109 @@ class SimpleKeyboard {
     this.currentAccentOverlayButton = button;
     this.currentAccentOverlay = document.createElement("div");
     this.currentAccentOverlay.className = "accents-overlay";
+    const useTouchEvents = this.options.useTouchEvents || false;
+    const useMouseEvents = this.options.useMouseEvents || false;
     _.forEach(accents, accent => {
       const accentKey = document.createElement("div");
       accentKey.className = "accent-key";
       accentKey.innerHTML = `${accent}`;
-      accentKey.onmousedown = event => {
-        event.target.classList.add("hg-activeButton");
-      };
-      accentKey.onclick = event => {
-        console.warn(`accent clicked: ${accent}`);
-        event.preventDefault();
-        event.stopPropagation();
-        this.handleAccentKey(accent);
-        event.target.classList.remove("hg-activeButton");
-        this.recurseButtons(buttonElement => {
-          buttonElement.classList.remove(this.activeButtonClass);
-        });
-      };
+
+      if (
+        this.utilities.pointerEventsSupported() &&
+        !useTouchEvents &&
+        !useMouseEvents
+      ) {
+        /**
+         * Handle PointerEvents
+         */
+        accentKey.onpointerdown = event => {
+          console.warn("accent pointer down event", event);
+          event.preventDefault();
+          event.stopPropagation();
+          event.target.classList.add("hg-activeButton");
+        };
+        accentKey.onpointerup = event => {
+          console.warn("accent pointer up event", event);
+          event.preventDefault();
+          event.stopPropagation();
+          this.handleAccentKey(accent);
+          event.target.classList.remove("hg-activeButton");
+          this.recurseButtons(buttonElement => {
+            buttonElement.classList.remove(this.activeButtonClass);
+          });
+        };
+      } else {
+        /**
+         * Fallback for browsers not supporting PointerEvents
+         */
+        if (useTouchEvents) {
+          /**
+           * Handle touch events
+           */
+          accentKey.ontouchstart = event => {
+            console.warn("accent touch start event", event);
+            event.preventDefault();
+            event.stopPropagation();
+            event.target.classList.add("hg-activeButton");
+          };
+          accentKey.ontouchend = event => {
+            console.warn("accent touch end event", event);
+            event.preventDefault();
+            event.stopPropagation();
+            this.handleAccentKey(accent);
+            event.target.classList.remove("hg-activeButton");
+            this.recurseButtons(buttonElement => {
+              buttonElement.classList.remove(this.activeButtonClass);
+            });
+          };
+        } else {
+          /**
+           * Handle mouse events
+           */
+          accentKey.onclick = event => {
+            console.warn("accent on click event", event);
+            event.preventDefault();
+            event.stopPropagation();
+            this.handleAccentKey(accent);
+            event.target.classList.remove("hg-activeButton");
+            this.recurseButtons(buttonElement => {
+              buttonElement.classList.remove(this.activeButtonClass);
+            });
+          };
+          accentKey.onmousedown = event => {
+            console.warn("accent mouse down event", event);
+            event.preventDefault();
+            event.stopPropagation();
+            event.target.classList.add("hg-activeButton");
+          };
+          accentKey.onmouseup = event => {
+            console.warn("accent mouse up event", event);
+            event.preventDefault();
+            event.stopPropagation();
+            this.handleAccentKey(accent);
+            event.target.classList.remove("hg-activeButton");
+            this.recurseButtons(buttonElement => {
+              buttonElement.classList.remove(this.activeButtonClass);
+            });
+          };
+        }
+      }
+
+      // accentKey.onmousedown = event => {
+      //   event.preventDefault();
+      //   event.stopPropagation();
+      //   event.target.classList.add("hg-activeButton");
+      // };
+      // accentKey.onclick = event => {
+      //   console.warn(`accent on clicked: ${accent}`);
+      //   event.preventDefault();
+      //   event.stopPropagation();
+      //   this.handleAccentKey(accent);
+      //   event.target.classList.remove("hg-activeButton");
+      //   this.recurseButtons(buttonElement => {
+      //     buttonElement.classList.remove(this.activeButtonClass);
+      //   });
+      // };
       this.currentAccentOverlay.appendChild(accentKey);
     });
     keyButton.appendChild(this.currentAccentOverlay);
