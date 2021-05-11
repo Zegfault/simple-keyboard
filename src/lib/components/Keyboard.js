@@ -406,6 +406,7 @@ class SimpleKeyboard {
    * Setters
    */
   setCaretPosition(position, endPosition) {
+    // console.warn(`TEST HUGO 777 - setCaretPosition - ${position} - ${endPosition}`);
     this.caretPosition = position;
     this.caretPositionEnd = endPosition || position;
   }
@@ -687,6 +688,10 @@ class SimpleKeyboard {
     this.currentAccentOverlayButton = button;
     this.currentAccentOverlay = document.createElement("div");
     this.currentAccentOverlay.className = "accents-overlay";
+    // NOTE: Special class for the 'o' button since we need to shift it to the left to display all the accents
+    if (button === "o" || button === "O") {
+      this.currentAccentOverlay.className = "accents-overlay shift-left";
+    }
     const useTouchEvents = this.options.useTouchEvents || false;
     const useMouseEvents = this.options.useMouseEvents || false;
     _.forEach(accents, accent => {
@@ -1809,6 +1814,7 @@ class SimpleKeyboard {
     this.updateLangKeyIcon();
     this.forceUpdateSpaceKey();
     this.disableKeysBasedOnFieldType();
+    this.disableKeysBasedOnLanguage();
   }
 
   handleLangKey(button) {
@@ -2029,6 +2035,27 @@ class SimpleKeyboard {
       return false;
     }
     this.setInput(event.target.value, event.target.id);
+  }
+
+  disableKeysBasedOnLanguage() {
+    _.forEach(
+      ["hg-button-lang_hand", "hg-button-lang_cj", "hg-button-lang_en"],
+      keyClass => {
+        const btnElem = document.querySelector(`.${keyClass}`);
+        btnElem.classList.remove("disabled");
+      }
+    );
+    const disabledKeys =
+      this.getCurrentInputMethod() === "ENG"
+        ? ["hg-button-lang_hand", "hg-button-lang_cj"]
+        : ["hg-button-lang_en"];
+    _.forEach(disabledKeys, keyClass => {
+      console.warn(
+        `TEST HUGO - disableKeysBasedOnLanguage - will disable key ${keyClass}`
+      );
+      const btnElem = document.querySelector(`.${keyClass}`);
+      btnElem.classList.add("disabled");
+    });
   }
 
   disableKeysBasedOnFieldType() {
