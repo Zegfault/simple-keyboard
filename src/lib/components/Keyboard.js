@@ -411,6 +411,23 @@ class SimpleKeyboard {
     this.caretPositionEnd = endPosition || position;
   }
 
+  measureText(text, fontSize) {
+    let meastureDiv = document.createElement("div");
+    document.body.appendChild(meastureDiv);
+    meastureDiv.style.fontSize = fontSize;
+    meastureDiv.style.position = "absolute";
+    meastureDiv.style.left = -1000;
+    meastureDiv.style.top = -1000;
+    meastureDiv.innerHTML = text;
+    var size = {
+      width: meastureDiv.clientWidth,
+      height: meastureDiv.clientHeight
+    };
+    document.body.removeChild(meastureDiv);
+    meastureDiv = null;
+    return size;
+  }
+
   /**
    * Handles clicks made to keyboard buttons
    * @param  {string} button The button's layout name.
@@ -436,17 +453,56 @@ class SimpleKeyboard {
       case "{canvas}":
         return;
       case "{arrowleft}": {
-        const input = document.querySelector(this.selectedInput);
-        if (input.selectionStart > 0) {
-          input.selectionEnd = input.selectionStart = input.selectionStart - 1;
+        const selectedInput = this.getSelectedInput();
+        const inputElement = document.querySelector(selectedInput);
+        if (!inputElement) {
+          return;
         }
+        inputElement.focus();
+        if (inputElement.selectionStart == null) {
+          return;
+        }
+        if (inputElement.selectionStart > 0) {
+          inputElement.selectionEnd = inputElement.selectionStart =
+            inputElement.selectionStart - 1;
+        }
+        const fontSize = window
+          .getComputedStyle(inputElement, null)
+          .getPropertyValue("font-size");
+        const size = this.measureText(
+          inputElement.value.substr(0, inputElement.selectionEnd - 1),
+          fontSize
+        );
+        setTimeout(() => {
+          inputElement.scrollLeft = size.width;
+        }, 5);
         return;
       }
       case "{arrowright}": {
-        const input = document.querySelector(this.selectedInput);
-        if (input.selectionStart < input.value.length) {
-          input.selectionEnd = input.selectionStart = input.selectionStart + 1;
+        const selectedInput = this.getSelectedInput();
+        const inputElement = document.querySelector(selectedInput);
+
+        if (!inputElement) {
+          return;
         }
+        inputElement.focus();
+        if (inputElement.selectionStart == null) {
+          return;
+        }
+        if (inputElement.selectionStart < inputElement.value.length) {
+          inputElement.selectionEnd = inputElement.selectionStart =
+            inputElement.selectionStart + 1;
+        }
+        const fontSize = window
+          .getComputedStyle(inputElement, null)
+          .getPropertyValue("font-size");
+        const size = this.measureText(
+          inputElement.value.substr(0, inputElement.selectionEnd + 1),
+          fontSize
+        );
+        setTimeout(() => {
+          inputElement.scrollLeft = size.width;
+        }, 5);
         return;
       }
     }
@@ -2050,9 +2106,9 @@ class SimpleKeyboard {
         ? ["hg-button-lang_hand", "hg-button-lang_cj"]
         : ["hg-button-lang_en"];
     _.forEach(disabledKeys, keyClass => {
-      console.warn(
-        `TEST HUGO - disableKeysBasedOnLanguage - will disable key ${keyClass}`
-      );
+      // console.warn(
+      //   `TEST HUGO - disableKeysBasedOnLanguage - will disable key ${keyClass}`
+      // );
       const btnElem = document.querySelector(`.${keyClass}`);
       btnElem.classList.add("disabled");
     });
@@ -2224,34 +2280,44 @@ class SimpleKeyboard {
     let inputVal = inputElement.value;
 
     const index = inputElement.selectionStart;
-    console.warn(
-      `TEST HUGO 2 - ${index} - ${suggestedWord} - selection start = ${inputElement.selectionStart}`
-    );
+    // console.warn(
+    //   `TEST HUGO 2 - ${index} - ${suggestedWord} - selection start = ${inputElement.selectionStart}`
+    // );
     if (index > 0) {
-      console.warn(
-        `TEST HUGO - WILL ADD '${suggestedWord}' AT THE END OF THE FIELD`
-      );
+      // console.warn(
+      //   `TEST HUGO - WILL ADD '${suggestedWord}' AT THE END OF THE FIELD`
+      // );
       inputVal =
         inputVal.substring(0, index) + suggestedWord + inputVal.substr(index);
     } else {
-      console.warn(
-        `TEST HUGO - WILL ADD '${suggestedWord}' AT THE BEGINNING OF THE FIELD`
-      );
+      // console.warn(
+      //   `TEST HUGO - WILL ADD '${suggestedWord}' AT THE BEGINNING OF THE FIELD`
+      // );
       inputVal = suggestedWord + inputVal;
     }
 
     const lastSelectionIndex = inputElement.selectionStart;
 
     inputElement.value = this.sanitizeInput(selectedInput, inputVal);
-    console.warn(
-      `TEST HUGO 3 - ${lastSelectionIndex + 1} - ${lastSelectionIndex + 1} - ${
-        inputElement.value
-      }`
-    );
+    // console.warn(
+    //   `TEST HUGO 3 - ${lastSelectionIndex + 1} - ${lastSelectionIndex + 1} - ${
+    //     inputElement.value
+    //   }`
+    // );
     inputElement.setSelectionRange(
       lastSelectionIndex + 1,
       lastSelectionIndex + 1
     );
+    const fontSize = window
+      .getComputedStyle(inputElement, null)
+      .getPropertyValue("font-size");
+    const size = this.measureText(
+      inputElement.value.substr(0, inputElement.selectionEnd + 2),
+      fontSize
+    );
+    setTimeout(() => {
+      inputElement.scrollLeft = size.width;
+    }, 5);
   }
 
   onChange(input) {
@@ -2293,6 +2359,16 @@ class SimpleKeyboard {
       this.setLayoutName("shift");
     }
     this.triggerOnChangeEvent();
+    const fontSize = window
+      .getComputedStyle(selectedInputEle, null)
+      .getPropertyValue("font-size");
+    const size = this.measureText(
+      selectedInputEle.value.substr(0, selectedInputEle.selectionEnd + 1),
+      fontSize
+    );
+    setTimeout(() => {
+      selectedInputEle.scrollLeft = size.width;
+    }, 5);
     return;
   }
 
