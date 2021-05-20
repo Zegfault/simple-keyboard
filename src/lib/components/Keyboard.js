@@ -2141,16 +2141,7 @@ class SimpleKeyboard {
     });
   }
 
-  onInputFocus(event) {
-    this.selectedInput = `#${event.target.id}`;
-    document.querySelector(this.selectedInput).focus();
-
-    this.setOptions(
-      _.merge(this.options, {
-        inputName: event.target.id
-      })
-    );
-    this.resetToNonShiftedLayout();
+  disableKeysBasedOnForceLayoutAndLanguage() {
     const selectedInputValue = document.querySelector(this.selectedInput).value;
     const forceLayout = this.getForceLayoutForInput(this.selectedInput);
     if (forceLayout && selectedInputValue.length === 0) {
@@ -2161,6 +2152,19 @@ class SimpleKeyboard {
     }
     this.disableKeysBasedOnFieldType();
     this.disableKeysBasedOnLanguage();
+  }
+
+  onInputFocus(event) {
+    this.selectedInput = `#${event.target.id}`;
+    document.querySelector(this.selectedInput).focus();
+
+    this.setOptions(
+      _.merge(this.options, {
+        inputName: event.target.id
+      })
+    );
+    this.resetToNonShiftedLayout();
+    this.disableKeysBasedOnForceLayoutAndLanguage();
   }
 
   onInputBlur(event) {
@@ -2500,6 +2504,7 @@ class SimpleKeyboard {
       // );
       this.handleShift();
     }
+    this.disableKeysBasedOnForceLayoutAndLanguage();
     this.triggerOnChangeEvent();
   }
 
