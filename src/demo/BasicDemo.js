@@ -17,7 +17,7 @@ class Demo {
     //   console.warn(`BLUR !!!`);
     // });
     // Demo Start
-    this.keyboard = new Keyboard({
+    const beforeOptions = {
       theme: "hg-theme-default mgto-keyboard-theme",
       defaultLanguage: "ENG",
       layout: {
@@ -94,7 +94,85 @@ class Demo {
         }
       },
       physicalKeyboardHighlight: true
-    });
+    };
+    const newOptions = {
+      inputElementsSelector: `.input`,
+      theme: "hg-theme-default lego-keyboard-theme",
+      defaultLanguage: "ENG",
+      layout: {
+        default: [
+          "1 2 3 4 5 6 7 8 9 0",
+          "q w e r t y u i o p",
+          "a s d f g h j k l -",
+          "{shift} z x c v b n m '",
+          "{lang_cj} . {space} {bksp}"
+        ],
+        shift: [
+          "1 2 3 4 5 6 7 8 9 0",
+          "Q W E R T Y U I O P",
+          "A S D F G H J K L -",
+          "{shift} Z X C V B N M '",
+          "{lang_cj} . {space} {bksp}"
+        ],
+        zhHT: [
+          "1 2 3 4 5 6 7 8 9 0",
+          "q w e r t y u i o p",
+          "a s d f g h j k l -",
+          "{shift} z x c v b n m '",
+          "{lang_en} . {space} {bksp}"
+        ],
+        zhHTshift: [
+          "1 2 3 4 5 6 7 8 9 0",
+          "Q W E R T Y U I O P",
+          "A S D F G H J K L -",
+          "{shift} Z X C V B N M '",
+          "{lang_en} . {space} {bksp}"
+        ]
+      },
+      mergeDisplay: true,
+      display: {
+        "{enter}": "enter",
+        "{bksp}": "delete",
+        "{lang}": "ENG",
+        "{lang_en}": "ENG",
+        "{lang_hand}": "HAND",
+        "{lang_cj}": "CJ",
+        "{space}": "Space",
+        "{undo}": "還原",
+        "{clear}": "清除"
+      },
+      accentsMapping: {
+        lowercase: {
+          a: ["á", "ã", "â", "à", "ä", "æ", "å"],
+          e: ["é", "ê", "è", "ë"],
+          i: ["í", "î", "ì", "ï"],
+          o: ["ó", "õ", "ô", "ò", "ö", "œ", "ø"],
+          u: ["ú", "û", "ù", "ü"],
+          y: ["ý", "ÿ"],
+          n: ["ñ"],
+          d: ["ð"],
+          s: ["ß"],
+          c: ["ç"]
+        },
+        uppercase: {
+          A: ["Á", "Ã", "Â", "À", "Ä", "Æ", "Å"],
+          E: ["É", "Ê", "È", "Ë"],
+          I: ["Í", "Î", "Ì", "Ï"],
+          O: ["Ó", "Õ", "Ô", "Ò", "Ö", "Œ", "Ø"],
+          U: ["Ú", "Û", "Ù", "Ü"],
+          Y: ["Ý", "Ÿ"],
+          N: ["Ñ"],
+          D: ["Ð"],
+          S: ["ß"],
+          C: ["Ç"]
+        }
+      },
+      physicalKeyboardHighlight: true,
+      onChange: () => {
+        // StateService.setInactivityTimeout()
+      }
+    };
+    this.keyboard = new Keyboard(newOptions);
     this.keyboard.setCNSuggestionsListeners();
     this.keyboard.initKeydownListener();
 

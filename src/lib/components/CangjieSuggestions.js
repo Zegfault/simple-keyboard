@@ -9,7 +9,6 @@ class CNSuggestions {
     this.events.setMaxListeners(100);
     console.log("Will init the CN trad suggestions");
     this.suggestions = _.uniq(suggestionData);
-    console.warn(`test hugo - `, this.suggestions);
     this.lat2CJ = {
       q: "手",
       w: "田",

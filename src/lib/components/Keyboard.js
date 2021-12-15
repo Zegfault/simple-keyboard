@@ -7,8 +7,8 @@ import "./Keyboard.css";
 import { getDefaultLayout } from "../services/KeyboardLayout";
 import PhysicalKeyboard from "../services/PhysicalKeyboard";
 import Utilities from "../services/Utilities";
-// import CNSuggestions from "./CNSuggestions";
-import CangjieSuggestions from "./CangjieSuggestions";
+import CNSuggestions from "./CNSuggestions";
+// import CangjieSuggestions from "./CangjieSuggestions";
 import HanziLookup from "./hanzi/hanzilookup.min";
 
 /**
@@ -1825,7 +1825,7 @@ class SimpleKeyboard {
     return this.options.layoutName.includes("zhHT") ||
       this.options.layoutName.includes("hand")
       ? "空格"
-      : "Space / barra de espaço";
+      : "Space";
   }
 
   // NOTE: Forces the update of space key's text since it doesn't work properly with the setOptions sometimes
@@ -2005,13 +2005,13 @@ class SimpleKeyboard {
     const onSetSuggestions = suggestions => {
       this.setSuggestions(suggestions);
     };
-    // CNSuggestions.events.on(`displaySuggestionBox`, onDisplaySuggestionBox);
-    CangjieSuggestions.events.on(
-      `displaySuggestionBox`,
-      onDisplaySuggestionBox
-    );
-    // CNSuggestions.events.on(`setSuggestions`, onSetSuggestions);
-    CangjieSuggestions.events.on(`setSuggestions`, onSetSuggestions);
+    CNSuggestions.events.on(`displaySuggestionBox`, onDisplaySuggestionBox);
+    // CangjieSuggestions.events.on(
+    //   `displaySuggestionBox`,
+    //   onDisplaySuggestionBox
+    // );
+    CNSuggestions.events.on(`setSuggestions`, onSetSuggestions);
+    // CangjieSuggestions.events.on(`setSuggestions`, onSetSuggestions);
   }
 
   keydownListener(event) {
@@ -2077,7 +2077,8 @@ class SimpleKeyboard {
 
   findSuggestions(button) {
     // TODO: hugo - change the charProcessor depending on the current language input
-    return CangjieSuggestions.charProcessor(button, _.trim(this.currentWord));
+    // return CangjieSuggestions.charProcessor(button, _.trim(this.currentWord));
+    return CNSuggestions.charProcessor(button, _.trim(this.currentWord));
   }
 
   inputEventListener(event) {
@@ -2094,28 +2095,33 @@ class SimpleKeyboard {
   }
 
   disableKeysBasedOnLanguage() {
-    _.forEach(
-      ["hg-button-lang_hand", "hg-button-lang_cj", "hg-button-lang_en"],
-      keyClass => {
-        const btnElem = document.querySelector(`.${keyClass}`);
-        if (btnElem.classList && _.isFunction(btnElem.classList.remove)) {
-          btnElem.classList.remove("disabled");
-        }
-      }
-    );
-    const disabledKeys =
-      this.getCurrentInputMethod() === "ENG"
-        ? ["hg-button-lang_hand", "hg-button-lang_cj"]
-        : ["hg-button-lang_en"];
-    _.forEach(disabledKeys, keyClass => {
-      // console.warn(
-      //   `TEST HUGO - disableKeysBasedOnLanguage - will disable key ${keyClass}`
-      // );
-      const btnElem = document.querySelector(`.${keyClass}`);
-      if (btnElem.classList && _.isFunction(btnElem.classList.remove)) {
-        btnElem.classList.add("disabled");
-      }
-    });
+    return;
+    // _.forEach(
+    //   ["hg-button-lang_hand", "hg-button-lang_cj", "hg-button-lang_en"],
+    //   keyClass => {
+    //     const btnElem = document.querySelector(`.${keyClass}`);
+    //     if (
+    //       btnElem &&
+    //       btnElem.classList &&
+    //       _.isFunction(btnElem.classList.remove)
+    //     ) {
+    //       btnElem.classList.remove("disabled");
+    //     }
+    //   }
+    // );
+    // const disabledKeys =
+    //   this.getCurrentInputMethod() === "ENG"
+    //     ? ["hg-button-lang_hand", "hg-button-lang_cj"]
+    //     : ["hg-button-lang_en"];
+    // _.forEach(disabledKeys, keyClass => {
+    //   // console.warn(
+    //   //   `TEST HUGO - disableKeysBasedOnLanguage - will disable key ${keyClass}`
+    //   // );
+    //   const btnElem = document.querySelector(`.${keyClass}`);
+    //   if (btnElem && btnElem.classList && _.isFunction(btnElem.classList.add)) {
+    //     btnElem.classList.add("disabled");
+    //   }
+    // });
   }
 
   disableKeysBasedOnFieldType() {
