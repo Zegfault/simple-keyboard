@@ -2098,7 +2098,9 @@ class SimpleKeyboard {
       ["hg-button-lang_hand", "hg-button-lang_cj", "hg-button-lang_en"],
       keyClass => {
         const btnElem = document.querySelector(`.${keyClass}`);
-        btnElem.classList.remove("disabled");
+        if (btnElem.classList && _.isFunction(btnElem.classList.remove)) {
+          btnElem.classList.remove("disabled");
+        }
       }
     );
     const disabledKeys =
@@ -2110,7 +2112,9 @@ class SimpleKeyboard {
       //   `TEST HUGO - disableKeysBasedOnLanguage - will disable key ${keyClass}`
       // );
       const btnElem = document.querySelector(`.${keyClass}`);
-      btnElem.classList.add("disabled");
+      if (btnElem.classList && _.isFunction(btnElem.classList.remove)) {
+        btnElem.classList.add("disabled");
+      }
     });
   }
 
