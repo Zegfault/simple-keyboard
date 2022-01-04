@@ -170,6 +170,9 @@ class Demo {
       physicalKeyboardHighlight: true,
       onChange: () => {
         // StateService.setInactivityTimeout()
+      },
+      onEnterSuggestedWord(word) {
+        console.warn("onEnterSuggestedWord callback !", word);
       }
     };
     this.keyboard = new Keyboard(newOptions);

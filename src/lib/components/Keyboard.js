@@ -731,6 +731,7 @@ class SimpleKeyboard {
 
   handleAccentKey(accent) {
     this.enterSuggestedWord(accent);
+    this.callOnEnterSuggestedWordCallback(accent);
     this.removeAccentsOverlay();
   }
 
@@ -2060,8 +2061,14 @@ class SimpleKeyboard {
           this.enterSuggestedWord(
             this.suggestionAreaDOM.firstElementChild.firstElementChild.innerHTML
           );
+          this.callOnEnterSuggestedWordCallback(
+            this.suggestionAreaDOM.firstElementChild.firstElementChild.innerHTML
+          );
         } else {
           this.enterSuggestedWord(`${this.previewPinyin.innerHTML} `);
+          this.callOnEnterSuggestedWordCallback(
+            `${this.previewPinyin.innerHTML} `
+          );
         }
       } else {
         this.enterSuggestedWord(
@@ -2429,6 +2436,14 @@ class SimpleKeyboard {
     this.setPinyinPreview(_.trim(_.first(foundSuggestions)));
   }
 
+  callOnEnterSuggestedWordCallback(suggestion) {
+    if (_.get(this.options, "onEnterSuggestedWord", false)) {
+      if (typeof this.options.onEnterSuggestedWord === "function") {
+        this.options.onEnterSuggestedWord(suggestion);
+      }
+    }
+  }
+
   setSuggestions(suggestions) {
     const suggestionsList = this.suggestionAreaDOM.firstElementChild;
     suggestionsList.innerHTML = "";
@@ -2451,6 +2466,7 @@ class SimpleKeyboard {
       suggestionElem.onclick = () => {
         // console.warn("word clicked !", suggestion);
         this.enterSuggestedWord(suggestion);
+        this.callOnEnterSuggestedWordCallback(suggestion);
         if (this.drawingBoard) {
           this.drawingBoard.clearCanvas();
           this.drawingBoard.redraw();
