@@ -702,9 +702,9 @@ class SimpleKeyboard {
   }
 
   keyHasAccents(button) {
-    if (this.options.layoutName === "zhHT") {
+    if (this.options.layoutName === "zhHS") {
       console.warn(
-        `in zhHT, will not take accents in consideration`,
+        `in zhHS, will not take accents in consideration`,
         this.inputLanguage,
         this.options.layoutName
       );
@@ -1775,7 +1775,7 @@ class SimpleKeyboard {
     const forceLayout = this.getForceLayoutForInput(selectedInput);
     if (_.isUndefined(button)) {
       if (this.inputLanguage === "ENG") {
-        this.setLayoutName("zhHT");
+        this.setLayoutName("zhHS");
       } else if (this.inputLanguage === "CN") {
         this.setLayoutName("hand");
       } else if (this.inputLanguage === "HAND") {
@@ -1794,7 +1794,7 @@ class SimpleKeyboard {
           this.setLayoutName("hand");
           break;
         case "{lang_cj}":
-          this.setLayoutName("zhHT");
+          this.setLayoutName("zhHS");
           break;
       }
     }
@@ -1804,7 +1804,7 @@ class SimpleKeyboard {
   }
 
   getLangKeyDisplayName() {
-    return this.options.layoutName.includes("zhHT")
+    return this.options.layoutName.includes("zhHS")
       ? "繁體"
       : this.inputLanguage;
   }
@@ -1812,7 +1812,7 @@ class SimpleKeyboard {
   getNumbersKeyDisplayName() {
     let numbersKeyDisplayName = `&123`;
     if (this.options.layoutName.includes("numbers")) {
-      if (this.options.layoutName.includes(`zhHT`)) {
+      if (this.options.layoutName.includes(`zhHS`)) {
         numbersKeyDisplayName = `拼音`;
       } else {
         numbersKeyDisplayName = `ABC`;
@@ -1822,7 +1822,7 @@ class SimpleKeyboard {
   }
 
   getSpaceKeyDisplayName() {
-    return this.options.layoutName.includes("zhHT") ||
+    return this.options.layoutName.includes("zhHS") ||
       this.options.layoutName.includes("hand")
       ? "空格"
       : "Space";
@@ -1844,14 +1844,14 @@ class SimpleKeyboard {
     );
     if (langKey) {
       if (
-        this.options.layoutName.includes("zhHT") ||
+        this.options.layoutName.includes("zhHS") ||
         this.options.layoutName.includes("hand")
       ) {
-        if (!_.includes(langKey.classList, "zhHT")) {
-          langKey.classList.add("zhHT");
+        if (!_.includes(langKey.classList, "zhHS")) {
+          langKey.classList.add("zhHS");
         }
       } else {
-        langKey.classList.remove("zhHT");
+        langKey.classList.remove("zhHS");
       }
     }
   }
@@ -1883,7 +1883,7 @@ class SimpleKeyboard {
       this.inputLanguage = "ENG";
     } else if (layoutName === "ptPT") {
       this.inputLanguage = "POR";
-    } else if (layoutName === "zhHT") {
+    } else if (layoutName === "zhHS") {
       this.inputLanguage = "CN";
     } else if (layoutName === "hand") {
       this.inputLanguage = "HAND";
@@ -2228,14 +2228,14 @@ class SimpleKeyboard {
     }
     // if (
     //   this.getCurrentInputMethod() === "CN" &&
-    //   this.options.layoutName === "zhHT"
+    //   this.options.layoutName === "zhHS"
     // ) {
     //   return this.handleCNKeyPress(button);
     // }
     // TODO: hugo - make sure that when in cangjie it goes in this block
     if (
       this.getCurrentInputMethod() === "CN" &&
-      this.options.layoutName === "zhHT"
+      this.options.layoutName === "zhHS"
     ) {
       return this.handleCangjieKeyPress(button);
     }

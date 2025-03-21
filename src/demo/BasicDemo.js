@@ -35,14 +35,14 @@ class Demo {
           "{shift} Z X C V B N M . {arrowleft} {arrowright}",
           "{lang_en} {lang_hand} {lang_cj} {space} {bksp}"
         ],
-        zhHT: [
+        zhHS: [
           "{//} 1 2 3 4 5 6 7 8 9 0 {//}",
           "{//} 手 田 水 口 廿 卜 山 戈 人 心 {//}",
           "@ 日 尸 木 火 土 竹 十 大 中 - _",
           "{shift} 重 難 金 女 月 弓 一 . {arrowleft} {arrowright}",
           "{lang_en} {lang_hand} {lang_cj} {space} {bksp}"
         ],
-        zhHTshift: [
+        zhHSshift: [
           "{//} 1 2 3 4 5 6 7 8 9 0 {//}",
           "{//} Q W E R T Y U I O P {//}",
           "@ A S D F G H J K L - _",
@@ -114,14 +114,14 @@ class Demo {
           "{shift} Z X C V B N M '",
           "{lang_cj} . {space} {bksp}"
         ],
-        zhHT: [
+        zhHS: [
           "1 2 3 4 5 6 7 8 9 0",
           "q w e r t y u i o p",
           "a s d f g h j k l -",
           "{shift} z x c v b n m '",
           "{lang_en} . {space} {bksp}"
         ],
-        zhHTshift: [
+        zhHSshift: [
           "1 2 3 4 5 6 7 8 9 0",
           "Q W E R T Y U I O P",
           "A S D F G H J K L -",
