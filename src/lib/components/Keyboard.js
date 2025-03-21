@@ -406,7 +406,6 @@ class SimpleKeyboard {
    * Setters
    */
   setCaretPosition(position, endPosition) {
-    // console.warn(`TEST HUGO 777 - setCaretPosition - ${position} - ${endPosition}`);
     this.caretPosition = position;
     this.caretPositionEnd = endPosition || position;
   }
@@ -2121,9 +2120,6 @@ class SimpleKeyboard {
     //     ? ["hg-button-lang_hand", "hg-button-lang_cj"]
     //     : ["hg-button-lang_en"];
     // _.forEach(disabledKeys, keyClass => {
-    //   // console.warn(
-    //   //   `TEST HUGO - disableKeysBasedOnLanguage - will disable key ${keyClass}`
-    //   // );
     //   const btnElem = document.querySelector(`.${keyClass}`);
     //   if (btnElem && btnElem.classList && _.isFunction(btnElem.classList.add)) {
     //     btnElem.classList.add("disabled");
@@ -2217,7 +2213,7 @@ class SimpleKeyboard {
   }
 
   onKeyPress(button) {
-    console.log("Button pressed", button);
+    // console.log("Button pressed", button);
     if (button === "{lang}") {
       return this.handleLangKey();
     }
@@ -2301,30 +2297,16 @@ class SimpleKeyboard {
     let inputVal = inputElement.value;
 
     const index = inputElement.selectionStart;
-    // console.warn(
-    //   `TEST HUGO 2 - ${index} - ${suggestedWord} - selection start = ${inputElement.selectionStart}`
-    // );
     if (index > 0) {
-      // console.warn(
-      //   `TEST HUGO - WILL ADD '${suggestedWord}' AT THE END OF THE FIELD`
-      // );
       inputVal =
         inputVal.substring(0, index) + suggestedWord + inputVal.substr(index);
     } else {
-      // console.warn(
-      //   `TEST HUGO - WILL ADD '${suggestedWord}' AT THE BEGINNING OF THE FIELD`
-      // );
       inputVal = suggestedWord + inputVal;
     }
 
     const lastSelectionIndex = inputElement.selectionStart;
 
     inputElement.value = this.sanitizeInput(selectedInput, inputVal);
-    // console.warn(
-    //   `TEST HUGO 3 - ${lastSelectionIndex + 1} - ${lastSelectionIndex + 1} - ${
-    //     inputElement.value
-    //   }`
-    // );
     inputElement.setSelectionRange(
       lastSelectionIndex + 1,
       lastSelectionIndex + 1
