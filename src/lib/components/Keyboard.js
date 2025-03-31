@@ -2825,7 +2825,7 @@ class SimpleKeyboard {
          */
         rowDOM.appendChild(buttonDOM);
 
-        // handle draing canvas
+        // handle drawing canvas
         switch (button) {
           case "{canvas}":
             this.drawingBoard = HanziLookup.DrawingBoard(
@@ -2898,13 +2898,23 @@ class SimpleKeyboard {
        */
       this.onInit();
     }
+    if (this.options.layoutName === "hand") {
+      this.handleButtonClicked("{clear}");
+      this.setSuggestions([]);
+    }
   }
 
   lookup() {
     // Decompose character from drawing board
-    var analyzedChar = new HanziLookup.AnalyzedCharacter(
-      this.drawingBoard.cloneStrokes()
-    );
+    var strokes = this.drawingBoard.cloneStrokes();
+    if (
+      _.get(strokes, "length", 0) === 1 &&
+      _.get(strokes, "[0].length", 0) === 2
+    ) {
+      strokes = [];
+      console.debug(`Will reset drawing strokes`);
+    }
+    var analyzedChar = new HanziLookup.AnalyzedCharacter(strokes);
     // // Look up with original HanziLookup data
     // var matcherOrig = new HanziLookup.Matcher("orig");
     // this.showResults([]);
