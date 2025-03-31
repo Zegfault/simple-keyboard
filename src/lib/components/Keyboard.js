@@ -598,8 +598,8 @@ class SimpleKeyboard {
     /**
      * Handle event options
      */
-    if (this.options.preventMouseDownDefault) e.preventDefault();
-    if (this.options.stopMouseDownPropagation) e.stopPropagation();
+    e.preventDefault();
+    e.stopPropagation();
 
     /**
      * Add active class
@@ -2213,7 +2213,7 @@ class SimpleKeyboard {
   }
 
   onKeyPress(button) {
-    // console.log("Button pressed", button);
+    console.log("Button pressed", button);
     if (button === "{lang}") {
       return this.handleLangKey();
     }
