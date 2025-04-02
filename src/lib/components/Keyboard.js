@@ -2454,12 +2454,16 @@ class SimpleKeyboard {
       suggestionElem.innerHTML = suggestion;
       suggestionElem.onclick = () => {
         // console.warn("word clicked !", suggestion);
-        this.enterSuggestedWord(suggestion);
-        this.callOnEnterSuggestedWordCallback(suggestion);
-        if (this.drawingBoard) {
-          this.drawingBoard.clearCanvas();
-          this.drawingBoard.redraw();
-        }
+        suggestionElem.classList.add("hg-activeButton");
+        setTimeout(() => {
+          this.enterSuggestedWord(suggestion);
+          this.callOnEnterSuggestedWordCallback(suggestion);
+          if (this.drawingBoard) {
+            this.drawingBoard.clearCanvas();
+            this.drawingBoard.redraw();
+          }
+          suggestionElem.classList.remove("hg-activeButton");
+        }, 150);
       };
       suggestionsList.appendChild(suggestionElem);
       if (key === this.numberOfSuggestionsPerLine) {
