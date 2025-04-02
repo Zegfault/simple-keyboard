@@ -2259,7 +2259,8 @@ class SimpleKeyboard {
     if (fieldType === "alpha") {
       return /[a-z ]|[áãâàäæéêèëíîìïóõôòöœúûùüýÿñçÁÃÂÀÄÆÉÊÈËÍÎÌÏÓÕÔÒÖŒÚÛÙÜÝŸÑÇ]|[A-Z]|^[\p{Han}{2,10}+$]+|[\u4E00-\u9FCC\u3400-\u4DB5\uFA0E\uFA0F\uFA11\uFA13\uFA14\uFA1F\uFA21\uFA23\uFA24\uFA27-\uFA29]|[\ud840-\ud868][\udc00-\udfff]|\ud869[\udc00-\uded6\udf00-\udfff]|[\ud86a-\ud86c][\udc00-\udfff]|\ud86d[\udc00-\udf34\udf40-\udfff]|\ud86e[\udc00-\udc1d]/;
     } else if (fieldType === "alphanumeric") {
-      return /[a-z ]|[áãâàäæéêèëíîìïóõôòöœúûùüýÿñçÁÃÂÀÄÆÉÊÈËÍÎÌÏÓÕÔÒÖŒÚÛÙÜÝŸÑÇ]|[A-Z]|[0-9]|^[\p{Han}{2,10}+$]+|[\u4E00-\u9FCC\u3400-\u4DB5\uFA0E\uFA0F\uFA11\uFA13\uFA14\uFA1F\uFA21\uFA23\uFA24\uFA27-\uFA29]|[\ud840-\ud868][\udc00-\udfff]|\ud869[\udc00-\uded6\udf00-\udfff]|[\ud86a-\ud86c][\udc00-\udfff]|\ud86d[\udc00-\udf34\udf40-\udfff]|\ud86e[\udc00-\udc1d]/gi;
+      // return /[a-z ]|[áãâàäæéêèëíîìïóõôòöœúûùüýÿñçÁÃÂÀÄÆÉÊÈËÍÎÌÏÓÕÔÒÖŒÚÛÙÜÝŸÑÇ]|[A-Z]|[0-9]|^[\p{Han}{2,10}+$]+|[\u4E00-\u9FCC\u3400-\u4DB5\uFA0E\uFA0F\uFA11\uFA13\uFA14\uFA1F\uFA21\uFA23\uFA24\uFA27-\uFA29]|[\ud840-\ud868][\udc00-\udfff]|\ud869[\udc00-\uded6\udf00-\udfff]|[\ud86a-\ud86c][\udc00-\udfff]|\ud86d[\udc00-\udf34\udf40-\udfff]|\ud86e[\udc00-\udc1d]/gi;
+      return "";
     } else if (fieldType === "numeric") {
       return /[0-9]/gi;
     }
@@ -2287,6 +2288,9 @@ class SimpleKeyboard {
       return newInputVal;
     }
     const regex = this.getRegexForFielType(fieldType);
+    if (regex.length === 0) {
+      return newInputVal;
+    }
     let newVal = [];
     _.forEach(newInputVal, char => {
       if (char.match(regex)) {
@@ -2298,7 +2302,7 @@ class SimpleKeyboard {
   }
 
   onSuggestedWordClicked(suggestedWord) {
-    // console.warn("onSuggestedWordClicked - ", suggestedWord);
+    console.warn("onSuggestedWordClicked - ", suggestedWord);
     const selectedInput = this.getSelectedInput();
     const inputElement = document.querySelector(selectedInput);
     let inputVal = inputElement.value;
@@ -2310,7 +2314,6 @@ class SimpleKeyboard {
     } else {
       inputVal = suggestedWord + inputVal;
     }
-
     const lastSelectionIndex = inputElement.selectionStart;
 
     inputElement.value = this.sanitizeInput(selectedInput, inputVal);
@@ -2648,6 +2651,7 @@ class SimpleKeyboard {
 
     this.suggestionAreaParent = this.keyboardWrapper;
     this.previewPinyinParent = this.keyboardDOM;
+    var drawingCanvasContainer = false;
 
     /**
      * Iterating through each row
@@ -2724,6 +2728,9 @@ class SimpleKeyboard {
         const buttonDOM = document.createElement(buttonType);
 
         buttonDOM.className += `hg-button ${fctBtnClass}`;
+        if (fctBtnClass === "hg-button-canvas") {
+          drawingCanvasContainer = buttonDOM;
+        }
 
         /**
          * Adding buttonTheme
@@ -2850,10 +2857,10 @@ class SimpleKeyboard {
          * Appending button to row
          */
         rowDOM.appendChild(buttonDOM);
-
         // handle drawing canvas
         switch (button) {
           case "{canvas}":
+            drawingCanvasContainer = buttonDOM;
             this.drawingBoard = HanziLookup.DrawingBoard(
               $(buttonDOM),
               this.lookup
@@ -2877,7 +2884,6 @@ class SimpleKeyboard {
        */
       this.keyboardWrapper.appendChild(rowDOM);
     });
-
     this.suggestionAreaParent.appendChild(this.suggestionAreaDOM);
     this.suggestionAreaParent.appendChild(this.expandSuggestionsBtn2);
     this.previewPinyinParent.appendChild(this.previewPinyin);
@@ -2931,6 +2937,14 @@ class SimpleKeyboard {
     if (this.options.layoutName === "hand") {
       this.handleButtonClicked("{clear}");
       this.setSuggestions([]);
+    }
+    if (this.drawingBoard) {
+      if (_.get(drawingCanvasContainer, "children[0]", false)) {
+        drawingCanvasContainer.children[0].width =
+          drawingCanvasContainer.clientWidth;
+        drawingCanvasContainer.children[0].height =
+          drawingCanvasContainer.clientHeight;
+      }
     }
   }
 

@@ -449,7 +449,7 @@ HanziLookup.DrawingBoard = function(elmHost, strokeFinished) {
 
   // Initializes handwriting recognition (events etc.)
   _canvas = $(
-    '<canvas class="stroke-input-canvas" width="256" height="256"></canvas>'
+    `<canvas class="stroke-input-canvas" width="${elmHost[0].clientWidth}" height="${elmHost[0].clientHeight}"></canvas>`
   );
   _elmHost.append(_canvas);
   _ctx = _canvas[0].getContext("2d");
