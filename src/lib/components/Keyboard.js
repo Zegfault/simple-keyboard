@@ -9,7 +9,7 @@ import PhysicalKeyboard from "../services/PhysicalKeyboard";
 import Utilities from "../services/Utilities";
 import CNSuggestions from "./CNSuggestions";
 // import CangjieSuggestions from "./CangjieSuggestions";
-import HanziLookup from "./hanzi/hanzilookup.min";
+import HanziLookup from "./hanzi/hanzilookup";
 
 /**
  * Root class for simple-keyboard
@@ -27,6 +27,12 @@ class SimpleKeyboard {
     const { keyboardDOMClass, keyboardDOM, options = {} } = this.handleParams(
       params
     );
+
+    HanziLookup.options = _.merge(
+      HanziLookup.options,
+      _.get(options, "drawingOptions", {})
+    );
+
     this.touchMoveTimeout = false;
     this.canSelectSuggestedWord = true;
     this.currentAccentOverlay = false;
@@ -1752,7 +1758,7 @@ class SimpleKeyboard {
       return `{bksp}`;
     }
     if (input === "Control") {
-      return `{ctrl}`;
+      return ``;
     }
     if (input === "Shift") {
       return `{shift}`;
@@ -1764,7 +1770,7 @@ class SimpleKeyboard {
       return `{enter}`;
     }
     if (input === "Alt") {
-      return `{alt}`;
+      return ``;
     }
     return input;
   }
@@ -2018,7 +2024,8 @@ class SimpleKeyboard {
     // NOTE: If we are in CN or if a special key has been typed
     if (
       (this.getCurrentInputMethod() === "CN" || event.key.length > 1) &&
-      event.preventDefault
+      event.preventDefault &&
+      !_.includes(["Control", "Alt"], event.key)
     ) {
       event.preventDefault();
       this.handleButtonClicked(
@@ -2587,14 +2594,13 @@ class SimpleKeyboard {
     );
     this.previewPinyin = document.createElement("div");
     this.previewPinyin.className = "preview-pinyin";
-    this.keyboardDOM.appendChild(this.previewPinyin);
     this.keyboardWrapper = document.createElement("div");
     this.keyboardWrapper.className = "keyboard-wrapper";
     this.keyboardDOM.appendChild(this.keyboardWrapper);
     this.suggestionAreaDOM = document.createElement("div");
     this.suggestionAreaDOM.appendChild(document.createElement("ul"));
     this.suggestionAreaDOM.className = "suggestion-area";
-    this.keyboardWrapper.appendChild(this.suggestionAreaDOM);
+
     this.suggestionsMenu = document.createElement("div");
     this.suggestionsMenu.className = "suggestions-menu";
     this.expandSuggestionsBtn = document.createElement("div");
@@ -2630,12 +2636,14 @@ class SimpleKeyboard {
       this.toggleMoreSuggestionsArea();
     };
     // this.expandSuggestionsBtnWrapper.appendChild(this.expandSuggestionsBtn2);
-    this.keyboardWrapper.appendChild(this.expandSuggestionsBtn2);
     this.suggestionsMenu.appendChild(this.expandSuggestionsBtn);
     this.suggestionsMenu.appendChild(this.previousSuggestionPageBtn);
     this.suggestionsMenu.appendChild(this.nextSuggestionPageBtn);
     this.suggestionsMenu.appendChild(this.suggestionsPagination);
     this.suggestionAreaDOM.appendChild(this.suggestionsMenu);
+
+    this.suggestionAreaParent = this.keyboardWrapper;
+    this.previewPinyinParent = this.keyboardDOM;
 
     /**
      * Iterating through each row
@@ -2710,6 +2718,7 @@ class SimpleKeyboard {
          */
         const buttonType = this.options.useButtonTag ? "button" : "div";
         const buttonDOM = document.createElement(buttonType);
+
         buttonDOM.className += `hg-button ${fctBtnClass}`;
 
         /**
@@ -2726,69 +2735,77 @@ class SimpleKeyboard {
 
         this.activeButtonClass = "hg-activeButton";
 
-        /**
-         * Handle button click event
-         */
-        /* istanbul ignore next */
-        if (
-          this.utilities.pointerEventsSupported() &&
-          !useTouchEvents &&
-          !useMouseEvents
-        ) {
+        if (button === "{suggestion_area}") {
+          this.suggestionAreaParent = buttonDOM;
+        } else if (button === "{preview_pinyin}") {
+          this.previewPinyinParent = buttonDOM;
+        }
+
+        if (!_.includes(["{suggestion_area}", "{preview_pinyin}"], button)) {
           /**
-           * Handle PointerEvents
+           * Handle button click event
            */
-          buttonDOM.onpointerdown = e => {
-            // console.warn("down", e);
-            if (!_.includes(_.get(e, "target.classList", []), "accent-key")) {
-              this.removeAccentsOverlay();
-              // this.handleButtonClicked(button);
-              this.handleButtonMouseDown(button, e);
-            }
-          };
-          buttonDOM.onpointerup = e => {
-            // console.warn("up", button, e);
-            if (!this.currentAccentOverlay) {
-              this.handleButtonClicked(button);
-            }
-            // this.handleButtonMouseDown(button, e);
-            this.handleButtonMouseUp(button, e);
-          };
-          buttonDOM.onpointercancel = e => {
-            this.handleButtonMouseUp(button, e);
-          };
-        } else {
-          /**
-           * Fallback for browsers not supporting PointerEvents
-           */
-          if (useTouchEvents) {
+          /* istanbul ignore next */
+          if (
+            this.utilities.pointerEventsSupported() &&
+            !useTouchEvents &&
+            !useMouseEvents
+          ) {
             /**
-             * Handle touch events
+             * Handle PointerEvents
              */
-            buttonDOM.ontouchstart = e => {
-              this.handleButtonClicked(button);
-              this.handleButtonMouseDown(button, e);
+            buttonDOM.onpointerdown = e => {
+              // console.warn("down", e);
+              if (!_.includes(_.get(e, "target.classList", []), "accent-key")) {
+                this.removeAccentsOverlay();
+                // this.handleButtonClicked(button);
+                this.handleButtonMouseDown(button, e);
+              }
             };
-            buttonDOM.ontouchend = e => {
+            buttonDOM.onpointerup = e => {
+              // console.warn("up", button, e);
+              if (!this.currentAccentOverlay) {
+                this.handleButtonClicked(button);
+              }
+              // this.handleButtonMouseDown(button, e);
               this.handleButtonMouseUp(button, e);
             };
-            buttonDOM.ontouchcancel = e => {
+            buttonDOM.onpointercancel = e => {
               this.handleButtonMouseUp(button, e);
             };
           } else {
             /**
-             * Handle mouse events
+             * Fallback for browsers not supporting PointerEvents
              */
-            buttonDOM.onclick = () => {
-              this.isMouseHold = false;
-              this.handleButtonClicked(button);
-            };
-            buttonDOM.onmousedown = e => {
-              this.handleButtonMouseDown(button, e);
-            };
-            buttonDOM.onmouseup = e => {
-              this.handleButtonMouseUp(button, e);
-            };
+            if (useTouchEvents) {
+              /**
+               * Handle touch events
+               */
+              buttonDOM.ontouchstart = e => {
+                this.handleButtonClicked(button);
+                this.handleButtonMouseDown(button, e);
+              };
+              buttonDOM.ontouchend = e => {
+                this.handleButtonMouseUp(button, e);
+              };
+              buttonDOM.ontouchcancel = e => {
+                this.handleButtonMouseUp(button, e);
+              };
+            } else {
+              /**
+               * Handle mouse events
+               */
+              buttonDOM.onclick = () => {
+                this.isMouseHold = false;
+                this.handleButtonClicked(button);
+              };
+              buttonDOM.onmousedown = e => {
+                this.handleButtonMouseDown(button, e);
+              };
+              buttonDOM.onmouseup = e => {
+                this.handleButtonMouseUp(button, e);
+              };
+            }
           }
         }
 
@@ -2807,7 +2824,12 @@ class SimpleKeyboard {
         /**
          * Adding button label to button
          */
-        if (!_.includes(["{canvas}"], button)) {
+        if (
+          !_.includes(
+            ["{canvas}", "{suggestion_area}", "{preview_pinyin}"],
+            button
+          )
+        ) {
           const buttonSpanDOM = document.createElement("span");
           buttonSpanDOM.innerHTML = buttonDisplayName;
           buttonDOM.appendChild(buttonSpanDOM);
@@ -2851,6 +2873,10 @@ class SimpleKeyboard {
        */
       this.keyboardWrapper.appendChild(rowDOM);
     });
+
+    this.suggestionAreaParent.appendChild(this.suggestionAreaDOM);
+    this.suggestionAreaParent.appendChild(this.expandSuggestionsBtn2);
+    this.previewPinyinParent.appendChild(this.previewPinyin);
 
     /**
      * Calling onRender

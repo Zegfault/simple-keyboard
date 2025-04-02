@@ -96,6 +96,10 @@ class Demo {
       physicalKeyboardHighlight: true
     };
     const newOptions = {
+      drawingOptions: {
+        drawingGrid: true,
+        strokeColor: "blue"
+      },
       fieldTypes: {
         alpha: [
           "a",
@@ -190,6 +194,8 @@ class Demo {
           "{arrowright}",
           "{confirm}",
           "{confirm_cn}",
+          "{preview_pinyin}",
+          "{suggestion_area}",
           "'",
           "-"
         ]
@@ -211,18 +217,23 @@ class Demo {
           "{lang_cj} {lang_hand} {space} {arrowleft} {arrowright} {confirm}"
         ],
         zhHS: [
+          "{preview_pinyin}",
+          "{suggestion_area}",
           "{smaller_space} q w e r t y u i o p {bksp}",
           "{smaller_space} a s d f g h j k l - {small_space}",
           "{shift} z x c v b n m ' {big_space}",
           "{lang_en} {lang_hand} {space} {arrowleft} {arrowright} {confirm_cn}"
         ],
         zhHSshift: [
+          "{preview_pinyin}",
+          "{suggestion_area}",
           "{smaller_space} Q W E R T Y U I O P {bksp}",
           "{smaller_space} A S D F G H J K L - {small_space}",
           "{shift} Z X C V B N M ' {big_space}",
           "{lang_en} {lang_hand} {space} {arrowleft} {arrowright} {confirm_cn}"
         ],
         hand: [
+          "{suggestion_area}",
           "{undo} {empty_space} {clear} {bksp}",
           "{canvas}",
           "{lang_en} {lang_hand} {lang_cj} {space} {arrowleft} {arrowright} {confirm_cn}"
@@ -289,9 +300,9 @@ class Demo {
       input.addEventListener("click", this.keyboard.onInputFocus);
       // Optional: Use if you want to track input changes
       // made without simple-keyboard
-      input.addEventListener("input", this.keyboard.inputEventListener);
+      // input.addEventListener("input", this.keyboard.inputEventListener);
 
-      input.addEventListener("blur", this.keyboard.onInputBlur);
+      // input.addEventListener("blur", this.keyboard.onInputBlur);
     });
   }
 }

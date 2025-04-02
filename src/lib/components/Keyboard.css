@@ -162,6 +162,11 @@ html {
   color: grey;
 }
 
+.hg-button-preview_pinyin,
+.hg-button-suggestion_area {
+  position: relative;
+}
+
 .suggestion-area {
   position: absolute;
   top: 0;
@@ -170,6 +175,7 @@ html {
   opacity: 0;
   transition: opacity 0.3s;
 }
+
 .suggestion-area ul {
   height: 36px;
   width: 100%;
@@ -408,4 +414,16 @@ html {
 .simple-keyboard.hg-layout-hand canvas {
   pointer-events: auto;
   touch-action: auto;
+}
+
+.hg-button-preview_pinyin .expand-btn,
+.hg-button-suggestion_area .expand-btn {
+  background-color: black;
+}
+
+.hg-button-preview_pinyin .suggestions-area,
+.hg-button-suggestion_area .suggestions-area,
+.hg-button-preview_pinyin .suggestions-menu,
+.hg-button-suggestion_area .suggestions-menu {
+  color: black;
 }
