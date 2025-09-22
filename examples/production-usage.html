@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Production Usage Example - Vue Simple Keyboard</title>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <script src="../dist/vue-simple-keyboard.umd.js"></script>
+    <link rel="stylesheet" href="../dist/vue-simple-keyboard-component.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .input-field {
+            width: 100%;
+            padding: 15px;
+            font-size: 18px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            box-sizing: border-box;
+        }
+        .simple-keyboard {
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <h1>Production Usage Example</h1>
+        <p>This example shows how to use the built Vue Simple Keyboard component in a production environment.</p>
+
+        <input
+            v-model="inputText"
+            class="input-field"
+            placeholder="Click the virtual keyboard below to start typing..."
+        />
+
+        <simple-keyboard
+            v-model="inputText"
+            theme="hg-theme-default"
+            :debug="false"
+            @on-key-press="onKeyPress"
+            @on-change="onChange"
+        />
+
+        <div style="margin-top: 20px;">
+            <h3>Current Input:</h3>
+            <p style="background: #f0f0f0; padding: 10px; border-radius: 5px;">{{ inputText || '(empty)' }}</p>
+        </div>
+    </div>
+
+    <script>
+        const { createApp } = Vue;
+        const { SimpleKeyboard } = VueSimpleKeyboard;
+
+        createApp({
+            components: {
+                SimpleKeyboard
+            },
+            data() {
+                return {
+                    inputText: ''
+                }
+            },
+            methods: {
+                onKeyPress(button) {
+                    console.log('Button pressed:', button);
+                },
+                onChange(input) {
+                    console.log('Input changed:', input);
+                }
+            }
+        }).mount('#app');
+    </script>
+</body>
+</html>
