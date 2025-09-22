@@ -1,12 +1,8 @@
 import SimpleKeyboard from './SimpleKeyboard.vue'
 
-// Export the component
+// Export the component and plugin install function as named exports only
 export { SimpleKeyboard }
 
-// Export as default for easier importing
-export default SimpleKeyboard
-
-// Vue plugin installation function
 export const install = (app) => {
   app.component('SimpleKeyboard', SimpleKeyboard)
 }

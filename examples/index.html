@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Vue Simple Keyboard Component Demo</title>
+    <title>Vue Simple Keyboard</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -59,61 +59,48 @@
         .simple-keyboard {
             margin-top: 20px;
         }
+        .hg-theme-default.hg-theme-custom {
+          background-color: red;
+        }
     </style>
 </head>
 <body>
     <div id="app">
         <div class="container">
-            <h1>Vue Simple Keyboard Component Demo</h1>
-
+            <h1>Vue Simple Keyboard</h1>
             <div class="input-section">
-                <input
-                    v-model="inputText"
-                    class="demo-input"
-                    placeholder="Click on the virtual keyboard below to start typing..."
-                />
+                <input v-model="inputText" class="demo-input" placeholder="Click on the virtual keyboard below to start typing..."/>
             </div>
-
             <div class="controls">
                 <h3>Keyboard Options</h3>
                 <div class="control-group">
                     <label>Theme:</label>
                     <select v-model="selectedTheme">
-                        <option value="hg-theme-default">Default</option>
-                        <option value="hg-theme-default hg-layout-default">Default + Layout</option>
-                        <option value="hg-theme-default hg-layout-numeric">Numeric</option>
+                      <option value="hg-theme-default">Default</option>
+                      <option value="hg-theme-default hg-layout-default">Default + Layout</option>
+                      <option value="hg-theme-default hg-layout-numeric">Numeric</option>
+                      <option value="hg-theme-default hg-theme-custom">Custom</option>
                     </select>
                 </div>
                 <div class="control-group">
                     <label>Layout:</label>
                     <select v-model="selectedLayout">
-                            <option value="default">Default</option>
-                            <option value="shift">Shift</option>
-                            <option value="chinese">Simplified Chinese</option>
+                      <option value="enUS">enUS</option>
+                      <option value="zhCN">Simplified Chinese</option>
+                      <option value="zhHT">Traditional Chinese</option>
+                      <option value="hand">Handwriting</option>
                     </select>
                 </div>
-                <div class="control-group">
-                    <label>Debug Mode:</label>
-                    <input type="checkbox" v-model="debugMode" />
-                </div>
-                <div class="control-group">
-                    <label>Disable Caret Positioning:</label>
-                    <input type="checkbox" v-model="disableCaret" />
-                </div>
             </div>
-
             <simple-keyboard
                 v-model="inputText"
                 :theme="selectedTheme"
                 :layout-name="selectedLayout"
                 :layout="layout"
                 :layout-candidates="layoutCandidates"
-                :debug="debugMode"
-                :disable-caret-positioning="disableCaret"
                 @on-key-press="onKeyPress"
                 @on-change="onChange"
             />
-
             <div style="margin-top: 20px;">
                 <h3>Events Log:</h3>
                 <div style="background: #f1f1f1; padding: 10px; border-radius: 5px; height: 150px; overflow-y: auto;">
@@ -124,7 +111,6 @@
             </div>
         </div>
     </div>
-
     <script type="module" src="./main.js"></script>
 </body>
 </html>
