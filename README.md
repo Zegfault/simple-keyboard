@@ -48,53 +48,79 @@ function onChange(input) {
 </script>
 ```
 
+
 ## Props
 
-The component accepts all the options from simple-keyboard as props:
+The `SimpleKeyboard` component accepts the following props:
 
 ### Layout & Display
-- `layout` - Modify the keyboard layout
-- `layoutName` - Specifies which layout should be used (default: 'default')
-- `display` - Replaces variable buttons with human-friendly names
-- `mergeDisplay` - Merges display with default instead of replacing
-- `excludeFromLayout` - Exclude buttons from layout
+- `layout` (Object): Keyboard layout definition.
+- `languageMapping` (Object): Mapping for language switch buttons.
+- `layoutName` (String, default: 'default'): Name of the active layout.
+- `localeForHandwriting` (String, default: 'zhCN'): Locale for handwriting recognition.
+- `suggestionsLimit` (Number, default: 9999): Max number of handwriting suggestions.
+- `display` (Object): Button display mapping (human-friendly names).
+- `mergeDisplay` (Boolean, default: false): Merge custom display with default.
+- `excludeFromLayout` (Object): Exclude buttons from layout.
+- `drawingOptions` (Object, default: `{ drawingGrid: true, strokeColor: 'blue' }`): Options for handwriting drawing board.
+- `numberOfSuggestionsPerLine` (Number, default: 10): Max suggestions per line for handwriting.
 
 ### Styling & Theming
-- `theme` - CSS classes for keyboard wrapper (default: 'hg-theme-default')
-- `buttonTheme` - CSS classes for specific buttons
-- `buttonAttributes` - HTML attributes for specific buttons
-- `useButtonTag` - Render buttons as button elements instead of div
-- `baseClass` - Custom base class for keyboard wrapper
+- `theme` (String, default: 'hg-theme-default'): CSS class for keyboard wrapper.
+- `buttonTheme` (Object): CSS classes for specific buttons.
+- `buttonAttributes` (Object): HTML attributes for specific buttons.
+- `useButtonTag` (Boolean, default: false): Render buttons as `<button>` elements.
+- `baseClass` (String): Custom base class for keyboard wrapper.
 
 ### Input Handling
-- `inputName` - Use single keyboard instance for multiple inputs
-- `maxLength` - Restrict input length
-- `inputPattern` - Restrict input to regex pattern
-- `newLineOnEnter` - Add newline on ENTER (default: false)
-- `tabCharOnTab` - Add tab character on TAB (default: false)
-- `syncInstanceInputs` - Sync internal input across instances
+- `inputName` (String): Name of the input field for multi-input support.
+- `maxLength` (Number/Object): Restrict input length.
+- `inputPattern` (RegExp/Object): Restrict input to regex pattern.
+- `newLineOnEnter` (Boolean, default: false): Add newline on ENTER.
+- `tabCharOnTab` (Boolean, default: false): Add tab character on TAB.
+- `syncInstanceInputs` (Boolean, default: false): Sync input across keyboard instances.
+
+### Caret & Text Positioning
+- `disableCaretPositioning` (Boolean, default: false): Disable caret positioning.
+- `updateCaretOnSelectionChange` (Boolean, default: false): Update caret on selection change.
 
 ### Mouse & Touch Events
-- `useMouseEvents` - Use mouse events instead of pointer events
-- `useTouchEvents` - Use touch events instead of click events
-- `autoUseTouchEvents` - Auto-detect touch devices (default: true)
-- `clickOnMouseDown` - Trigger click on mousedown
-- `preventMouseDownDefault` - Prevent default mousedown behavior
-- `preventMouseUpDefault` - Prevent default mouseup behavior
-- `stopMouseDownPropagation` - Stop mousedown event propagation
-- `stopMouseUpPropagation` - Stop mouseup event propagation
-- `disableButtonHold` - Disable button hold action
+- `useMouseEvents` (Boolean, default: false): Use mouse events instead of pointer events.
+- `useTouchEvents` (Boolean, default: false): Use touch events instead of click events.
+- `autoUseTouchEvents` (Boolean, default: true): Auto-detect touch devices.
+- `clickOnMouseDown` (Boolean, default: false): Trigger click on mousedown.
+- `preventMouseDownDefault` (Boolean, default: false): Prevent default mousedown behavior.
+- `preventMouseUpDefault` (Boolean, default: false): Prevent default mouseup behavior.
+- `stopMouseDownPropagation` (Boolean, default: false): Stop mousedown event propagation.
+- `stopMouseUpPropagation` (Boolean, default: false): Stop mouseup event propagation.
+- `disableButtonHold` (Boolean, default: false): Disable button hold action.
 
 ### Physical Keyboard Integration
-- `physicalKeyboardHighlight` - Highlight keys pressed on physical keyboard
-- `physicalKeyboardHighlightPress` - Press highlighted keys
-- `physicalKeyboardHighlightTextColor` - Text color for highlighted keys
-- `physicalKeyboardHighlightBgColor` - Background color for highlighted keys
+- `physicalKeyboardHighlight` (Boolean, default: false): Highlight keys pressed on physical keyboard.
+- `physicalKeyboardHighlightPress` (Boolean, default: false): Simulate key press for highlighted keys.
+- `physicalKeyboardHighlightPressUseClick` (Boolean, default: false): Use click for highlight press.
+- `physicalKeyboardHighlightPressUsePointerEvents` (Boolean, default: false): Use pointer events for highlight press.
+- `physicalKeyboardHighlightPreventDefault` (Boolean, default: false): Prevent default for highlight press.
+- `physicalKeyboardHighlightTextColor` (String): Text color for highlighted keys.
+- `physicalKeyboardHighlightBgColor` (String): Background color for highlighted keys.
 
-### Other Options
-- `debug` - Enable debug mode (default: false)
-- `rtl` - Right-to-left support
-- `keyboardClass` - CSS class for keyboard container (default: 'simple-keyboard')
+### Layout Candidates (IME Support)
+- `enableLayoutCandidates` (Boolean, default: true): Enable IME candidate suggestions.
+- `layoutCandidates` (Object): Custom candidate suggestions.
+- `layoutCandidatesPageSize` (Number, default: 10000): Max candidate suggestions per page.
+- `layoutCandidatesCaseSensitiveMatch` (Boolean, default: false): Case-sensitive candidate matching.
+- `disableCandidateNormalization` (Boolean, default: false): Disable candidate normalization.
+- `enableLayoutCandidatesKeyPress` (Boolean, default: false): Enable candidate selection by key press.
+
+### Localization
+- `rtl` (Boolean, default: false): Enable right-to-left layout.
+
+### Debug & Development
+- `debug` (Boolean, default: false): Enable debug mode.
+
+### Additional Props
+- `keyboardClass` (String, default: 'simple-keyboard'): CSS class for keyboard container.
+- `modelValue` (String): Input value for v-model binding.
 
 ## Events
 
