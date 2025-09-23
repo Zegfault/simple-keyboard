@@ -149,17 +149,11 @@ export default {
     },
     getLayoutCandidates () {
       if (this.layoutCandidates) {
-        // console.warn('Using custom layoutCandidates')
         return this.layoutCandidates
       } else if (!this.enableLayoutCandidates) {
-        // console.warn('Layout candidates disabled')
         return undefined
       }
-      const candidatesToUse = _.get(layouts, `${this.layoutName}.layoutCandidates`, undefined)
-      // if (!_.isUndefined(candidatesToUse)) {
-      //   console.warn(`Using built-in layoutCandidates for ${this.layoutName}`, candidatesToUse)
-      // }
-      return candidatesToUse
+      return _.get(layouts, `${this.layoutName}.layoutCandidates`, undefined)
     },
     initializeKeyboard () {
       const container = this.$refs.keyboardContainer
@@ -244,8 +238,6 @@ export default {
             // Handle suggestion clicks
             const suggestion = button.replace('suggestion:', '')
             this.addSuggestionToInput(suggestion)
-          } else {
-            console.warn(`unhandled button: ${button}`)
           }
           this.$emit('onKeyPress', button)
         },
