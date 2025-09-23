@@ -1,8 +1,8 @@
 export default {
   '{enter}': 'enter',
   '{bksp}': 'delete',
-  '{lang}': 'ENG',
   '{lang_en}': 'ENG',
+  '{lang_cn}': 'CN',
   '{lang_hand}': 'HAND',
   '{lang_cj}': 'CJ',
   '{space}': 'Space',

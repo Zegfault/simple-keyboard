@@ -25,6 +25,11 @@ const app = createApp({
       this.addLog('Change', input)
       console.log('Input changed:', input)
     },
+    onLayoutChange (layoutName) {
+      this.selectedLayout = layoutName
+      this.addLog('Layout Change', layoutName)
+      console.log('Layout changed to:', layoutName)
+    },
     addLog (type, data) {
       this.eventLogs.unshift({
         type,

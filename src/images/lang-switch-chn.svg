@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="40" height="41" viewBox="0 0 40 41">
+    <g fill="none" fill-rule="evenodd">
+        <g>
+            <g>
+                <g>
+                    <g>
+                        <path fill="#FFF" fill-rule="nonzero" d="M40 0H14v26h26V0zm-2 2v22H16V2h22z" transform="translate(-360 -1448) translate(200 976) translate(144 456) translate(16 16)"/>
+                        <text fill="#FFF" font-family="GTAmerica-Regular, GT America" font-size="20" transform="translate(-360 -1448) translate(200 976) translate(144 456) translate(16 16)">
+                            <tspan x="20.28" y="21">A</tspan>
+                        </text>
+                        <path fill="#FFF" fill-rule="nonzero" d="M26 15H0v26h26V15zm-2 2v22H2V17h22z" transform="translate(-360 -1448) translate(200 976) translate(144 456) translate(16 16)"/>
+                        <path fill="#FFF" d="M1 16H25V40H1z" transform="translate(-360 -1448) translate(200 976) translate(144 456) translate(16 16)"/>
+                        <text fill="#001969" font-family="NotoSansTC-Medium, Noto Sans TC" font-size="16" font-weight="400" transform="translate(-360 -1448) translate(200 976) translate(144 456) translate(16 16)">
+                            <tspan x="5" y="35">文</tspan>
+                        </text>
+                    </g>
+                </g>
+            </g>
+        </g>
+    </g>
+</svg>

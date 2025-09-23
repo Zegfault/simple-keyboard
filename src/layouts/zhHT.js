@@ -1,18 +1,18 @@
 export default {
   layout: {
     default: [
-      'ˉ 1 2 3 4 5 6 7 8 9 0 - = {bksp}',
+      '{lang_en} {lang_hand} {lang_cj} {big_space} {arrowleft} {arrowright} {bksp}',
+      'ˉ 1 2 3 4 5 6 7 8 9 0 - = {enter}',
       '{tab} q w e r t y u i o p [ ] \\',
-      '{lock} a s d f g h j k l ; \' {enter}',
-      '{shift} z x c v b n m , . / {shift}',
-      '.com @ {space}'
+      '{lock} a s d f g h j k l ; \' {space}',
+      '{shift} z x c v b n m , . / {shift}'
     ],
     shift: [
-      '~ ! @ # $ % ^ & * ( ) _ + {bksp}',
+      '{lang_en} {lang_hand} {lang_cj} {big_space} {arrowleft} {arrowright} {bksp}',
+      '~ ! @ # $ % ^ & * ( ) _ + {enter}',
       '{tab} Q W E R T Y U I O P { } |',
-      '{lock} A S D F G H J K L : " {enter}',
-      '{shift} Z X C V B N M < > ? {shift}',
-      '.com @ {space}'
+      '{lock} A S D F G H J K L : " {space}',
+      '{shift} Z X C V B N M < > ? {shift}'
     ]
   },
   layoutCandidates: {
@@ -3225,7 +3225,7 @@ export default {
     vhio: '姂',
     vmym: '姃',
     vrvp: '姄',
-    
+
     vfq: '姅攣',
     xvfq: '姅',
     vwyi: '姆',

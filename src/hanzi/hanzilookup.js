@@ -41,18 +41,26 @@ class HanziLookup {
     this.right = this._right >= 0 ? this._right : 256
     this.analyzedStrokes = this._analyzedStrokes
     this.subStrokeCount = this._subStrokeCount
-    console.warn('test after -----', this.analyzedStrokes, this.subStrokeCount)
+    return this
   }
 
   // Calculates rectangle that bounds all points in raw strokes.
   getBoundingRect (rawStrokes) {
-    for (var i = 0; i != rawStrokes.length; ++i) {
-      for (var j = 0; j != rawStrokes[i].length; ++j) {
-        var pt = rawStrokes[i][j]
-        if (pt[0] < this._left) this._left = pt[0]
-        if (pt[0] > this._right) this._right = pt[0]
-        if (pt[1] < this._top) this._top = pt[1]
-        if (pt[1] > this._bottom) this._bottom = pt[1]
+    for (let i = 0; i != rawStrokes.length; ++i) {
+      for (let j = 0; j != rawStrokes[i].length; ++j) {
+        const pt = rawStrokes[i][j]
+        if (pt[0] < this._left) {
+          this._left = pt[0]
+        }
+        if (pt[0] > this._right) {
+          this._right = pt[0]
+        }
+        if (pt[1] < this._top) {
+          this._top = pt[1]
+        }
+        if (pt[1] > this._bottom) {
+          this._bottom = pt[1]
+        }
       }
     }
   }
@@ -60,8 +68,8 @@ class HanziLookup {
   // Gets distance between two points
   // a and b are two-dimensional arrays for X, Y
   dist (a, b) {
-    var dx = a[0] - b[0]
-    var dy = a[1] - b[1]
+    const dx = a[0] - b[0]
+    const dy = a[1] - b[1]
     return Math.sqrt(dx * dx + dy * dy)
   }
 
@@ -69,27 +77,25 @@ class HanziLookup {
   // a and b are two-dimensional arrays for X, Y
   // Normalized based on bounding rectangle
   normDist (a, b) {
-    var width = this._right - this._left
-    var height = this._bottom - this._top
+    const width = this._right - this._left
+    const height = this._bottom - this._top
     // normalizer is a diagonal along a square with sides of size the larger dimension of the bounding box
-    var dimensionSquared = width > height ? width * width : height * height
-    var normalizer = Math.sqrt(dimensionSquared + dimensionSquared)
-    var distanceNormalized = this.dist(a, b) / normalizer
+    const dimensionSquared = width > height ? width * width : height * height
+    const normalizer = Math.sqrt(dimensionSquared + dimensionSquared)
+    const distanceNormalized = this.dist(a, b) / normalizer
     // Cap at 1 (...why is this needed??)
     return Math.min(distanceNormalized, 1)
   }
-
 
   // Gets direction, in radians, from point a to b
   // a and b are two-dimensional arrays for X, Y
   // 0 is to the right, PI / 2 is up, etc.
   dir (a, b) {
-    var dx = a[0] - b[0]
-    var dy = a[1] - b[1]
-    var dir = Math.atan2(dy, dx)
+    const dx = a[0] - b[0]
+    const dy = a[1] - b[1]
+    const dir = Math.atan2(dy, dx)
     return Math.PI - dir
   }
-
 
   // Calculates array with indexes of pivot points in raw stroke
   getPivotIndexes (points) {
@@ -128,9 +134,7 @@ class HanziLookup {
       // mark the point as a pivot.
       let distFromPrevious = this.dist(points[prevPtIx], nextPoint)
       let distFromFirst = this.dist(points[firstPtIx], nextPoint)
-      if (localLength > this.MAX_LOCAL_LENGTH_RATIO * distFromPrevious ||
-        runningLength > this.MAX_RUNNING_LENGTH_RATIO * distFromFirst
-      ) {
+      if (localLength > this.MAX_LOCAL_LENGTH_RATIO * distFromPrevious || runningLength > this.MAX_RUNNING_LENGTH_RATIO * distFromFirst) {
         // If the previous point was a pivot and was very close to this point,
         // which we are about to mark as a pivot, then unmark the previous point as a pivot.
         if (markers[prevPtIx] && this.dist(points[prevPtIx], points[pivotPtIx]) < this.MIN_SEGMENT_LENGTH) {
@@ -151,15 +155,12 @@ class HanziLookup {
     // We'll want to unmark the previous point if it's also a pivot and very close to the lat point.
     // However if the previous point is the first point of the stroke, then don't unmark it, because
     // then we'd only have one pivot.
-    if (markers[prevPtIx] &&
-      this.dist(points[prevPtIx], points[pivotPtIx]) < this.MIN_SEGMENT_LENGTH &&
-      prevPtIx != 0
-    ) {
+    if (markers[prevPtIx] && this.dist(points[prevPtIx], points[pivotPtIx]) < this.MIN_SEGMENT_LENGTH && prevPtIx != 0) {
       markers[prevPtIx] = false
     }
     // Return result in the form of an index array: includes indexes where marker is true
-    var res = []
-    for (var i = 0; i != markers.length; ++i) {
+    let res = []
+    for (let i = 0; i != markers.length; ++i) {
       if (markers[i]) res.push(i)
     }
     return res
@@ -230,8 +231,7 @@ class HanziLookup {
   }
 
   CharacterMatch (character, score) {
-    this.character = character
-    this.score = score
+    return {character, score}
   }
   getCubicAx () {
     return this._x2 - this._x1 - this.getCubicBx() - this.getCubicCx()
@@ -298,12 +298,12 @@ class HanziLookup {
   }
 
   getYOnCurve (t) {
-    var ay = this.getCubicAy()
-    var by = this.getCubicBy()
-    var cy = this.getCubicCy()
-    var tSquared = t * t
-    var tCubed = t * tSquared
-    var y = ay * tCubed + by * tSquared + cy * t + this._y1
+    const ay = this.getCubicAy()
+    const by = this.getCubicBy()
+    const cy = this.getCubicCy()
+    const tSquared = t * t
+    const tCubed = t * tSquared
+    const y = ay * tCubed + by * tSquared + cy * t + this._y1
     return y
   }
 
@@ -588,10 +588,10 @@ class HanziLookup {
   // - array of points, each of which is
   // - two-dimensional array of coordinates
   cloneStrokes () {
-    var res = []
-    for (var i = 0; i != this._rawStrokes.length; ++i) {
-      var stroke = []
-      for (var j = 0; j != this._rawStrokes[i].length; ++j) {
+    const res = []
+    for (let i = 0; i != this._rawStrokes.length; ++i) {
+      let stroke = []
+      for (let j = 0; j != this._rawStrokes[i].length; ++j) {
         stroke.push([this._rawStrokes[i][j][0], this._rawStrokes[i][j][1]])
       }
       res.push(stroke)
@@ -663,7 +663,6 @@ class HanziLookup {
   }
 
   DrawingBoard (elmHost, strokeFinished) {
-    console.warn('test - drawingboard called', elmHost)
     window.test = elmHost
     this._elmHost = elmHost
     this._strokeFinished = strokeFinished
@@ -686,7 +685,6 @@ class HanziLookup {
     // Initializes handwriting recognition (events etc.)
     // Get existing canvas element from the host or create one if not found
     let canvas = document.querySelector('canvas')
-    console.warn('found the canvas', canvas)
     if (!canvas) {
       canvas = document.createElement('canvas')
       canvas.className = 'stroke-input-canvas'
@@ -709,13 +707,6 @@ class HanziLookup {
     // Draws a clear canvas, with gridlines
     this.drawClearCanvas()
     return this
-    // return {
-    //   clearCanvas: this.clearCanvas,
-    //   undoStroke: this.undoStroke,
-    //   cloneStrokes: this.cloneStrokes,
-    //   redraw: this.redraw,
-    //   enrich: this.enrich
-    // }
   }
 
   init (key, data) {
@@ -726,7 +717,7 @@ class HanziLookup {
   }
 
   findSlot (score) {
-    var ix
+    let ix
     for (ix = 0; ix < this._count; ++ix) {
       if (this._matches[ix].score < score) {
         return ix
@@ -790,7 +781,7 @@ class HanziLookup {
   MatchCollector (limit) {
     this._count = 0
     this._matches = []
-    for (var i = 0; i != limit; ++i) {
+    for (let i = 0; i != limit; ++i) {
       this._matches.push(null)
     }
     return {
@@ -939,10 +930,10 @@ class HanziLookup {
       const bonus = (this.CORRECT_NUM_STROKES_BONUS * Math.max(this.CORRECT_NUM_STROKES_CAP - inputStrokeCount, 0)) / this.CORRECT_NUM_STROKES_CAP
       score += bonus * score
     }
-    return new this.CharacterMatch(repoChar[0], score)
+    return this.CharacterMatch(repoChar[0], score)
   }
 
-  computeMatchScore (strokeCount,inputSubStrokes,subStrokesRange,repoChar) {
+  computeMatchScore (strokeCount, inputSubStrokes, subStrokesRange, repoChar) {
     for (let x = 0; x < inputSubStrokes.length; x++) {
       // For each of the input substrokes...
       const inputDirection = inputSubStrokes[x].direction
@@ -1041,12 +1032,12 @@ class HanziLookup {
   }
 
   initCubicCurveScoreTable (curve, numSamples) {
-    let x1 = curve.x1()
-    let x2 = curve.x2()
-    let range = x2 - x1
+    const x1 = curve.x1()
+    const x2 = curve.x2()
+    const range = x2 - x1
     let x = x1
-    let xInc = range / numSamples // even incrementer to increment x value by when sampling across the curve
-    let scoreTable = []
+    const xInc = range / numSamples // even incrementer to increment x value by when sampling across the curve
+    const scoreTable = []
     // Sample evenly across the curve and set the samples into the table.
     for (let i = 0; i < numSamples; i++) {
       let t = curve.getFirstSolutionForX(Math.min(x, x2))
@@ -1087,7 +1078,6 @@ class HanziLookup {
 
   Matcher (dataName, looseness) {
     this._looseness = looseness || this.DEFAULT_LOOSENESS
-    console.warn('test Matcher ----', this.data, dataName)
     this._repo = this.data[dataName].chars
     this._sbin = this.data[dataName].substrokes
     this._scoreMatrix = this.buildScoreMatrix()
@@ -1113,10 +1103,12 @@ class HanziLookup {
   }
 
   SubStroke (direction, length, centerX, centerY) {
-    this.direction = direction
-    this.length = length
-    this.centerX = centerX
-    this.centerY = centerY
+    return {
+      direction: direction,
+      length: length,
+      centerX: centerX,
+      centerY: centerY
+    }
   }
 
 }
