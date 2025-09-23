@@ -26,8 +26,8 @@ export default {
     drawingOptions: {
       type: Object,
       default: () => ({
-        drawingGrid: true,
-        strokeColor: 'blue'
+        drawingGrid: false,
+        strokeColor: 'black'
       })
     },
     numberOfSuggestionsPerLine: { type: Number, default: 10 },
@@ -121,11 +121,11 @@ export default {
       deep: true
     },
     layoutName: 'reinitKeyboard',
+    theme: 'reinitKeyboard',
     display: {
       handler () { this.reinitKeyboard() },
       deep: true
     },
-    theme: 'reinitKeyboard',
     buttonTheme: {
       handler () { this.reinitKeyboard() },
       deep: true
@@ -155,114 +155,81 @@ export default {
       }
       return _.get(layouts, `${this.layoutName}.layoutCandidates`, undefined)
     },
+    onKeyPress (button)  {
+      if (button === '{shift}' || button === '{lock}') {
+        this.handleShift()
+      } else if (_.startsWith(button, '{lang_')) {
+        const mapping = this.languageMapping || this.defaultLanguageMapping
+        this.$emit('onLayoutChange', mapping[button])
+      } else if (button === '{arrowleft}') {
+        this.moveCursorLeft()
+      } else if (button === '{arrowright}') {
+        this.moveCursorRight()
+      } else if (button === '{canvas}') {
+        // this.$emit('onCanvasPress')
+      } else if (button === '{undo}') {
+        this.drawingBoard.undoStroke()
+        this.drawingBoard.redraw()
+        this.lookup()
+      } else if (button === '{clear}') {
+        this.drawingBoard.clearCanvas()
+        this.drawingBoard.redraw()
+        this.lookup()
+      } else if (button.startsWith('suggestion:')) {
+        // Handle suggestion clicks
+        const suggestion = button.replace('suggestion:', '')
+        this.addSuggestionToInput(suggestion)
+      }
+      this.$emit('onKeyPress', button)
+    },
+    onChange (input) {
+      this.$emit('onChange', input)
+      this.$emit('update:modelValue', input)
+    },
+    onChangeAll (inputs) {
+      this.$emit('onChangeAll', inputs)
+    },
+    onKeyReleased (button) {
+      this.$emit('onKeyReleased', button)
+    },
+    async onRender () {
+      this.$emit('onRender')
+      const elem = document.querySelector('.hg-button-canvas')
+      if (_.isNull(elem) || _.isUndefined(elem)) {
+        return
+      }
+      await this.initHanzi()
+      this.drawingBoard = this.drawingBoard.DrawingBoard(elem, this.lookup)
+    },
+    onInit () {
+      this.$emit('onInit')
+    },
+    beforeInputUpdate (input, inputName) {
+      this.$emit('beforeInputUpdate', input, inputName)
+    },
     initializeKeyboard () {
       const container = this.$refs.keyboardContainer
       if (!container) {
         return
       }
-      const layout = this.layout || _.get(layouts, `${this.layoutName}.layout`, undefined)
-      const display = this.display || defaultDisplay
       const layoutCandidates = this.getLayoutCandidates()
-      const layoutCandidatesCaseSensitiveMatch = this.layoutCandidatesCaseSensitiveMatch || (!_.isUndefined(layoutCandidates) && _.includes(['enUS'], this.layoutName))
       const options = {
-        layout: layout,
-        layoutName: this.layoutName,
-        display: display,
-        mergeDisplay: this.mergeDisplay,
-        ...(this.excludeFromLayout && { excludeFromLayout: this.excludeFromLayout }),
-        theme: this.theme,
-        ...(this.buttonTheme && { buttonTheme: this.buttonTheme }),
-        ...(this.buttonAttributes && { buttonAttributes: this.buttonAttributes }),
-        useButtonTag: this.useButtonTag,
-        ...(this.baseClass && { baseClass: this.baseClass }),
-        ...(this.inputName && { inputName: this.inputName }),
-        ...(this.maxLength && { maxLength: this.maxLength }),
-        ...(this.inputPattern && { inputPattern: this.inputPattern }),
-        newLineOnEnter: this.newLineOnEnter,
-        tabCharOnTab: this.tabCharOnTab,
-        syncInstanceInputs: this.syncInstanceInputs,
-        disableCaretPositioning: this.disableCaretPositioning,
-        updateCaretOnSelectionChange: this.updateCaretOnSelectionChange,
-        useMouseEvents: this.useMouseEvents,
-        useTouchEvents: this.useTouchEvents,
-        autoUseTouchEvents: this.autoUseTouchEvents,
-        clickOnMouseDown: this.clickOnMouseDown,
-        preventMouseDownDefault: this.preventMouseDownDefault,
-        preventMouseUpDefault: this.preventMouseUpDefault,
-        stopMouseDownPropagation: this.stopMouseDownPropagation,
-        stopMouseUpPropagation: this.stopMouseUpPropagation,
-        disableButtonHold: this.disableButtonHold,
-        physicalKeyboardHighlight: this.physicalKeyboardHighlight,
-        physicalKeyboardHighlightPress: this.physicalKeyboardHighlightPress,
-        physicalKeyboardHighlightPressUseClick: this.physicalKeyboardHighlightPressUseClick,
-        physicalKeyboardHighlightPressUsePointerEvents: this.physicalKeyboardHighlightPressUsePointerEvents,
-        physicalKeyboardHighlightPreventDefault: this.physicalKeyboardHighlightPreventDefault,
-        ...(this.physicalKeyboardHighlightTextColor && { physicalKeyboardHighlightTextColor: this.physicalKeyboardHighlightTextColor }),
-        ...(this.physicalKeyboardHighlightBgColor && { physicalKeyboardHighlightBgColor: this.physicalKeyboardHighlightBgColor }),
-        enableLayoutCandidates: this.enableLayoutCandidates,
-        layoutCandidates: this.getLayoutCandidates(),
-        layoutCandidatesPageSize: this.layoutCandidatesPageSize,
-        layoutCandidatesCaseSensitiveMatch: layoutCandidatesCaseSensitiveMatch,
-        disableCandidateNormalization: this.disableCandidateNormalization,
-        enableLayoutCandidatesKeyPress: this.enableLayoutCandidatesKeyPress,
-        rtl: this.rtl,
-        debug: this.debug,
-        onChange: (input) => {
-          this.$emit('onChange', input)
-          this.$emit('update:modelValue', input)
-        },
-        onChangeAll: (inputs) => {
-          this.$emit('onChangeAll', inputs)
-        },
-        onKeyPress: (button) => {
-          if (button === '{shift}' || button === '{lock}') {
-            this.handleShift()
-          } else if (_.startsWith(button, '{lang_')) {
-            const mapping = this.languageMapping || this.defaultLanguageMapping
-            this.$emit('onLayoutChange', mapping[button])
-          } else if (button === '{arrowleft}') {
-            this.moveCursorLeft()
-          } else if (button === '{arrowright}') {
-            this.moveCursorRight()
-          } else if (button === '{canvas}') {
-            // this.$emit('onCanvasPress')
-          } else if (button === '{undo}') {
-            this.drawingBoard.undoStroke()
-            this.drawingBoard.redraw()
-            this.lookup()
-          } else if (button === '{clear}') {
-            this.drawingBoard.clearCanvas()
-            this.drawingBoard.redraw()
-            this.lookup()
-          } else if (button.startsWith('suggestion:')) {
-            // Handle suggestion clicks
-            const suggestion = button.replace('suggestion:', '')
-            this.addSuggestionToInput(suggestion)
-          }
-          this.$emit('onKeyPress', button)
-        },
-        onKeyReleased: (button) => {
-          this.$emit('onKeyReleased', button)
-        },
-        onRender: async () => {
-          this.$emit('onRender')
-          const elem = document.querySelector('.hg-button-canvas')
-          if (_.isNull(elem) || _.isUndefined(elem)) {
-            return
-          }
-          await this.initHanzi()
-          this.drawingBoard = this.drawingBoard.DrawingBoard(elem, this.lookup)
-        },
-        onInit: () => {
-          this.$emit('onInit')
-        },
-        beforeInputUpdate: (input, inputName) => {
-          this.$emit('beforeInputUpdate', input, inputName)
-        }
+        ..._.pick(this, _.keys(this.$props)),
+        layout: this.layout || _.get(layouts, `${this.layoutName}.layout`, undefined),
+        display: this.display || defaultDisplay,
+        layoutCandidates,
+        layoutCandidatesCaseSensitiveMatch: this.layoutCandidatesCaseSensitiveMatch || (!_.isUndefined(layoutCandidates) && _.includes(['enUS'], this.layoutName)),
+        onChange: this.onChange,
+        onChangeAll: this.onChangeAll,
+        onKeyPress: this.onKeyPress,
+        onKeyReleased: this.onKeyReleased,
+        onRender: this.onRender,
+        onInit: this.onInit,
+        beforeInputUpdate: this.beforeInputUpdate
       }
       options.layoutName = _.includes(['default', 'shift', 'alt', 'alt-shift'], options.layoutName) ? options.layoutName : 'default'
       this.keyboard = new Keyboard(container, options)
-      if (this.modelValue !== undefined) {
+      if (!_.isUndefined(this.modelValue)) {
         this.keyboard.setInput(this.modelValue)
       }
     },
@@ -486,7 +453,7 @@ export default {
       border-width: 0;
       outline: 0;
       font-size: inherit;
-span {
+      span {
         pointer-events: none;
       }
       &.hg-activeButton, &.hg-standardBtn {
@@ -544,10 +511,10 @@ span {
           background-size: contain;
           max-width: 10vw;
         }
-        &.hg-button-lang_en {
-          background-image: url(./images/lang-switch-latin.svg);
-        }
-          &.hg-button-lang_cn {
+        // &.hg-button-lang_en {
+        //   background-image: url(./images/lang-switch-latin.svg);
+        // }
+        &.hg-button-lang_cn {
           background-image: url(./images/lang-switch-chn.svg);
         }
         &.hg-button-lang_hand {

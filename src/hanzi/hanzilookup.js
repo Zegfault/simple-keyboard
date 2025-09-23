@@ -1,4 +1,3 @@
-import _ from 'lodash'
 import autoBind from 'auto-bind'
 class HanziLookup {
   constructor () {
@@ -41,7 +40,9 @@ class HanziLookup {
     this.right = this._right >= 0 ? this._right : 256
     this.analyzedStrokes = this._analyzedStrokes
     this.subStrokeCount = this._subStrokeCount
-    return this
+    return {
+      analyzedStrokes: this._analyzedStrokes
+    }
   }
 
   // Calculates rectangle that bounds all points in raw strokes.
@@ -395,7 +396,7 @@ class HanziLookup {
 
   drawClearCanvas () {
     this._ctx.clearRect(0, 0, this._ctx.canvas.width, this._ctx.canvas.height)
-    if (!_.get(this.options, 'drawingGrid', false)) {
+    if (!this.options || !this.options.drawingGrid) {
       return
     }
     this._ctx.setLineDash([1, 1])
@@ -1069,13 +1070,6 @@ class HanziLookup {
     return this.LENGTH_SCORE_TABLE[ratio]
   }
 
-  getCounters () {
-    return {
-      chars: this._charsChecked,
-      subStrokes: this._subStrokesCompared
-    }
-  }
-
   Matcher (dataName, looseness) {
     this._looseness = looseness || this.DEFAULT_LOOSENESS
     this._repo = this.data[dataName].chars
@@ -1087,8 +1081,7 @@ class HanziLookup {
     // Init score tables
     this.initScoreTables()
     return {
-      doMatch: this.doMatch,
-      getCounters: this.getCounters
+      doMatch: this.doMatch
     }
   }
 
