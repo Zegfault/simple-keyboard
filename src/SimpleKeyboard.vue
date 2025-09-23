@@ -271,15 +271,13 @@ export default {
     },
     moveCursorLeft () {
       if (this.keyboard) {
-        const newPosition = Math.max(0, this.keyboard.getCaretPosition() - 1)
-        this.keyboard.setCaretPosition(newPosition)
+        this.keyboard.setCaretPosition(Math.max(0, this.keyboard.getCaretPosition() - 1))
       }
     },
     moveCursorRight () {
       if (this.keyboard) {
         const currentInput = this.keyboard.getInput()
-        const newPosition = Math.min(currentInput.length, this.keyboard.getCaretPosition() + 1)
-        this.keyboard.setCaretPosition(newPosition)
+        this.keyboard.setCaretPosition(Math.min(currentInput.length, this.keyboard.getCaretPosition() + 1))
       }
     },
     handleShift () {
@@ -374,7 +372,6 @@ export default {
         if (suggestions.length > maxPerLine) {
           const expandBtn = document.createElement('button')
           expandBtn.className = 'expand-btn displayed'
-          expandBtn.textContent = expanded ? 'Show Less' : 'Show More'
           expandBtn.addEventListener('click', () => {
             this.suggestionsExpanded = !this.suggestionsExpanded
             this.setSuggestions(suggestions)
@@ -471,28 +468,6 @@ export default {
     background-color: #ececec;
     padding: 5px;
     border-radius: 5px;
-    /* When using option "useButtonTag" */
-    button.hg-button {
-      border-width: 0;
-      outline: 0;
-      font-size: inherit;
-    }
-    .hg-row {
-      display: flex;
-      &:not(:last-child) {
-        margin-bottom: 5px;
-      }
-      > div:last-child {
-        margin-right: 0;
-      }
-      .hg-button:not(:last-child) {
-        margin-right: 5px;
-      }
-      .hg-button-container {
-        margin-right: 5px;
-        display: flex;
-      }
-    }
     .hg-button {
       display: inline-block;
       flex-grow: 1;
@@ -508,7 +483,10 @@ export default {
       align-items: center;
       justify-content: center;
       -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
-      span {
+      border-width: 0;
+      outline: 0;
+      font-size: inherit;
+span {
         pointer-events: none;
       }
       &.hg-activeButton, &.hg-standardBtn {
@@ -579,12 +557,48 @@ export default {
           background-image: url(./images/lang-switch-cj.svg);
         }
       }
+      &.hg-button-arrowleft,
+      &.hg-button-arrowright {
+        span {
+          width: 40px;
+          height: 40px;
+          background-image: url(./images/left-arrow.svg);
+          background-repeat: no-repeat;
+          background-position: center;
+          background-size: 30% 32%;
+          color: transparent;
+          font-size: 0;
+          transform: rotate(90deg);
+        }
+      }
+      &.hg-button-arrowright {
+        span {
+          transform: rotate(-90deg);
+        }
+      }
       &.disabled {
         background-color: lightgrey;
         pointer-events: none;
         touch-action: none;
       }
     }
+    .hg-row {
+      display: flex;
+      &:not(:last-child) {
+        margin-bottom: 5px;
+      }
+      > div:last-child {
+        margin-right: 0;
+      }
+      .hg-button:not(:last-child) {
+        margin-right: 5px;
+      }
+      .hg-button-container {
+        margin-right: 5px;
+        display: flex;
+      }
+    }
+
     .hg-suggestion-button {
       background: #f0f8ff;
       border: 1px solid #4682b4;

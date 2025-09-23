@@ -4,13 +4,13 @@
             <g>
                 <g>
                     <g>
-                        <path fill="#FFF" fill-rule="nonzero" d="M40 0H14v26h26V0zm-2 2v22H16V2h22z" transform="translate(-360 -1448) translate(200 976) translate(144 456) translate(16 16)"/>
-                        <text fill="#FFF" font-family="GTAmerica-Regular, GT America" font-size="20" transform="translate(-360 -1448) translate(200 976) translate(144 456) translate(16 16)">
+                        <path fill="#FFF" fill-rule="nonzero" d="M40 0H14v26h26V0zm-2 2v22H16V2h22z" />
+                        <text fill="#FFF" font-family="GTAmerica-Regular, GT America" font-size="20" >
                             <tspan x="20.28" y="21">A</tspan>
                         </text>
-                        <path fill="#FFF" fill-rule="nonzero" d="M26 15H0v26h26V15zm-2 2v22H2V17h22z" transform="translate(-360 -1448) translate(200 976) translate(144 456) translate(16 16)"/>
-                        <path fill="#FFF" d="M1 16H25V40H1z" transform="translate(-360 -1448) translate(200 976) translate(144 456) translate(16 16)"/>
-                        <text fill="#001969" font-family="NotoSansTC-Medium, Noto Sans TC" font-size="16" font-weight="400" transform="translate(-360 -1448) translate(200 976) translate(144 456) translate(16 16)">
+                        <path fill="#FFF" fill-rule="nonzero" d="M26 15H0v26h26V15zm-2 2v22H2V17h22z" />
+                        <path fill="#FFF" d="M1 16H25V40H1z" />
+                        <text fill="#001969" font-family="NotoSansTC-Medium, Noto Sans TC" font-size="16" font-weight="400" >
                             <tspan x="5" y="35">文</tspan>
                         </text>
                     </g>
