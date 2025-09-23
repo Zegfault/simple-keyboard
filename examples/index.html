@@ -56,12 +56,6 @@
         select, input[type="checkbox"] {
             margin-left: 10px;
         }
-        .simple-keyboard {
-            margin-top: 20px;
-        }
-        .hg-theme-default.hg-theme-custom {
-          background-color: red;
-        }
     </style>
 </head>
 <body>
@@ -77,8 +71,6 @@
                     <label>Theme:</label>
                     <select v-model="selectedTheme">
                       <option value="hg-theme-default">Default</option>
-                      <option value="hg-theme-default hg-layout-default">Default + Layout</option>
-                      <option value="hg-theme-default hg-layout-numeric">Numeric</option>
                       <option value="hg-theme-default hg-theme-custom">Custom</option>
                     </select>
                 </div>
@@ -86,31 +78,14 @@
                     <label>Layout:</label>
                     <select v-model="selectedLayout">
                       <option value="enUS">enUS</option>
-                      <option value="zhCN">Simplified Chinese</option>
-                      <option value="zhHT">Traditional Chinese</option>
+                      <option value="zhCN">zhCN</option>
+                      <option value="zhHT">zhHT</option>
                       <option value="hand">Handwriting</option>
                     </select>
                 </div>
             </div>
-            <simple-keyboard
-                v-model="inputText"
-                :theme="selectedTheme"
-                :layout-name="selectedLayout"
-                :layout="layout"
-                :layout-candidates="layoutCandidates"
-                @on-key-press="onKeyPress"
-                @on-change="onChange"
-                @on-layout-change="onLayoutChange"
-            />
-            <div style="margin-top: 20px;">
-                <h3>Events Log:</h3>
-                <div style="background: #f1f1f1; padding: 10px; border-radius: 5px; height: 150px; overflow-y: auto;">
-                    <div v-for="(log, index) in eventLogs" :key="index" style="margin-bottom: 5px;">
-                        <strong>{{ log.type }}:</strong> {{ log.data }}
-                    </div>
-                </div>
-            </div>
-        </div>
+            <simple-keyboard v-model="inputText" :theme="selectedTheme" :layout-name="selectedLayout" :layout="layout" :layout-candidates="layoutCandidates" @on-key-press="onKeyPress" @on-change="onChange" @on-layout-change="onLayoutChange"/>
+          </div>
     </div>
     <script type="module" src="./main.js"></script>
 </body>

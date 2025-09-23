@@ -991,7 +991,7 @@ class HanziLookup {
     //lengthScore = Math.min(lengthScore, 1.0);
     // For the final "classic" score we just multiply the two scores together.
     let score = lengthScore * directionScore
-    // If we have center points (from MMAH data), reduce score if strokes are farther apart
+    // If we have center points (from zhCN data), reduce score if strokes are farther apart
     if (repoCenter) {
       let dx = inputCenter[0] - repoCenter[0]
       let dy = inputCenter[1] - repoCenter[1]

@@ -18,6 +18,8 @@ export default {
     layout: { type: Object, default: undefined },
     languageMapping: { type: Object, default: undefined },
     layoutName: { type: String, default: 'default' },
+    localeForHandwriting: { type: String, default: 'zhCN' },
+    suggestionsLimit: { type: Number, default: 9999 },
     display: { type: Object, default: undefined },
     mergeDisplay: { type: Boolean, default: false },
     excludeFromLayout: { type: Object, default: undefined },
@@ -28,6 +30,7 @@ export default {
         strokeColor: 'blue'
       })
     },
+    numberOfSuggestionsPerLine: { type: Number, default: 10 },
     // Styling & Theming
     theme: { type: String, default: 'hg-theme-default' },
     buttonTheme: { type: Object, default: undefined },
@@ -98,7 +101,8 @@ export default {
         '{lang_cn}': 'zhCN',
         '{lang_hand}': 'hand',
         '{lang_cj}': 'zhHT'
-      }
+      },
+      suggestionsExpanded: false
     }
   },
   computed: {
@@ -140,23 +144,21 @@ export default {
   methods: {
     async initHanzi () {
       this.drawingBoard.options = _.merge(this.drawingBoard.options, this.drawingOptions || {})
-      // const data = await import('./hanzi/mmah.json')
-      // this.drawingBoard.init('mmah', {substrokes: data.substrokes, chars: data.chars})
-      const data2 = await import('./hanzi/orig.json')
-      this.drawingBoard.init('orig', {substrokes: data2.substrokes, chars: data2.chars})
+      const data = await import(`./hanzi/${this.localeForHandwriting}.json`)
+      this.drawingBoard.init(this.localeForHandwriting, {substrokes: data.substrokes, chars: data.chars})
     },
     getLayoutCandidates () {
       if (this.layoutCandidates) {
-        console.warn('Using custom layoutCandidates')
+        // console.warn('Using custom layoutCandidates')
         return this.layoutCandidates
       } else if (!this.enableLayoutCandidates) {
-        console.warn('Layout candidates disabled')
+        // console.warn('Layout candidates disabled')
         return undefined
       }
       const candidatesToUse = _.get(layouts, `${this.layoutName}.layoutCandidates`, undefined)
-      if (!_.isUndefined(candidatesToUse)) {
-        console.warn(`Using built-in layoutCandidates for ${this.layoutName}`, candidatesToUse)
-      }
+      // if (!_.isUndefined(candidatesToUse)) {
+      //   console.warn(`Using built-in layoutCandidates for ${this.layoutName}`, candidatesToUse)
+      // }
       return candidatesToUse
     },
     initializeKeyboard () {
@@ -337,23 +339,15 @@ export default {
       }
     },
     lookup () {
-    // Decompose character from drawing board
       let strokes = this.drawingBoard.cloneStrokes()
       if (_.get(strokes, 'length', 0) === 1 && _.get(strokes, '[0].length', 0) === 2) {
         strokes = []
         console.debug('Will reset drawing strokes')
       }
       const analyzedChar = this.drawingBoard.AnalyzedCharacter(strokes)
-      // // Look up with original HanziLookup data
-      // let matcherOrig = new HanziLookup.Matcher("orig");
-      // this.showResults([]);
-      // matcherOrig.doMatch(analyzedChar, 10, matches => {
-      //   this.showResults(matches);
-      // });
-      // Look up with MMAH data
-      let matcherOrig = this.drawingBoard.Matcher('orig')
+      const matcher = this.drawingBoard.Matcher(this.localeForHandwriting)
       this.showResults([])
-      matcherOrig.doMatch(analyzedChar, 10, matches => {
+      matcher.doMatch(analyzedChar, this.suggestionsLimit, matches => {
         this.showResults(matches)
       })
     },
@@ -367,53 +361,61 @@ export default {
       this.showSuggestions()
     },
     setSuggestions (suggestions) {
-      // Find the suggestion area DOM element
       const suggestionArea = document.querySelector('.hg-button-suggestion_area')
       if (!suggestionArea) {
         return
       }
-      // Clear existing suggestions
       suggestionArea.innerHTML = ''
       if (suggestions && suggestions.length > 0) {
-        // Create suggestion buttons
-        suggestions.forEach((suggestion, index) => {
-          if (index < 10) { // Limit to 10 suggestions
-            const suggestionButton = document.createElement('button')
-            suggestionButton.className = 'hg-button hg-suggestion-button'
-            suggestionButton.textContent = suggestion
-            suggestionButton.addEventListener('click', () => {
-              this.addSuggestionToInput(suggestion)
-            })
-            suggestionArea.appendChild(suggestionButton)
-          }
+        const maxPerLine = this.numberOfSuggestionsPerLine
+        const expanded = this.suggestionsExpanded
+        const visibleSuggestions = expanded ? suggestions : suggestions.slice(0, maxPerLine)
+        _.each(visibleSuggestions, (suggestion) => {
+          const suggestionButton = document.createElement('button')
+          suggestionButton.className = 'hg-button hg-suggestion-button'
+          suggestionButton.textContent = suggestion
+          suggestionButton.addEventListener('click', () => {
+            this.addSuggestionToInput(suggestion)
+          })
+          suggestionArea.appendChild(suggestionButton)
         })
-        // Show suggestion area
+        if (suggestions.length > maxPerLine) {
+          const expandBtn = document.createElement('button')
+          expandBtn.className = 'expand-btn displayed'
+          expandBtn.textContent = expanded ? 'Show Less' : 'Show More'
+          expandBtn.addEventListener('click', () => {
+            this.suggestionsExpanded = !this.suggestionsExpanded
+            this.setSuggestions(suggestions)
+            if (this.suggestionsExpanded) {
+              suggestionArea.classList.add('expanded')
+            } else {
+              suggestionArea.classList.remove('expanded')
+            }
+          })
+          suggestionArea.appendChild(expandBtn)
+          suggestionArea.classList.add('has-more')
+        } else {
+          suggestionArea.classList.remove('has-more')
+        }
         this.showSuggestions()
-        // Emit event to let parent component know about new suggestions
         this.$emit('onSuggestionsUpdate', suggestions)
       } else {
-        // Hide suggestions if none provided
         this.hideSuggestions()
         this.$emit('onSuggestionsUpdate', [])
       }
     },
     addSuggestionToInput (suggestion) {
-      if (this.keyboard) {
-        // Get current input
-        const currentInput = this.keyboard.getInput()
-        // Add the suggestion to the input
-        const newInput = currentInput + suggestion
-        // Update the keyboard input
-        this.keyboard.setInput(newInput)
-        // Emit change events
-        this.$emit('onChange', newInput)
-        this.$emit('update:modelValue', newInput)
-        // Clear the drawing canvas after adding suggestion
-        this.drawingBoard.clearCanvas()
-        this.drawingBoard.redraw()
-        // Hide suggestions after selection
-        this.hideSuggestions()
+      if (!this.keyboard) {
+        return
       }
+      const currentInput = this.keyboard.getInput()
+      const newInput = currentInput + suggestion
+      this.keyboard.setInput(newInput)
+      this.$emit('onChange', newInput)
+      this.$emit('update:modelValue', newInput)
+      this.drawingBoard.clearCanvas()
+      this.drawingBoard.redraw()
+      this.hideSuggestions()
     },
     showSuggestions () {
       const suggestionArea = document.querySelector('.hg-button-suggestion_area')
@@ -432,182 +434,245 @@ export default {
 </script>
 
 <style lang="scss">
-.hg-theme-default {
-  width: 100%;
-  user-select: none;
-  box-sizing: border-box;
-  overflow: hidden;
-  touch-action: manipulation;
-  font-family: "HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue",
-    Helvetica, Arial, "Lucida Grande", sans-serif;
-  background-color: #ececec;
-  padding: 5px;
-  border-radius: 5px;
-  /* When using option "useButtonTag" */
-  button.hg-button {
-    border-width: 0;
-    outline: 0;
-    font-size: inherit;
-  }
-  .hg-row {
-    display: flex;
-    &:not(:last-child) {
-      margin-bottom: 5px;
-    }
-    > div:last-child {
-      margin-right: 0;
-    }
-    .hg-button:not(:last-child) {
-      margin-right: 5px;
-    }
-    .hg-button-container {
-      margin-right: 5px;
-      display: flex;
-    }
-  }
-  .hg-button {
-    display: inline-block;
-    flex-grow: 1;
-    cursor: pointer;
-    box-shadow: 0px 0px 3px -1px rgba(0, 0, 0, 0.3);
-    height: 40px;
-    border-radius: 5px;
-    box-sizing: border-box;
-    padding: 5px;
-    background: white;
-    border-bottom: 1px solid #b5b5b5;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
-    span {
-      pointer-events: none;
-    }
-    &.hg-activeButton, &.hg-standardBtn {
-      background: #efefef;
-    }
-    &.hg-button-numpadadd, &.hg-button-numpadenter {
-      height: 85px;
-    }
-    &.hg-button-numpad0 {
-      width: 105px;
-    }
-    &.hg-button-com {
-      max-width: 85px;
-    }
-    &.hg-standardBtn {
-      position: relative;
-      &.hg-button-at {
-        max-width: 45px;
-      }
-      &[data-skbtn=".com"] {
-        max-width: 82px;
-      }
-      &[data-skbtn="@"] {
-        max-width: 60px;
-      }
-    }
-    &.hg-selectedButton {
-      background: rgba(5, 25, 70, 0.53);
-      color: white;
-    }
-    &.hg-functionBtn {
-      &.hg-button-bksp, &.hg-button-enter, &.hg-button-shift {
-        background-repeat: no-repeat;
-        background-color: grey;
-        background-position: center;
-        background-size: 4vw;
-        color: transparent;
-      }
-      &.hg-button-enter {
-        background-image: url(./images/enter.svg);
-        background-size: 23.7% 32%;
-      }
-      &.hg-button-bksp {
-        background-image: url(./images/delete.svg);
-        background-size: 30% 32%;
-        max-width: 10vw;
-      }
-      &.hg-button-shift {
-        background-image: url(./images/shift.svg);
-        background-size: 30.2% 30%;
-      }
-      &.hg-button-lang_en, &.hg-button-lang_hand, &.hg-button-lang_cj, &.hg-button-lang_cn {
-        background-repeat: no-repeat;
-        background-position: center;
-        background-size: contain;
-        max-width: 10vw;
-      }
-      &.hg-button-lang_en {
-        background-image: url(./images/lang-switch-latin.svg);
-      }
-        &.hg-button-lang_cn {
-        background-image: url(./images/lang-switch-chn.svg);
-      }
-      &.hg-button-lang_hand {
-        background-image: url(./images/lang-switch-hand.svg);
-      }
-      &.hg-button-lang_cj {
-        background-image: url(./images/lang-switch-cj.svg);
-      }
-    }
-    &.disabled {
-      background-color: lightgrey;
-      pointer-events: none;
-      touch-action: none;
-    }
-  }
-  .hg-suggestion-button {
-    background: #f0f8ff;
-    border: 1px solid #4682b4;
-    margin: 2px;
-    min-width: 40px;
-    font-size: 16px;
-    &:hover {
-      background: #e6f3ff;
-    }
-    &:active {
-      background: #cce7ff;
-    }
-  }
-  &.hg-layout-numeric .hg-button {
-    width: 33.3%;
-    height: 60px;
-    align-items: center;
-    display: flex;
-    justify-content: center;
-  }
-}
-.hg-button.hg-functionBtn.hg-button-ctrl {
-  max-width: 10%;
-}
-html {
-  background-color: black;
-}
-.hg-button-preview_pinyin,
-.hg-button-suggestion_area {
+.keyboard-wrapper {
   position: relative;
-  opacity: 0;
-  transition: opacity 0.3s;
-  min-height: 50px;
-  background: white;
-  border: 1px solid #ddd;
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: flex-start;
-  padding: 5px;
-  &.displayed {
-    opacity: 1;
+  .suggestion-area {
+    z-index: 2;
+    background-color: white;
+    + .hg-row {
+      padding-top: 5vw;
+    }
   }
   .expand-btn {
-    background-color: black;
+    height: 36px;
+    width: 36px;
+    opacity: 0;
+    transition: opacity 0.3s, transform 0.3s;
+    background-image: url(./images/more-arrow.svg);
+    background-repeat: no-repeat;
+    background-position: center;
+    color: transparent;
+    font-size: 0px;
+    margin: 0;
+    height: 5vw;
+    &.displayed {
+      opacity: 1;
+    }
+    &.top-right {
+      position: absolute;
+      top: 0;
+      right: 0;
+      width: 9.325%;
+      min-width: 9.325%;
+      max-width: 9.325%;
+      z-index: 2;
+    }
   }
-  .suggestions-area, .suggestions-menu {
-    color: black;
+  .hg-theme-default {
+    width: 100%;
+    user-select: none;
+    box-sizing: border-box;
+    overflow: hidden;
+    touch-action: manipulation;
+    font-family: "HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue",
+      Helvetica, Arial, "Lucida Grande", sans-serif;
+    background-color: #ececec;
+    padding: 5px;
+    border-radius: 5px;
+    /* When using option "useButtonTag" */
+    button.hg-button {
+      border-width: 0;
+      outline: 0;
+      font-size: inherit;
+    }
+    .hg-row {
+      display: flex;
+      &:not(:last-child) {
+        margin-bottom: 5px;
+      }
+      > div:last-child {
+        margin-right: 0;
+      }
+      .hg-button:not(:last-child) {
+        margin-right: 5px;
+      }
+      .hg-button-container {
+        margin-right: 5px;
+        display: flex;
+      }
+    }
+    .hg-button {
+      display: inline-block;
+      flex-grow: 1;
+      cursor: pointer;
+      box-shadow: 0px 0px 3px -1px rgba(0, 0, 0, 0.3);
+      height: 40px;
+      border-radius: 5px;
+      box-sizing: border-box;
+      padding: 5px;
+      background: white;
+      border-bottom: 1px solid #b5b5b5;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+      span {
+        pointer-events: none;
+      }
+      &.hg-activeButton, &.hg-standardBtn {
+        background: #efefef;
+      }
+      &.hg-button-numpadadd, &.hg-button-numpadenter {
+        height: 85px;
+      }
+      &.hg-button-numpad0 {
+        width: 105px;
+      }
+      &.hg-button-com {
+        max-width: 85px;
+      }
+      &.hg-standardBtn {
+        position: relative;
+        &.hg-button-at {
+          max-width: 45px;
+        }
+        &[data-skbtn=".com"] {
+          max-width: 82px;
+        }
+        &[data-skbtn="@"] {
+          max-width: 60px;
+        }
+      }
+      &.hg-selectedButton {
+        background: rgba(5, 25, 70, 0.53);
+        color: white;
+      }
+      &.hg-functionBtn {
+        &.hg-button-bksp, &.hg-button-enter, &.hg-button-shift {
+          background-repeat: no-repeat;
+          background-color: grey;
+          background-position: center;
+          background-size: 4vw;
+          color: transparent;
+        }
+        &.hg-button-enter {
+          background-image: url(./images/enter.svg);
+          background-size: 23.7% 32%;
+        }
+        &.hg-button-bksp {
+          background-image: url(./images/delete.svg);
+          background-size: 30% 32%;
+          max-width: 10vw;
+        }
+        &.hg-button-shift {
+          background-image: url(./images/shift.svg);
+          background-size: 30.2% 30%;
+        }
+        &.hg-button-lang_en, &.hg-button-lang_hand, &.hg-button-lang_cj, &.hg-button-lang_cn {
+          background-repeat: no-repeat;
+          background-position: center;
+          background-size: contain;
+          max-width: 10vw;
+        }
+        &.hg-button-lang_en {
+          background-image: url(./images/lang-switch-latin.svg);
+        }
+          &.hg-button-lang_cn {
+          background-image: url(./images/lang-switch-chn.svg);
+        }
+        &.hg-button-lang_hand {
+          background-image: url(./images/lang-switch-hand.svg);
+        }
+        &.hg-button-lang_cj {
+          background-image: url(./images/lang-switch-cj.svg);
+        }
+      }
+      &.disabled {
+        background-color: lightgrey;
+        pointer-events: none;
+        touch-action: none;
+      }
+    }
+    .hg-suggestion-button {
+      background: #f0f8ff;
+      border: 1px solid #4682b4;
+      margin: 2px;
+      min-width: 40px;
+      font-size: 16px;
+      &:hover {
+        background: #e6f3ff;
+      }
+      &:active {
+        background: #cce7ff;
+      }
+    }
+    &.hg-layout-numeric .hg-button {
+      width: 33.3%;
+      height: 60px;
+      align-items: center;
+      display: flex;
+      justify-content: center;
+    }
+  }
+  .hg-button.hg-functionBtn.hg-button-ctrl {
+    max-width: 10%;
+  }
+  .hg-button-preview_pinyin,
+  .hg-button-suggestion_area {
+    position: relative;
+    opacity: 0;
+    transition: opacity 0.3s;
+    min-height: 50px;
+    background: white;
+    border: 1px solid #ddd;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: flex-start;
+    padding: 5px;
+    &.displayed {
+      opacity: 1;
+    }
+    .expand-btn {
+      background-color: black;
+    }
+    .suggestions-area, .suggestions-menu {
+      color: black;
+    }
+  }
+  .simple-keyboard {
+    .hg-button-canvas {
+      width: 783px;
+      height: 335px;
+      cursor: crosshair;
+      clear: both;
+      overflow: hidden;
+      background-color: #fafafa;
+      flex-grow: 0;
+    }
+    canvas {
+      pointer-events: auto;
+      touch-action: auto;
+    }
+  }
+
+  &.expanded .expand-btn {
+    transform: rotate(180deg);
+  }
+  ::-webkit-scrollbar-track {
+    -webkit-box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.3);
+    background-color: #f5f5f5;
+  }
+  ::-webkit-scrollbar {
+    width: 6px;
+    background-color: #f5f5f5;
+  }
+  ::-webkit-scrollbar-thumb {
+    background-color: #000000;
   }
 }
-.suggestion-area {
+
+.hg-button-suggestion_area {
   position: absolute;
   top: 0;
   left: 0;
@@ -617,37 +682,6 @@ html {
   height: 5vw;
   margin-bottom: 5px;
   background-color: transparent;
-  /* NOTE: hugo - added after */
-  ul {
-    height: 36px;
-    width: 100%;
-    padding: 0;
-    margin: 0;
-    display: flex;
-    flex-wrap: wrap;
-    align-items: flex-start;
-    align-content: flex-start;
-    justify-content: flex-start;
-    min-height: 5vw;
-    li {
-      flex: 1 0 10%;
-      padding: 10px 0;
-      display: inline-block;
-      line-height: 1.5;
-      text-align: center;
-      color: black;
-      height: 5vw;
-      width: 9.325%;
-      min-width: 9.325%;
-      max-width: 9.325%;
-      &:not(:first-child) {
-        padding-left: 0px;
-      }
-      &:not(:last-child) {
-        margin-right: 0.75%;
-      }
-    }
-  }
   &.has-more {
     ul {
       max-width: 100%;
@@ -725,108 +759,6 @@ html {
     }
   }
 }
-.preview-pinyin {
-  color: grey;
-  min-height: 18px;
-  font-size: 15px;
-}
-.keyboard-wrapper {
-  position: relative;
-  .suggestion-area {
-    z-index: 2;
-    background-color: white;
-    + .hg-row {
-      padding-top: 5vw;
-    }
-  }
-  .expand-btn {
-    height: 36px;
-    width: 36px;
-    opacity: 0;
-    transition: opacity 0.3s, transform 0.3s;
-    background-image: url(./images/more-arrow.svg);
-    background-repeat: no-repeat;
-    background-position: center;
-    color: transparent;
-    font-size: 0px;
-    margin: 0;
-    height: 5vw;
-    &.displayed {
-      opacity: 1;
-    }
-    &.top-right {
-      position: absolute;
-      top: 0;
-      right: 0;
-      width: 9.325%;
-      min-width: 9.325%;
-      max-width: 9.325%;
-      z-index: 2;
-    }
-  }
-  &.expanded .expand-btn {
-    transform: rotate(180deg);
-  }
-  ::-webkit-scrollbar-track {
-    -webkit-box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.3);
-    background-color: #f5f5f5;
-  }
-  ::-webkit-scrollbar {
-    width: 6px;
-    background-color: #f5f5f5;
-  }
-  ::-webkit-scrollbar-thumb {
-    background-color: #000000;
-  }
-}
-.simple-keyboard {
-  canvas {
-    pointer-events: none;
-    touch-action: none;
-  }
-  .hg-button-canvas {
-    width: 783px;
-    height: 335px;
-    cursor: crosshair;
-    clear: both;
-    overflow: hidden;
-    background-color: #fafafa;
-    flex-grow: 0;
-  }
-  canvas {
-    pointer-events: auto;
-    touch-action: auto;
-  }
-}
 
-/* Locale-specific styles */
-.keyboard-wrapper {
-  &.locale-enUS, &.lang-english {
-    /* English-specific styles */
-    .hg-theme-default {
-      border-left: 3px solid #1e40af; /* Blue accent for English */
-    }
-  }
 
-  &.locale-zhCN, &.lang-chinese-simplified {
-    /* Simplified Chinese-specific styles */
-    .hg-theme-default {
-      border-left: 3px solid #dc2626; /* Red accent for Simplified Chinese */
-    }
-  }
-
-  &.locale-zhHT, &.lang-chinese-traditional {
-    /* Traditional Chinese-specific styles */
-    .hg-theme-default {
-      border-left: 3px solid #ea580c; /* Orange accent for Traditional Chinese */
-    }
-  }
-
-  &.locale-hand, &.lang-handwriting {
-    /* Handwriting-specific styles */
-    .hg-theme-default {
-      border-left: 3px solid #16a34a; /* Green accent for Handwriting */
-    }
-  }
-}
 </style>

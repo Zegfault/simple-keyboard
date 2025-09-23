@@ -28,7 +28,7 @@ const app = createApp({
     onLayoutChange (layoutName) {
       this.selectedLayout = layoutName
       this.addLog('Layout Change', layoutName)
-      console.log('Layout changed to:', layoutName)
+      // console.log('Layout changed to:', layoutName)
     },
     addLog (type, data) {
       this.eventLogs.unshift({
@@ -39,6 +39,7 @@ const app = createApp({
       if (this.eventLogs.length > 20) {
         this.eventLogs = this.eventLogs.slice(0, 20)
       }
+      console.warn('add log',  this.eventLogs)
     }
   }
 })
