@@ -17,5 +17,6 @@ export default {
   '{small_space}': ' ',
   '{smaller_space}': ' ',
   '{empty_space}': ' ',
+  '{suggestion_area}': ' ',
   '{canvas}': '<canvas class="stroke-input-canvas"></canvas>'
 }

@@ -104,7 +104,8 @@ export default {
         '{lang_cj}': 'zhHT'
       },
       suggestionsExpanded: false,
-      layoutCandidatesInternal: undefined
+      layoutCandidatesInternal: undefined,
+      originalRenderPage: false
     }
   },
   computed: {
@@ -235,6 +236,9 @@ export default {
       if (!_.isUndefined(this.modelValue)) {
         this.keyboard.setInput(this.modelValue)
       }
+      if (this.layoutName === 'hand' && _.isFunction(_.get(this.keyboard, 'candidateBox.renderPage', false))) {
+        this.keyboard.candidateBox.renderPage = this.keyboard.candidateBox.renderPageFromLibrary
+      }
     },
     switchLayout (newLayoutName) {
       this.$emit('onLayoutChange', newLayoutName)
@@ -312,8 +316,10 @@ export default {
         this.showResults(matches)
       })
     },
+    customCandidatesBox () {
+      this.keyboard.candidateBox.renderPage()
+    },
     showResults (matches) {
-      // Use layoutCandidates for suggestions
       const suggestions = _.map(matches, 'character')
       if (_.isEmpty(suggestions)) {
         this.setLayoutCandidates([])
@@ -323,9 +329,85 @@ export default {
       this.setLayoutCandidates(suggestions)
       this.$emit('onSuggestionsUpdate', suggestions)
     },
+    createSuggestionElement (suggestionArea, onItemSelected, candidateListItem) {
+      const candidateListLIElement = document.createElement('div')
+      const getMouseEvent = () => {
+        const mouseEvent = new (this.keyboard.candidateBox.options.useTouchEvents ? TouchEvent : MouseEvent)('click')
+        Object.defineProperty(mouseEvent, 'target', { value: candidateListLIElement })
+        return mouseEvent
+      }
+      candidateListLIElement.className = 'hg-suggestion-button'
+      candidateListLIElement.innerHTML = this.keyboard.candidateBox.options.display?.[candidateListItem] || candidateListItem
+      if (this.keyboard.candidateBox.options.useTouchEvents) {
+        candidateListLIElement.ontouchstart = (e) => onItemSelected(candidateListItem, e || getMouseEvent())
+      } else {
+        candidateListLIElement.onclick = (e = getMouseEvent()) => onItemSelected(candidateListItem, e)
+      }
+      suggestionArea.appendChild(candidateListLIElement)
+    },
+    renderPageFromLibrary ({candidateListPages, targetElement, pageIndex, nbPages, onItemSelected}) {
+      // Find the suggestion area element
+      const suggestionArea = targetElement.querySelector('.hg-button-suggestion_area')
+      if (!suggestionArea) {
+        return
+      }
+      // Clear previous content
+      suggestionArea.innerHTML = ''
+      // Create suggestion_area-menu container
+      const suggestionMenu = document.createElement('div')
+      suggestionMenu.className = 'hg-suggestion_area-menu'
+      suggestionArea.appendChild(suggestionMenu)
+      // Determine candidates to render
+      let candidatesToRender = []
+      const pageSize = this.layoutCandidatesPageSize || 10
+      if (this.suggestionsExpanded) {
+        // Expanded: show all candidates from all pages
+        candidatesToRender = _.flatten(candidateListPages)
+        suggestionArea.classList.add('expanded')
+      } else {
+        // Collapsed: show only first X candidates from current page
+        candidatesToRender = _.slice(candidateListPages[pageIndex], 0, pageSize)
+        suggestionArea.classList.remove('expanded')
+      }
+      // Create Candidate box list items inside suggestion_area-menu
+      _.each(candidatesToRender, (candidateListItem) => {
+        this.createSuggestionElement(suggestionMenu, onItemSelected, candidateListItem)
+      })
+      // Add expand/collapse button
+      let expandBtn = suggestionArea.querySelector('.expand-btn')
+      const shouldShowExpand = _.flatten(candidateListPages).length > pageSize
+      if (!expandBtn) {
+        expandBtn = document.createElement('div')
+        expandBtn.className = 'expand-btn'
+        expandBtn.textContent = ''
+        suggestionArea.appendChild(expandBtn)
+      }
+      if (shouldShowExpand) {
+        expandBtn.classList.add('displayed')
+      } else {
+        expandBtn.classList.remove('displayed')
+      }
+      // Track expanded state on candidateBox
+      if (!_.isBoolean(this.suggestionsExpanded)) {
+        this.suggestionsExpanded = false
+      }
+      // Set initial class
+      if (this.suggestionsExpanded) {
+        suggestionArea.classList.add('expanded')
+      } else {
+        suggestionArea.classList.remove('expanded')
+      }
+      // Button click toggles expanded state
+      expandBtn.onclick = () => {
+        this.suggestionsExpanded = !this.suggestionsExpanded
+        // Re-render to update candidate list
+        this.keyboard.candidateBox.renderPage({candidateListPages, targetElement, pageIndex, nbPages, onItemSelected})
+      }
+    },
     setLayoutCandidates (suggestions) {
       this.layoutCandidatesInternal = suggestions
-      if (this.keyboard) {
+      if (_.get(this.keyboard, 'candidateBox', false)) {
+        this.keyboard.candidateBox.renderPage = this.renderPageFromLibrary
         this.keyboard.showCandidatesBox('', _.join(suggestions, ' '), this.$refs['keyboardContainer'])
       }
     }
@@ -336,39 +418,6 @@ export default {
 <style lang="scss">
 .keyboard-wrapper {
   position: relative;
-  .suggestion-area {
-    z-index: 2;
-    background-color: white;
-    + .hg-row {
-      padding-top: 5vw;
-    }
-  }
-  .expand-btn {
-    height: 36px;
-    width: 36px;
-    min-width: 36px;
-    max-width: 36px;
-    opacity: 0;
-    transition: opacity 0.3s, transform 0.3s;
-    background-image: url(./images/more-arrow.svg);
-    background-repeat: no-repeat;
-    background-position: center;
-    color: transparent;
-    font-size: 0px;
-    margin: 0;
-    &.displayed {
-      opacity: 1;
-    }
-    &.top-right {
-      position: absolute;
-      top: 0;
-      right: 0;
-      width: 36px;
-      min-width: 36px;
-      max-width: 36px;
-      z-index: 2;
-    }
-  }
   .hg-theme-default {
     width: 100%;
     user-select: none;
@@ -517,22 +566,144 @@ export default {
         display: flex;
       }
     }
-
-    .hg-suggestion-button {
-      background: #f0f8ff;
-      border: 1px solid #4682b4;
-      margin: 2px;
-      width: 36px;
-      min-width: 36px;
-      max-width: 36px;
-      font-size: 16px;
-      &:hover {
-        background: #e6f3ff;
+    // Suggestion Area
+    .hg-button-suggestion_area {
+      width: 100%;
+      z-index: 2;
+      position: relative;
+      opacity: 1;
+      transition: opacity 0.3s;
+      min-height: 36px;
+      background: white;
+      border: 1px solid #ddd;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: flex-start;
+      padding: 0px;
+      z-index: 10;
+      .expand-btn {
+        height: 36px;
+        width: 36px;
+        min-width: 36px;
+        max-width: 36px;
+        opacity: 0;
+        transition: opacity 0.3s, transform 0.3s;
+        background-image: url(./images/more-arrow.svg);
+        background-repeat: no-repeat;
+        background-position: center;
+        color: transparent;
+        font-size: 0px;
+        margin: 0;
+        border: none;
+        cursor: pointer;
+        position: absolute;
+        top: 0;
+        right: 0;
+        z-index: 100;
+        &.displayed {
+          opacity: 1;
+        }
       }
-      &:active {
-        background: #cce7ff;
+      &.has-more {
+        ul {
+          max-width: 100%;
+        }
+      }
+      &.expanded {
+        overflow-y: scroll;
+        height: 100%;
+        background: white;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+        z-index: 20;
+        ul {
+          height: auto;
+          max-height: 100%;
+        }
+        .suggestions-menu {
+          .prev, .next, .pagination {
+            display: block;
+          }
+        }
+        .expand-btn {
+          transform: rotate(180deg);
+        }
+      }
+      &.displayed {
+        opacity: 1;
+        background-color: white;
+        color: black;
+        &.has-more {
+          height: 5vw;
+          transition: height ease 0.3s;
+          &.expanded {
+            height: 100%;
+          }
+        }
+      }
+      &:not(.expanded) li:nth-child(n + 10) {
+        opacity: 0;
+        pointer-events: none;
+      }
+      .suggestions-menu {
+        position: absolute;
+        right: 0;
+        top: 0;
+        width: 9.325%;
+        min-width: 9.325%;
+        max-width: 9.325%;
+        height: 100%;
+        text-align: center;
+        color: white;
+        > div {
+          height: 36px;
+          width: 100%;
+          line-height: 36px;
+        }
+        .prev, .next, .pagination {
+          display: none;
+          pointer-events: none;
+          opacity: 0;
+        }
+        .disabled {
+          color: grey;
+        }
+      }
+      .hg-suggestion_area-menu {
+        width: 100%;
+        display: flex;
+        flex-wrap: wrap;
+      }
+      .hg-suggestion-button {
+        // background: #f0f8ff;
+        // border: 1px solid #4682b4;
+        width: 36px;
+        height: 36px;
+        min-width: 36px;
+        max-width: 36px;
+        font-size: 16px;
+        text-align: center;
+        line-height: 2;
+        &:hover {
+          background: #e6f3ff;
+        }
+        &:active {
+          background: #cce7ff;
+        }
+      }
+      &.displayed {
+        opacity: 1;
+      }
+      .expand-btn {
+        background-color: black;
       }
     }
+
+
+    &.expanded {
+      flex-wrap: wrap;
+    }
+
     &.hg-layout-numeric .hg-button {
       width: 33.3%;
       height: 60px;
@@ -544,28 +715,7 @@ export default {
   .hg-button.hg-functionBtn.hg-button-ctrl {
     max-width: 10%;
   }
-  .hg-button-preview_pinyin, .hg-button-suggestion_area {
-    position: relative;
-    opacity: 0;
-    transition: opacity 0.3s;
-    min-height: 50px;
-    background: white;
-    border: 1px solid #ddd;
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    justify-content: flex-start;
-    padding: 5px;
-    &.displayed {
-      opacity: 1;
-    }
-    .expand-btn {
-      background-color: black;
-    }
-    .suggestions-area, .suggestions-menu {
-      color: black;
-    }
-  }
+
   .simple-keyboard {
     .hg-button-canvas {
       width: 100%;
@@ -598,99 +748,6 @@ export default {
   }
 }
 
-.hg-button-suggestion_area {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  z-index: 10;
-  opacity: 0;
-  transition: background-color 0.3s, opacity 0.3s;
-  height: 5vw;
-  margin-bottom: 5px;
-  background-color: transparent;
-  &.has-more {
-    ul {
-      max-width: 100%;
-    }
-  }
-  &.expanded {
-    overflow-y: scroll;
-    height: 100%;
-    background: white;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.12);
-    z-index: 20;
-    ul {
-      height: auto;
-      max-height: 100%;
-    }
-    .suggestions-menu {
-      .prev, .next, .pagination {
-        display: block;
-      }
-    }
-    .expand-btn {
-      transform: rotate(180deg);
-    }
-  }
-  .expand-btn {
-    height: 36px;
-    width: 36px;
-    min-width: 36px;
-    max-width: 36px;
-    opacity: 0;
-    transition: opacity 0.3s, transform 0.3s;
-    background-image: url(./images/more-arrow.svg);
-    background-repeat: no-repeat;
-    background-position: center;
-    color: transparent;
-    font-size: 0px;
-    margin: 0;
-    &.displayed {
-      opacity: 1;
-    }
-  }
-  &.displayed {
-    opacity: 1;
-    background-color: white;
-    color: black;
-    &.has-more {
-      height: 5vw;
-      transition: height ease 0.3s;
-      &.expanded {
-        height: 100%;
-      }
-    }
-  }
-  &:not(.expanded) li:nth-child(n + 10) {
-    opacity: 0;
-    pointer-events: none;
-  }
-  .suggestions-menu {
-    position: absolute;
-    right: 0;
-    top: 0;
-    width: 9.325%;
-    min-width: 9.325%;
-    max-width: 9.325%;
-    height: 100%;
-    text-align: center;
-    color: white;
-    > div {
-      height: 36px;
-      width: 100%;
-      line-height: 36px;
-    }
-    .prev, .next, .pagination {
-      display: none;
-      pointer-events: none;
-      opacity: 0;
-    }
-    .disabled {
-      color: grey;
-    }
-  }
-}
 
 
 </style>
