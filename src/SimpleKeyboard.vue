@@ -1,5 +1,5 @@
 <template>
-  <div class="keyboard-wrapper" :class="keyboardFullClass">
+  <div class="keyboard-wrapper" :class="localeClass">
     <div ref="keyboardContainer" :class="keyboardClass" />
   </div>
 </template>
@@ -68,17 +68,18 @@ export default {
     // Layout Candidates (IME Support)
     enableLayoutCandidates: { type: Boolean, default: true },
     layoutCandidates: { type: Object, default: undefined },
-    layoutCandidatesPageSize: { type: Number, default: 10000 },
+    layoutCandidatesPageSize: { type: Number, default: 10 },
     layoutCandidatesCaseSensitiveMatch: { type: Boolean, default: false },
     disableCandidateNormalization: { type: Boolean, default: false },
-    enableLayoutCandidatesKeyPress: { type: Boolean, default: false },
+    enableLayoutCandidatesKeyPress: { type: Boolean, default: true },
     // Localization
     rtl: { type: Boolean, default: false },
     // Debug & Development
     debug: { type: Boolean, default: false },
     // Additional Props
     keyboardClass: { type: String, default: 'simple-keyboard' },
-    modelValue: { type: String, default: undefined }
+    modelValue: { type: String, default: undefined },
+    handwritingLooseness: { type: Number, default: 0.15 }
   },
   emits: [
     'update:modelValue',
@@ -102,11 +103,12 @@ export default {
         '{lang_hand}': 'hand',
         '{lang_cj}': 'zhHT'
       },
-      suggestionsExpanded: false
+      suggestionsExpanded: false,
+      layoutCandidatesInternal: undefined
     }
   },
   computed: {
-    keyboardFullClass () {
+    localeClass () {
       return `locale-${this.layoutName}`
     }
   },
@@ -148,7 +150,9 @@ export default {
       this.drawingBoard.init(this.localeForHandwriting, {substrokes: data.substrokes, chars: data.chars})
     },
     getLayoutCandidates () {
-      if (this.layoutCandidates) {
+      if (_.get(this.layoutCandidatesInternal, 'length', 0) > 0) {
+        return this.layoutCandidatesInternal
+      } else if (this.layoutCandidates) {
         return this.layoutCandidates
       } else if (!this.enableLayoutCandidates) {
         return undefined
@@ -175,10 +179,8 @@ export default {
         this.drawingBoard.clearCanvas()
         this.drawingBoard.redraw()
         this.lookup()
-      } else if (button.startsWith('suggestion:')) {
-        // Handle suggestion clicks
-        const suggestion = button.replace('suggestion:', '')
-        this.addSuggestionToInput(suggestion)
+      } else if (this.layoutName === 'hand') {
+        this.onKeyPress('{clear}')
       }
       this.$emit('onKeyPress', button)
     },
@@ -212,13 +214,14 @@ export default {
       if (!container) {
         return
       }
+      this.layoutCandidatesInternal = []
       const layoutCandidates = this.getLayoutCandidates()
       const options = {
         ..._.pick(this, _.keys(this.$props)),
         layout: this.layout || _.get(layouts, `${this.layoutName}.layout`, undefined),
         display: this.display || defaultDisplay,
         layoutCandidates,
-        layoutCandidatesCaseSensitiveMatch: this.layoutCandidatesCaseSensitiveMatch || (!_.isUndefined(layoutCandidates) && _.includes(['enUS'], this.layoutName)),
+        layoutCandidatesCaseSensitiveMatch: this.layoutCandidatesCaseSensitiveMatch || (!_.isUndefined(layoutCandidates) && !_.includes(['zhCN', 'zhHT', 'hand'], this.layoutName)),
         onChange: this.onChange,
         onChangeAll: this.onChangeAll,
         onKeyPress: this.onKeyPress,
@@ -302,87 +305,28 @@ export default {
         console.debug('Will reset drawing strokes')
       }
       const analyzedChar = this.drawingBoard.AnalyzedCharacter(strokes)
-      const matcher = this.drawingBoard.Matcher(this.localeForHandwriting)
+      const looseness = this.layoutName === 'hand' ? this.handwritingLooseness : 1
+      const matcher = this.drawingBoard.Matcher(this.localeForHandwriting, looseness)
       this.showResults([])
       matcher.doMatch(analyzedChar, this.suggestionsLimit, matches => {
         this.showResults(matches)
       })
     },
     showResults (matches) {
+      // Use layoutCandidates for suggestions
       const suggestions = _.map(matches, 'character')
       if (_.isEmpty(suggestions)) {
-        this.setSuggestions([])
-        return this.hideSuggestions()
-      }
-      this.setSuggestions(suggestions)
-      this.showSuggestions()
-    },
-    setSuggestions (suggestions) {
-      const suggestionArea = document.querySelector('.hg-button-suggestion_area')
-      if (!suggestionArea) {
-        return
-      }
-      suggestionArea.innerHTML = ''
-      if (suggestions && suggestions.length > 0) {
-        const maxPerLine = this.numberOfSuggestionsPerLine
-        const expanded = this.suggestionsExpanded
-        const visibleSuggestions = expanded ? suggestions : suggestions.slice(0, maxPerLine)
-        _.each(visibleSuggestions, (suggestion) => {
-          const suggestionButton = document.createElement('button')
-          suggestionButton.className = 'hg-button hg-suggestion-button'
-          suggestionButton.textContent = suggestion
-          suggestionButton.addEventListener('click', () => {
-            this.addSuggestionToInput(suggestion)
-          })
-          suggestionArea.appendChild(suggestionButton)
-        })
-        if (suggestions.length > maxPerLine) {
-          const expandBtn = document.createElement('button')
-          expandBtn.className = 'expand-btn displayed'
-          expandBtn.addEventListener('click', () => {
-            this.suggestionsExpanded = !this.suggestionsExpanded
-            this.setSuggestions(suggestions)
-            if (this.suggestionsExpanded) {
-              suggestionArea.classList.add('expanded')
-            } else {
-              suggestionArea.classList.remove('expanded')
-            }
-          })
-          suggestionArea.appendChild(expandBtn)
-          suggestionArea.classList.add('has-more')
-        } else {
-          suggestionArea.classList.remove('has-more')
-        }
-        this.showSuggestions()
-        this.$emit('onSuggestionsUpdate', suggestions)
-      } else {
-        this.hideSuggestions()
+        this.setLayoutCandidates([])
         this.$emit('onSuggestionsUpdate', [])
-      }
-    },
-    addSuggestionToInput (suggestion) {
-      if (!this.keyboard) {
         return
       }
-      const currentInput = this.keyboard.getInput()
-      const newInput = currentInput + suggestion
-      this.keyboard.setInput(newInput)
-      this.$emit('onChange', newInput)
-      this.$emit('update:modelValue', newInput)
-      this.drawingBoard.clearCanvas()
-      this.drawingBoard.redraw()
-      this.hideSuggestions()
+      this.setLayoutCandidates(suggestions)
+      this.$emit('onSuggestionsUpdate', suggestions)
     },
-    showSuggestions () {
-      const suggestionArea = document.querySelector('.hg-button-suggestion_area')
-      if (suggestionArea) {
-        suggestionArea.classList.add('displayed')
-      }
-    },
-    hideSuggestions () {
-      const suggestionArea = document.querySelector('.hg-button-suggestion_area')
-      if (suggestionArea) {
-        suggestionArea.classList.remove('displayed')
+    setLayoutCandidates (suggestions) {
+      this.layoutCandidatesInternal = suggestions
+      if (this.keyboard) {
+        this.keyboard.showCandidatesBox('', _.join(suggestions, ' '), this.$refs['keyboardContainer'])
       }
     }
   }
@@ -402,6 +346,8 @@ export default {
   .expand-btn {
     height: 36px;
     width: 36px;
+    min-width: 36px;
+    max-width: 36px;
     opacity: 0;
     transition: opacity 0.3s, transform 0.3s;
     background-image: url(./images/more-arrow.svg);
@@ -410,7 +356,6 @@ export default {
     color: transparent;
     font-size: 0px;
     margin: 0;
-    height: 5vw;
     &.displayed {
       opacity: 1;
     }
@@ -418,9 +363,9 @@ export default {
       position: absolute;
       top: 0;
       right: 0;
-      width: 9.325%;
-      min-width: 9.325%;
-      max-width: 9.325%;
+      width: 36px;
+      min-width: 36px;
+      max-width: 36px;
       z-index: 2;
     }
   }
@@ -457,7 +402,7 @@ export default {
         pointer-events: none;
       }
       &.hg-activeButton, &.hg-standardBtn {
-        background: #efefef;
+        background: white;
       }
       &.hg-button-numpadadd, &.hg-button-numpadenter {
         height: 85px;
@@ -505,24 +450,31 @@ export default {
           background-image: url(./images/shift.svg);
           background-size: 30.2% 30%;
         }
-        &.hg-button-lang_en, &.hg-button-lang_hand, &.hg-button-lang_cj, &.hg-button-lang_cn {
-          background-repeat: no-repeat;
-          background-position: center;
-          background-size: contain;
-          max-width: 10vw;
-        }
+        // &.hg-button-lang_en, &.hg-button-lang_hand, &.hg-button-lang_cj, &.hg-button-lang_cn {
+          // background-repeat: no-repeat;
+          // background-position: center;
+          // background-size: contain;
+          // max-width: 10vw;
+        // }
         // &.hg-button-lang_en {
         //   background-image: url(./images/lang-switch-latin.svg);
         // }
-        &.hg-button-lang_cn {
-          background-image: url(./images/lang-switch-chn.svg);
-        }
-        &.hg-button-lang_hand {
-          background-image: url(./images/lang-switch-hand.svg);
-        }
-        &.hg-button-lang_cj {
-          background-image: url(./images/lang-switch-cj.svg);
-        }
+        // &.hg-button-lang_cn {
+          //background-image: url(./images/lang-switch-chn.svg);
+        // }
+        // &.hg-button-lang_hand {
+        //   background-image: url(./images/lang-switch-hand.svg);
+        // }
+        // &.hg-button-lang_cj {
+        //   background-image: url(./images/lang-switch-cj.svg);
+        // }
+      }
+      &.hg-button-big_space {
+        opacity: 0;
+        pointer-events: none;
+        width: 50%;
+        max-width: 50%;
+        min-width: 50%;
       }
       &.hg-button-arrowleft,
       &.hg-button-arrowright {
@@ -570,7 +522,9 @@ export default {
       background: #f0f8ff;
       border: 1px solid #4682b4;
       margin: 2px;
-      min-width: 40px;
+      width: 36px;
+      min-width: 36px;
+      max-width: 36px;
       font-size: 16px;
       &:hover {
         background: #e6f3ff;
@@ -590,8 +544,7 @@ export default {
   .hg-button.hg-functionBtn.hg-button-ctrl {
     max-width: 10%;
   }
-  .hg-button-preview_pinyin,
-  .hg-button-suggestion_area {
+  .hg-button-preview_pinyin, .hg-button-suggestion_area {
     position: relative;
     opacity: 0;
     transition: opacity 0.3s;
@@ -615,7 +568,7 @@ export default {
   }
   .simple-keyboard {
     .hg-button-canvas {
-      width: 783px;
+      width: 100%;
       height: 335px;
       cursor: crosshair;
       clear: both;
@@ -650,6 +603,7 @@ export default {
   top: 0;
   left: 0;
   width: 100%;
+  z-index: 10;
   opacity: 0;
   transition: background-color 0.3s, opacity 0.3s;
   height: 5vw;
@@ -662,6 +616,10 @@ export default {
   }
   &.expanded {
     overflow-y: scroll;
+    height: 100%;
+    background: white;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+    z-index: 20;
     ul {
       height: auto;
       max-height: 100%;
@@ -677,7 +635,9 @@ export default {
   }
   .expand-btn {
     height: 36px;
-    width: 100%;
+    width: 36px;
+    min-width: 36px;
+    max-width: 36px;
     opacity: 0;
     transition: opacity 0.3s, transform 0.3s;
     background-image: url(./images/more-arrow.svg);
@@ -686,7 +646,6 @@ export default {
     color: transparent;
     font-size: 0px;
     margin: 0;
-    height: 5vw;
     &.displayed {
       opacity: 1;
     }

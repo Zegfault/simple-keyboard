@@ -10,6 +10,8 @@ export default {
   '{clear}': '重写',
   '{confirm}': 'Confirm',
   '{confirm_cn}': '确认',
+  '{tab}': 'tab',
+  '{lock}': 'lock',
   '{big_space}': ' ',
   '{bottom_big_space}': ' ',
   '{small_space}': ' ',
