@@ -1,5 +1,6 @@
 import { createApp } from 'vue'
 import SimpleKeyboard from '../src/SimpleKeyboard.vue'
+import './hg-theme-dark.scss'
 
 const app = createApp({
   components: {

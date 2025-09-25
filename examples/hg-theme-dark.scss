@@ -1,0 +1,41 @@
+.keyboard-wrapper {
+  .hg-theme-dark {
+    background-color: #181a20;
+    color: #e0e0e0;
+    .hg-button {
+      background: #23262f;
+      color: #e0e0e0;
+      border-radius: 8px;
+      border-bottom: 1px solid #333;
+      &:hover {
+        background: #31344b;
+      }
+      &.hg-selectedButton {
+        background: #1976d2;
+        color: #fff;
+      }
+      &.hg-functionBtn {
+        background: #222;
+        color: #ffeb3b;
+      }
+      &.disabled {
+        background-color: #444;
+        color: #888;
+      }
+    }
+    .hg-row {
+      margin-bottom: 8px;
+    }
+    .hg-button-suggestion_area {
+      background: #23262f;
+      border-color: #1976d2;
+      .hg-suggestion-button {
+        background: #1976d2;
+        color: #fff;
+      }
+      .expand-btn {
+        background-color: #1976d2;
+      }
+    }
+  }
+}
