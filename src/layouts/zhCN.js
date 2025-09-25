@@ -1,7 +1,7 @@
 export default {
   layout: {
     default: [
-      '{lang_en} {lang_hand} {lang_cj} {big_space} {arrowleft} {arrowright} {bksp}',
+      '{lang_en} {lang_hand} {lang_cj} {suggestion_area} {arrowleft} {arrowright} {bksp}',
       '\u0060 1 2 3 4 5 6 7 8 9 0 - = {enter}',
       '{tab} q w e r t y u i o p [ ] \\',
       '{lock} a s d f g h j k l ; \' {space}',

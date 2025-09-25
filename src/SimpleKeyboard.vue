@@ -145,6 +145,33 @@ export default {
     this.destroy()
   },
   methods: {
+    updateSuggestions (suggestions) {
+      if (!_.get(this.keyboard, 'candidateBox', false)) {
+        return
+      }
+      const container = this.$refs['keyboardContainer']
+      if (!container) {
+        return
+      }
+      const suggestionArea = container.querySelector('.hg-button-suggestion_area')
+      if (!suggestionArea) {
+        return
+      }
+      if (_.get(suggestions, 'length', 0) === 0) {
+        suggestionArea.classList.remove('displayed')
+        suggestionArea.classList.remove('expanded')
+        this.suggestionsExpanded = false
+      } else {
+        suggestionArea.classList.add('displayed')
+      }
+      suggestionArea.innerHTML = ''
+      const suggestionMenu = document.createElement('div')
+      suggestionMenu.className = 'hg-suggestion_area-menu'
+      suggestionArea.appendChild(suggestionMenu)
+      _.each(suggestions, (item) => {
+        this.createSuggestionElement(suggestionMenu, () => {}, item)
+      })
+    },
     async initHanzi () {
       this.drawingBoard.options = _.merge(this.drawingBoard.options, this.drawingOptions || {})
       const data = await import(`./hanzi/${this.localeForHandwriting}.json`)
@@ -180,7 +207,7 @@ export default {
         this.drawingBoard.clearCanvas()
         this.drawingBoard.redraw()
         this.lookup()
-      } else if (this.layoutName === 'hand') {
+      } else if (this.layoutName === 'hand' && button !== '{suggestion_area}' && button !== '{clear}') {
         this.onKeyPress('{clear}')
       }
       this.$emit('onKeyPress', button)
@@ -215,6 +242,7 @@ export default {
       if (!container) {
         return
       }
+      this.suggestionsExpanded = false
       this.layoutCandidatesInternal = []
       const layoutCandidates = this.getLayoutCandidates()
       const options = {
@@ -236,8 +264,8 @@ export default {
       if (!_.isUndefined(this.modelValue)) {
         this.keyboard.setInput(this.modelValue)
       }
-      if (this.layoutName === 'hand' && _.isFunction(_.get(this.keyboard, 'candidateBox.renderPage', false))) {
-        this.keyboard.candidateBox.renderPage = this.keyboard.candidateBox.renderPageFromLibrary
+      if (_.isFunction(_.get(this.keyboard, 'candidateBox.renderPage', false)) && !_.isEmpty(this.getLayoutCandidates())) {
+        this.keyboard.candidateBox.renderPage = this.renderPageFromLibrary
       }
     },
     switchLayout (newLayoutName) {
@@ -338,42 +366,40 @@ export default {
       }
       candidateListLIElement.className = 'hg-suggestion-button'
       candidateListLIElement.innerHTML = this.keyboard.candidateBox.options.display?.[candidateListItem] || candidateListItem
+      const onClickOrTouch = (event) => {
+        onItemSelected(candidateListItem, event || getMouseEvent())
+        this.setLayoutCandidates([])
+        this.$emit('onSuggestionsUpdate', [])
+      }
       if (this.keyboard.candidateBox.options.useTouchEvents) {
-        candidateListLIElement.ontouchstart = (e) => onItemSelected(candidateListItem, e || getMouseEvent())
+        candidateListLIElement.ontouchstart = onClickOrTouch
       } else {
-        candidateListLIElement.onclick = (e = getMouseEvent()) => onItemSelected(candidateListItem, e)
+        candidateListLIElement.onclick = onClickOrTouch
       }
       suggestionArea.appendChild(candidateListLIElement)
     },
+    // eslint-disable-next-line no-unused-vars
     renderPageFromLibrary ({candidateListPages, targetElement, pageIndex, nbPages, onItemSelected}) {
-      // Find the suggestion area element
       const suggestionArea = targetElement.querySelector('.hg-button-suggestion_area')
       if (!suggestionArea) {
         return
       }
-      // Clear previous content
       suggestionArea.innerHTML = ''
-      // Create suggestion_area-menu container
       const suggestionMenu = document.createElement('div')
       suggestionMenu.className = 'hg-suggestion_area-menu'
       suggestionArea.appendChild(suggestionMenu)
-      // Determine candidates to render
       let candidatesToRender = []
       const pageSize = this.layoutCandidatesPageSize || 10
       if (this.suggestionsExpanded) {
-        // Expanded: show all candidates from all pages
         candidatesToRender = _.flatten(candidateListPages)
         suggestionArea.classList.add('expanded')
       } else {
-        // Collapsed: show only first X candidates from current page
         candidatesToRender = _.slice(candidateListPages[pageIndex], 0, pageSize)
         suggestionArea.classList.remove('expanded')
       }
-      // Create Candidate box list items inside suggestion_area-menu
       _.each(candidatesToRender, (candidateListItem) => {
         this.createSuggestionElement(suggestionMenu, onItemSelected, candidateListItem)
       })
-      // Add expand/collapse button
       let expandBtn = suggestionArea.querySelector('.expand-btn')
       const shouldShowExpand = _.flatten(candidateListPages).length > pageSize
       if (!expandBtn) {
@@ -387,27 +413,31 @@ export default {
       } else {
         expandBtn.classList.remove('displayed')
       }
-      // Track expanded state on candidateBox
       if (!_.isBoolean(this.suggestionsExpanded)) {
         this.suggestionsExpanded = false
       }
-      // Set initial class
-      if (this.suggestionsExpanded) {
-        suggestionArea.classList.add('expanded')
-      } else {
-        suggestionArea.classList.remove('expanded')
-      }
-      // Button click toggles expanded state
       expandBtn.onclick = () => {
         this.suggestionsExpanded = !this.suggestionsExpanded
-        // Re-render to update candidate list
-        this.keyboard.candidateBox.renderPage({candidateListPages, targetElement, pageIndex, nbPages, onItemSelected})
+        let candidatesToRender = []
+        const pageSize = this.layoutCandidatesPageSize || 10
+        if (this.suggestionsExpanded) {
+          candidatesToRender = _.flatten(candidateListPages)
+          suggestionArea.classList.add('expanded')
+        } else {
+          candidatesToRender = _.slice(candidateListPages[pageIndex], 0, pageSize)
+          suggestionArea.classList.remove('expanded')
+        }
+        suggestionMenu.innerHTML = ''
+        _.each(candidatesToRender, (candidateListItem) => {
+          this.createSuggestionElement(suggestionMenu, onItemSelected, candidateListItem)
+        })
       }
     },
     setLayoutCandidates (suggestions) {
       this.layoutCandidatesInternal = suggestions
       if (_.get(this.keyboard, 'candidateBox', false)) {
         this.keyboard.candidateBox.renderPage = this.renderPageFromLibrary
+        this.updateSuggestions(suggestions)
         this.keyboard.showCandidatesBox('', _.join(suggestions, ' '), this.$refs['keyboardContainer'])
       }
     }
@@ -582,101 +612,24 @@ export default {
       justify-content: flex-start;
       padding: 0px;
       z-index: 10;
-      .expand-btn {
+      .hg-suggestion_area-menu {
+        width: 100%;
+        position: absolute;
+        top: 0;
+        left: 0;
         height: 36px;
-        width: 36px;
-        min-width: 36px;
-        max-width: 36px;
-        opacity: 0;
-        transition: opacity 0.3s, transform 0.3s;
-        background-image: url(./images/more-arrow.svg);
-        background-repeat: no-repeat;
-        background-position: center;
-        color: transparent;
-        font-size: 0px;
-        margin: 0;
-        border: none;
-        cursor: pointer;
-        position: absolute;
-        top: 0;
-        right: 0;
-        z-index: 100;
-        &.displayed {
-          opacity: 1;
-        }
-      }
-      &.has-more {
-        ul {
-          max-width: 100%;
-        }
-      }
-      &.expanded {
-        overflow-y: scroll;
-        height: 100%;
-        background: white;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.12);
-        z-index: 20;
-        ul {
-          height: auto;
-          max-height: 100%;
-        }
-        .suggestions-menu {
-          .prev, .next, .pagination {
-            display: block;
-          }
-        }
-        .expand-btn {
-          transform: rotate(180deg);
-        }
-      }
-      &.displayed {
-        opacity: 1;
+        transition: height ease 0.3s;
         background-color: white;
-        color: black;
-        &.has-more {
-          height: 5vw;
-          transition: height ease 0.3s;
-          &.expanded {
-            height: 100%;
-          }
-        }
-      }
-      &:not(.expanded) li:nth-child(n + 10) {
-        opacity: 0;
-        pointer-events: none;
-      }
-      .suggestions-menu {
-        position: absolute;
-        right: 0;
-        top: 0;
-        width: 9.325%;
-        min-width: 9.325%;
-        max-width: 9.325%;
-        height: 100%;
-        text-align: center;
-        color: white;
+        display: flex;
+        flex-wrap: wrap;
+        align-content: flex-start;
         > div {
           height: 36px;
           width: 100%;
           line-height: 36px;
         }
-        .prev, .next, .pagination {
-          display: none;
-          pointer-events: none;
-          opacity: 0;
-        }
-        .disabled {
-          color: grey;
-        }
-      }
-      .hg-suggestion_area-menu {
-        width: 100%;
-        display: flex;
-        flex-wrap: wrap;
       }
       .hg-suggestion-button {
-        // background: #f0f8ff;
-        // border: 1px solid #4682b4;
         width: 36px;
         height: 36px;
         min-width: 36px;
@@ -691,31 +644,53 @@ export default {
           background: #cce7ff;
         }
       }
+      .expand-btn {
+        height: 36px;
+        width: 36px;
+        min-width: 36px;
+        max-width: 36px;
+        opacity: 0;
+        background-color: black;
+        background-image: url(./images/more-arrow.svg);
+        background-repeat: no-repeat;
+        background-position: center;
+        color: transparent;
+        font-size: 0px;
+        margin: 0;
+        border: none;
+        cursor: pointer;
+        position: absolute;
+        top: 0;
+        right: 0;
+        z-index: 100;
+        transition: opacity 0.3s, transform 0.3s;
+        &.displayed {
+          opacity: 1;
+        }
+      }
+      &.expanded {
+        .hg-suggestion_area-menu {
+          height: 250px;
+          overflow-y: scroll;
+        }
+        .expand-btn {
+          transform: rotate(180deg);
+        }
+      }
       &.displayed {
         opacity: 1;
+        background-color: white;
+        color: black;
       }
-      .expand-btn {
-        background-color: black;
+      &:not(.expanded) li:nth-child(n + 10) {
+        opacity: 0;
+        pointer-events: none;
       }
-    }
-
-
-    &.expanded {
-      flex-wrap: wrap;
-    }
-
-    &.hg-layout-numeric .hg-button {
-      width: 33.3%;
-      height: 60px;
-      align-items: center;
-      display: flex;
-      justify-content: center;
     }
   }
   .hg-button.hg-functionBtn.hg-button-ctrl {
     max-width: 10%;
   }
-
   .simple-keyboard {
     .hg-button-canvas {
       width: 100%;
@@ -730,10 +705,6 @@ export default {
       pointer-events: auto;
       touch-action: auto;
     }
-  }
-
-  &.expanded .expand-btn {
-    transform: rotate(180deg);
   }
   ::-webkit-scrollbar-track {
     -webkit-box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.3);
