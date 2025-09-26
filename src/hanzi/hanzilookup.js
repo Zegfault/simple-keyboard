@@ -145,7 +145,9 @@ class HanziLookup {
     let prevIx = 0
     for (let i = 0; i != pivotIndexes.length; ++i) {
       let ix = pivotIndexes[i]
-      if (ix == prevIx) continue
+      if (ix == prevIx) {
+        continue
+      }
       let direction = this.dir(points[prevIx], points[ix])
       direction = Math.round((direction * 256.0) / Math.PI / 2.0)
       if (direction == 256) direction = 0
@@ -161,12 +163,14 @@ class HanziLookup {
   }
 
   buildAnalyzedStrokes (rawStrokes) {
+    // console.time('buildAnalyzedStrokes')
     for (let i = 0; i != rawStrokes.length; ++i) {
       let pivotIndexes = this.getPivotIndexes(rawStrokes[i])
       let subStrokes = this.buildSubStrokes(rawStrokes[i], pivotIndexes)
       this._subStrokeCount += subStrokes.length
       this._analyzedStrokes.push(this.AnalyzedStroke(rawStrokes[i], pivotIndexes, subStrokes))
     }
+    // console.timeEnd('buildAnalyzedStrokes')
   }
 
   AnalyzedStroke (points, pivotIndexes, subStrokes) {
@@ -208,12 +212,10 @@ class HanziLookup {
     if (h > 0) {
       let u = 0 - g
       let r = u / 2 + Math.pow(h, 0.5)
-      let s6 = Math.pow(r, 1 / 3)
-      let s8 = s6
-      let t8 = u / 2 - Math.pow(h, 0.5)
-      let v7 = Math.pow(0 - t8, 1 / 3)
-      let v8 = v7
-      let x3 = s8 - v8 - b / (3 * a)
+      let s = Math.pow(r, 1 / 3)
+      let t = u / 2 - Math.pow(h, 0.5)
+      let v = Math.pow(-t, 1 / 3)
+      let x3 = s - v - b / (3 * a)
       solutions.push(x3)
     } else if (f == 0.0 && g == 0.0 && h == 0.0) {
       solutions.push(-Math.pow(d / a, 1.0 / 3.0))
@@ -221,10 +223,10 @@ class HanziLookup {
       let i = Math.sqrt((g * g) / 4.0 - h)
       let j = Math.pow(i, 1.0 / 3.0)
       let k = Math.acos(-g / (2 * i))
-      let l = j * -1.0
+      let l = -j
       let m = Math.cos(k / 3.0)
       let n = Math.sqrt(3.0) * Math.sin(k / 3.0)
-      let p = (b / (3.0 * a)) * -1.0
+      let p = -b / (3.0 * a)
       solutions.push(2.0 * j * Math.cos(k / 3.0) - b / (3.0 * a))
       solutions.push(l * (m + n) + p)
       solutions.push(l * (m - n) + p)
@@ -681,10 +683,12 @@ class HanziLookup {
   }
 
   doMatch (inputChar, limit, ready) {
+    console.time('doMatch')
     this._charsChecked = 0
     this._subStrokesCompared = 0
     let matchCollector = this.MatchCollector(limit)
     if (inputChar.analyzedStrokes.length == 0) {
+      console.timeEnd('doMatch')
       return matchCollector.getMatches()
     }
     let inputSubStrokes = []
@@ -698,10 +702,7 @@ class HanziLookup {
     let subStrokeCount = inputChar.subStrokeCount
     let strokeRange = this.getStrokesRange(strokeCount)
     let minimumStrokes = Math.max(strokeCount - strokeRange, 1)
-    let maximumStrokes = Math.min(
-      strokeCount + strokeRange,
-      this.MAX_CHARACTER_STROKE_COUNT
-    )
+    let maximumStrokes = Math.min(strokeCount + strokeRange, this.MAX_CHARACTER_STROKE_COUNT)
     let subStrokesRange = this.getSubStrokesRange(subStrokeCount)
     let minSubStrokes = Math.max(subStrokeCount - subStrokesRange, 1)
     let maxSubStrokes = Math.min(subStrokeCount + subStrokesRange, this.MAX_CHARACTER_SUB_STROKE_COUNT)
@@ -710,15 +711,15 @@ class HanziLookup {
       let cmpStrokeCount = repoChar[1]
       let cmpSubStrokes = repoChar[2]
       // If looseness is zero, require exact stroke count match only
-      if (this._looseness === 0 && cmpStrokeCount !== strokeCount) {
+      if ((this._looseness === 0 && cmpStrokeCount !== strokeCount) || (cmpStrokeCount < minimumStrokes || cmpStrokeCount > maximumStrokes || cmpSubStrokes.length < minSubStrokes || cmpSubStrokes.length > maxSubStrokes)) {
         continue
       }
-      if (cmpStrokeCount < minimumStrokes || cmpStrokeCount > maximumStrokes || cmpSubStrokes.length < minSubStrokes || cmpSubStrokes.length > maxSubStrokes) {
-        continue
-      }
+      // console.time('matchOne')
       let match = this.matchOne(strokeCount, inputSubStrokes, subStrokesRange, repoChar)
+      // console.timeEnd('matchOne')
       matchCollector.fileMatch(match)
     }
+    console.timeEnd('doMatch')
     ready(matchCollector.getMatches())
   }
   getStrokesRange (strokeCount) {
@@ -768,8 +769,10 @@ class HanziLookup {
   }
 
   matchOne (inputStrokeCount, inputSubStrokes, subStrokesRange, repoChar) {
+    // console.time('computeMatchScore')
     ++this._charsChecked
     let score = this.computeMatchScore(inputStrokeCount, inputSubStrokes, subStrokesRange, repoChar)
+    // console.timeEnd('computeMatchScore')
     if (inputStrokeCount == repoChar[1] && inputStrokeCount < this.CORRECT_NUM_STROKES_CAP) {
       const bonus = (this.CORRECT_NUM_STROKES_BONUS * Math.max(this.CORRECT_NUM_STROKES_CAP - inputStrokeCount, 0)) / this.CORRECT_NUM_STROKES_CAP
       score += bonus * score
@@ -778,6 +781,10 @@ class HanziLookup {
   }
 
   computeMatchScore (strokeCount, inputSubStrokes, subStrokesRange, repoChar) {
+    // console.time('computeMatchScore-inner')
+    // Memoization caches for direction and length scores
+    const directionScoreCache = {}
+    const lengthScoreCache = {}
     for (let x = 0; x < inputSubStrokes.length; x++) {
       const inputDirection = inputSubStrokes[x].direction
       const inputLength = inputSubStrokes[x].length
@@ -794,33 +801,41 @@ class HanziLookup {
           const skip1Score = this._scoreMatrix[x][y + 1] - (inputLength / 256) * this.SKIP_PENALTY_MULTIPLIER
           const skip2Score = this._scoreMatrix[x + 1][y] - (compareLength / 256) * this.SKIP_PENALTY_MULTIPLIER
           const skipScore = Math.max(skip1Score, skip2Score)
-          const matchScore = this.computeSubStrokeScore(inputDirection, inputLength, compareDirection, compareLength, inputCenter, compareCenter)
+          // Memoize direction and length scores
+          const dirKey = `${inputDirection},${compareDirection},${inputLength}`
+          const lenKey = `${inputLength},${compareLength}`
+          let directionScore = directionScoreCache[dirKey]
+          if (directionScore === undefined) {
+            directionScore = this.getDirectionScore(inputDirection, compareDirection, inputLength)
+            directionScoreCache[dirKey] = directionScore
+          }
+          let lengthScore = lengthScoreCache[lenKey]
+          if (lengthScore === undefined) {
+            lengthScore = this.getLengthScore(inputLength, compareLength)
+            lengthScoreCache[lenKey] = lengthScore
+          }
+          let matchScore = directionScore * lengthScore
+          if (compareCenter) {
+            const dx = inputCenter[0] - compareCenter[0]
+            const dy = inputCenter[1] - compareCenter[1]
+            const closeness = this.POS_SCORE_TABLE[dx * dx + dy * dy]
+            if (matchScore > 0) {
+              matchScore *= closeness
+            } else {
+              matchScore /= closeness
+            }
+          }
           const previousScore = this._scoreMatrix[x][y]
           newScore = Math.max(previousScore + matchScore, skipScore)
         }
         this._scoreMatrix[x + 1][y + 1] = newScore
       }
     }
+    // console.timeEnd('computeMatchScore-inner')
     return this._scoreMatrix[inputSubStrokes.length][repoChar[2]]
   }
 
-  computeSubStrokeScore (inputDir, inputLen, repoDir, repoLen, inputCenter, repoCenter) {
-    ++this._subStrokesCompared
-    const directionScore = this.getDirectionScore(inputDir, repoDir, inputLen)
-    const lengthScore = this.getLengthScore(inputLen, repoLen)
-    let score = lengthScore * directionScore
-    if (repoCenter) {
-      const dx = inputCenter[0] - repoCenter[0]
-      const dy = inputCenter[1] - repoCenter[1]
-      const closeness = this.POS_SCORE_TABLE[dx * dx + dy * dy]
-      if (score > 0) {
-        score *= closeness
-      } else {
-        score /= closeness
-      }
-    }
-    return score
-  }
+  // computeSubStrokeScore is now inlined in computeMatchScore for memoization efficiency
 
   initScoreTables () {
     const dirCurve = this.CubicCurve2D(0,1.0,0.5,1.0,0.25,-2.0,1.0,1.0)

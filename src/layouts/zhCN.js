@@ -1,18 +1,20 @@
 export default {
   layout: {
     default: [
-      '{lang_en} {lang_hand} {lang_cj} {suggestion_area} {arrowleft} {arrowright} {bksp}',
-      '\u0060 1 2 3 4 5 6 7 8 9 0 - = {enter}',
-      '{tab} q w e r t y u i o p [ ] \\',
-      '{lock} a s d f g h j k l ; \' {space}',
-      '{shift} z x c v b n m . - / {shift}'
+      '{lang_en} {lang_hand} {lang_cj} {preview_pinyin} {arrowleft} {arrowright} {bksp}',
+      '{suggestion_area}',
+      'q w e r t y u i o p \'',
+      'a s d f g h j k l -',
+      '{shift} z x c v b n m {shift}',
+      '{space} {confirm_cn}'
     ],
     shift: [
-      '{lang_en} {lang_hand} {lang_cj} {big_space} {arrowleft} {arrowright} {bksp}',
-      '~ ! @ # $ % ^ & * ) ( _ + {enter}',
-      '{tab} Q W E R T Y U I O P { } |',
-      '{lock} A S D F G H J K L : " {space}',
-      '{shift} Z X C V B N M < > ? {shift}'
+      '{lang_en} {lang_hand} {lang_cj} {preview_pinyin} {arrowleft} {arrowright} {bksp}',
+      '{suggestion_area}',
+      'Q W E R T Y U I O P \'',
+      'A S D F G H J K L -',
+      '{shift} Z X C V B N M {shift}',
+      '{space} {confirm_cn}'
     ]
   },
   layoutCandidates: {

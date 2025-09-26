@@ -11,11 +11,14 @@ import layouts from './layouts'
 import defaultDisplay from './display'
 import HanziLookup from './hanzi/hanzilookup'
 
+// TODO: when in zhCN/zhHT layout, disable the buttons based on if the input is valid pinyin or not
+// example: if the input is "er" it is valid pinyin but "err" is not so the after writing "er" the "r" button should be disabled
+
 export default {
   name: 'SimpleKeyboard',
   props: {
     // Layout & Display
-    layout: { type: Object, default: undefined },
+    layouts: { type: Object, default: undefined },
     languageMapping: { type: Object, default: undefined },
     layoutName: { type: String, default: 'default' },
     localeForHandwriting: { type: String, default: 'zhCN' },
@@ -95,6 +98,7 @@ export default {
   ],
   data () {
     return {
+      allKeys: [],
       keyboard: null,
       drawingBoard: new HanziLookup(),
       defaultLanguageMapping: {
@@ -105,7 +109,11 @@ export default {
       },
       suggestionsExpanded: false,
       layoutCandidatesInternal: undefined,
-      originalRenderPage: false
+      originalRenderPage: false,
+      singleShiftActive: false,
+      capsLockActive: false,
+      previewPinyin: '',
+      shouldEmptyPinyinPreview: false
     }
   },
   computed: {
@@ -114,6 +122,10 @@ export default {
     }
   },
   watch: {
+    previewPinyin (newValue) {
+      console.warn(`preview pinyin changed to '${newValue}'`)
+      this.updateDisabledPinyinKeys()
+    },
     modelValue (newValue) {
       if (this.keyboard && !_.isUndefined(newValue)) {
         this.keyboard.setInput(newValue)
@@ -123,7 +135,11 @@ export default {
       handler () { this.reinitKeyboard() },
       deep: true
     },
-    layoutName: 'reinitKeyboard',
+    layoutName: function () {
+      this.capsLockActive = false
+      this.singleShiftActive = false
+      this.reinitKeyboard()
+    },
     theme: 'reinitKeyboard',
     display: {
       handler () { this.reinitKeyboard() },
@@ -145,6 +161,38 @@ export default {
     this.destroy()
   },
   methods: {
+    getLayoutKeys () {
+      const layout = _.cloneDeep(_.get(layouts, `${this.layoutName}.layout.${this.keyboard.options.layoutName}`, []))
+      return _.filter(_.split(_.join(layout, ' '), ' '), key => !_.startsWith(key, '{') && !_.endsWith(key, '}'))
+    },
+    // Returns array of valid pinyin syllables for current layout
+    getValidPinyinList () {
+      const candidates = this.getLayoutCandidates() || []
+      if (_.isPlainObject(layouts[this.layoutName]?.layoutCandidates)) {
+        return _.keys(layouts[this.layoutName].layoutCandidates)
+      }
+      if (_.isArray(candidates)) {
+        return _.uniq(_.map(candidates, item => _.isString(item) ? item : item.pinyin))
+      }
+      return []
+    },
+    isValidPinyinPrefix (pinyin) {
+      const validList = this.getValidPinyinList()
+      return _.some(validList, syllable => _.startsWith(syllable, pinyin))
+    },
+    updateDisabledPinyinKeys () {
+      if (!_.includes(['zhCN', 'zhHT'], this.layoutName)) {
+        return
+      }
+      this.removeButtonTheme(_.join(this.allKeys, ' '), 'disabled')
+      let invalidKeys = []
+      if (_.trim(this.previewPinyin).length !== 0) {
+        invalidKeys = _.filter(this.allKeys, letter => !this.isValidPinyinPrefix(`${this.previewPinyin}${letter}`))
+      }
+      if (invalidKeys.length > 0) {
+        this.addButtonTheme(_.join(invalidKeys, ' '), 'disabled')
+      }
+    },
     updateSuggestions (suggestions) {
       if (!_.get(this.keyboard, 'candidateBox', false)) {
         return
@@ -187,9 +235,24 @@ export default {
       }
       return _.get(layouts, `${this.layoutName}.layoutCandidates`, undefined)
     },
+    setPreviewPinyin (string) {
+      if (this.shouldEmptyPinyinPreview) {
+        string = ' '
+        this.shouldEmptyPinyinPreview = false
+      }
+      this.previewPinyin = string
+      if (this.keyboard) {
+        const display = { ...this.keyboard.options.display, '{preview_pinyin}': this.previewPinyin }
+        this.keyboard.setOptions({ display })
+        this.updateDisabledPinyinKeys()
+      }
+      this.updatePinyinSuggestions()
+    },
     onKeyPress (button)  {
-      if (button === '{shift}' || button === '{lock}') {
+      if (button === '{shift}') {
         this.handleShift()
+      } else if (button === '{lock}') {
+        this.handleLock()
       } else if (_.startsWith(button, '{lang_')) {
         const mapping = this.languageMapping || this.defaultLanguageMapping
         this.$emit('onLayoutChange', mapping[button])
@@ -207,19 +270,77 @@ export default {
         this.drawingBoard.clearCanvas()
         this.drawingBoard.redraw()
         this.lookup()
+      } else if (button === '{space}') {
+        this.setLayoutCandidates([])
+        this.$emit('onSuggestionsUpdate', [])
       } else if (this.layoutName === 'hand' && button !== '{suggestion_area}' && button !== '{clear}') {
         this.onKeyPress('{clear}')
+      } else if (_.includes(['zhCN', 'zhHT'], this.layoutName)) {
+        // Prevent input for disabled keys
+        if (!_.startsWith(button, '{') && !_.endsWith(button, '}')) {
+          if (this.keyboard && this.keyboard.getButtonElement) {
+            const btnElem = this.keyboard.getButtonElement(button)
+            if (btnElem && btnElem.classList.contains('disabled')) {
+              return
+            }
+          }
+        }
+        if (button === '{bksp}') {
+          // If previewPinyin is not empty, remove last character from previewPinyin
+          if (_.trim(this.previewPinyin).length > 0) {
+            return this.setPreviewPinyin(this.previewPinyin.length > 1 ? this.previewPinyin.slice(0, -1) : ' ')
+          }
+          // If previewPinyin is empty, fall through to default behavior (remove from input)
+        }
+        // Only add to input if button is a capitalized letter (A-Z)
+        if (!_.startsWith(button, '{') && !_.endsWith(button, '}')) {
+          if (/^[A-Z]$/.test(button)) {
+            const currentInput = this.keyboard.getInput()
+            this.onChange(currentInput + button)
+            if (this.singleShiftActive && !this.capsLockActive) {
+              this.singleShiftActive = false
+              if (this.keyboard) {
+                this.keyboard.setOptions({ layoutName: 'default' })
+              }
+            }
+          } else {
+            return this.setPreviewPinyin(`${this.previewPinyin === ' ' ? '' : this.previewPinyin}${button}`)
+          }
+        }
       }
       this.$emit('onKeyPress', button)
     },
+    updatePinyinSuggestions () {
+      if (!_.includes(['zhCN', 'zhHT'], this.layoutName)) {
+        return
+      }
+      const pinyin = this.previewPinyin
+      if (!pinyin) {
+        this.setLayoutCandidates([])
+        return this.$emit('onSuggestionsUpdate', [])
+      }
+      const candidates = this.getLayoutCandidates() || []
+      const filtered = _.split(_.join(_.compact(_.map(candidates, (val, key) => _.startsWith(key, pinyin) ? val : false)), ' '), ' ')
+      this.setLayoutCandidates(filtered)
+      this.$emit('onSuggestionsUpdate', filtered)
+    },
     onChange (input) {
+      if (_.includes(['zhCN', 'zhHT'], this.layoutName) && /[a-z]+$/.test(input)) {
+        return
+      }
       this.$emit('onChange', input)
       this.$emit('update:modelValue', input)
     },
     onChangeAll (inputs) {
+      if (_.includes(['zhCN', 'zhHT'], this.layoutName) && _.every(inputs, input => /[a-z]+$/.test(input))) {
+        return
+      }
       this.$emit('onChangeAll', inputs)
     },
     onKeyReleased (button) {
+      if (_.includes(['zhCN', 'zhHT'], this.layoutName) && /[a-z]+$/.test(button)) {
+        return
+      }
       this.$emit('onKeyReleased', button)
     },
     async onRender () {
@@ -235,6 +356,12 @@ export default {
       this.$emit('onInit')
     },
     beforeInputUpdate (input, inputName) {
+      if (_.includes(['zhCN', 'zhHT'], this.layoutName)) {
+        const lastChar = typeof input === 'string' ? input.slice(-1) : ''
+        if (/^[a-z]$/.test(lastChar)) {
+          return false
+        }
+      }
       this.$emit('beforeInputUpdate', input, inputName)
     },
     initializeKeyboard () {
@@ -244,13 +371,22 @@ export default {
       }
       this.suggestionsExpanded = false
       this.layoutCandidatesInternal = []
-      const layoutCandidates = this.getLayoutCandidates()
+      const mergedLayouts = {}
+      _.forOwn(layouts, (layoutObj, langKey) => {
+        const baseLayout = _.get(layoutObj, 'layout', _.get(layouts, `${langKey}.layout`, undefined))
+        const candidates = _.merge(_.get(layoutObj, 'layoutCandidates', undefined), _.get(this.layouts, `${langKey}.layoutCandidates`, undefined))
+        mergedLayouts[langKey] = {
+          layout: baseLayout,
+          layoutCandidates: candidates
+        }
+      })
+      const currentLayoutObj = mergedLayouts[this.layoutName] || {}
       const options = {
         ..._.pick(this, _.keys(this.$props)),
-        layout: this.layout || _.get(layouts, `${this.layoutName}.layout`, undefined),
+        layout: currentLayoutObj.layout,
         display: this.display || defaultDisplay,
-        layoutCandidates,
-        layoutCandidatesCaseSensitiveMatch: this.layoutCandidatesCaseSensitiveMatch || (!_.isUndefined(layoutCandidates) && !_.includes(['zhCN', 'zhHT', 'hand'], this.layoutName)),
+        layoutCandidates: currentLayoutObj.layoutCandidates,
+        layoutCandidatesCaseSensitiveMatch: this.layoutCandidatesCaseSensitiveMatch || (!_.isUndefined(currentLayoutObj.layoutCandidates) && !_.includes(['zhCN', 'zhHT', 'hand'], this.layoutName)),
         onChange: this.onChange,
         onChangeAll: this.onChangeAll,
         onKeyPress: this.onKeyPress,
@@ -264,11 +400,14 @@ export default {
       if (!_.isUndefined(this.modelValue)) {
         this.keyboard.setInput(this.modelValue)
       }
-      if (_.isFunction(_.get(this.keyboard, 'candidateBox.renderPage', false)) && !_.isEmpty(this.getLayoutCandidates())) {
+      this.allKeys = this.getLayoutKeys()
+      if (_.isFunction(_.get(this.keyboard, 'candidateBox.renderPage', false)) && !_.isEmpty(currentLayoutObj.layoutCandidates)) {
         this.keyboard.candidateBox.renderPage = this.renderPageFromLibrary
       }
     },
     switchLayout (newLayoutName) {
+      this.capsLockActive = false
+      this.singleShiftActive = false
       this.$emit('onLayoutChange', newLayoutName)
     },
     moveCursorLeft () {
@@ -283,10 +422,26 @@ export default {
       }
     },
     handleShift () {
-      if (!this.keyboard) return
-      const currentLayout = this.keyboard.options.layoutName
-      const shiftToggle = currentLayout === 'default' ? 'shift' : 'default'
-      this.keyboard.setOptions({ layoutName: shiftToggle })
+      if (!this.keyboard) {
+        return
+      }
+      if (!this.capsLockActive) {
+        const currentLayout = this.keyboard.options.layoutName
+        this.singleShiftActive = currentLayout === 'default'
+        this.keyboard.setOptions({ layoutName: currentLayout === 'default' ? 'shift' : 'default' })
+      }
+    },
+    handleLock () {
+      if (!this.keyboard) {
+        return
+      }
+      this.capsLockActive = !this.capsLockActive
+      this.singleShiftActive = false
+      if (this.capsLockActive) {
+        this.keyboard.setOptions({ layoutName: 'shift' })
+      } else {
+        this.keyboard.setOptions({ layoutName: 'default' })
+      }
     },
     setInput (input, inputName) {
       if (this.keyboard) {
@@ -303,12 +458,24 @@ export default {
     },
     addButtonTheme (buttons, className) {
       if (this.keyboard) {
-        this.keyboard.addButtonTheme(buttons, className)
+        const btns = _.split(buttons, ' ')
+        _.each(btns, (btn) => {
+          const btnElem = this.keyboard.getButtonElement(btn)
+          if (btnElem && !btnElem.classList.contains(className)) {
+            btnElem.classList.add(className)
+          }
+        })
       }
     },
     removeButtonTheme (buttons, className) {
       if (this.keyboard) {
-        this.keyboard.removeButtonTheme(buttons, className)
+        const btns = _.split(buttons, ' ')
+        _.each(btns, (btn) => {
+          const btnElem = this.keyboard.getButtonElement(btn)
+          if (btnElem && btnElem.classList.contains(className)) {
+            btnElem.classList.remove(className)
+          }
+        })
       }
     },
     clearInput (inputName) {
@@ -367,6 +534,14 @@ export default {
       candidateListLIElement.className = 'hg-suggestion-button'
       candidateListLIElement.innerHTML = this.keyboard.candidateBox.options.display?.[candidateListItem] || candidateListItem
       const onClickOrTouch = (event) => {
+        this.setPreviewPinyin(' ')
+        if (_.includes(['zhCN', 'zhHT'], this.layoutName)) {
+          const currentInput = this.keyboard.getInput()
+          this.onChange(currentInput + candidateListItem)
+        }
+        if (this.keyboard) {
+          this.shouldEmptyPinyinPreview = true
+        }
         onItemSelected(candidateListItem, event || getMouseEvent())
         this.setLayoutCandidates([])
         this.$emit('onSuggestionsUpdate', [])
@@ -389,6 +564,7 @@ export default {
       suggestionMenu.className = 'hg-suggestion_area-menu'
       suggestionArea.appendChild(suggestionMenu)
       let candidatesToRender = []
+
       const pageSize = this.layoutCandidatesPageSize || 10
       if (this.suggestionsExpanded) {
         candidatesToRender = _.flatten(candidateListPages)
@@ -480,8 +656,11 @@ export default {
       span {
         pointer-events: none;
       }
-      &.hg-activeButton, &.hg-standardBtn {
+      &.hg-standardBtn {
         background: white;
+      }
+      &.hg-activeButton {
+        background: #e3f0ff;
       }
       &.hg-button-numpadadd, &.hg-button-numpadenter {
         height: 85px;
@@ -551,9 +730,9 @@ export default {
       &.hg-button-big_space {
         opacity: 0;
         pointer-events: none;
-        width: 50%;
-        max-width: 50%;
-        min-width: 50%;
+        // width: 50%;
+        // max-width: 50%;
+        // min-width: 50%;
       }
       &.hg-button-arrowleft,
       &.hg-button-arrowright {
