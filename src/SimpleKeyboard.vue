@@ -119,8 +119,7 @@ export default {
     }
   },
   watch: {
-    previewPinyin (newValue) {
-      console.warn(`preview pinyin changed to '${newValue}'`)
+    previewPinyin () {
       this.updateDisabledPinyinKeys()
     },
     modelValue (newValue) {
@@ -498,7 +497,6 @@ export default {
       let strokes = this.drawingBoard.cloneStrokes()
       if (_.get(strokes, 'length', 0) === 1 && _.get(strokes, '[0].length', 0) === 2) {
         strokes = []
-        console.debug('Will reset drawing strokes')
       }
       const analyzedChar = this.drawingBoard.AnalyzedCharacter(strokes)
       const looseness = this.layoutName === 'hand' ? this.handwritingLooseness : 1
