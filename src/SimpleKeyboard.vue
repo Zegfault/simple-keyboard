@@ -11,9 +11,6 @@ import layouts from './layouts'
 import defaultDisplay from './display'
 import HanziLookup from './hanzi/hanzilookup'
 
-// TODO: when in zhCN/zhHT layout, disable the buttons based on if the input is valid pinyin or not
-// example: if the input is "er" it is valid pinyin but "err" is not so the after writing "er" the "r" button should be disabled
-
 export default {
   name: 'SimpleKeyboard',
   props: {
