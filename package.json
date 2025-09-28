@@ -2,8 +2,8 @@
   "name": "vue-simple-keyboard",
   "version": "1.0.0",
   "description": "A Vue 3 component wrapper for simple-keyboard virtual keyboard library",
-  "main": "dist/vue-simple-keyboard.umd.js",
-  "module": "dist/vue-simple-keyboard.es.js",
+  "main": "dist/vue-simple-keyboard-index.umd.js",
+  "module": "dist/vue-simple-keyboard-index.es.js",
   "files": [
     "dist",
     "dist/vue-simple-keyboard.css",
@@ -11,8 +11,8 @@
   ],
   "exports": {
     ".": {
-      "import": "./dist/vue-simple-keyboard.es.js",
-      "require": "./dist/vue-simple-keyboard.umd.js"
+      "import": "./dist/vue-simple-keyboard-index.es.js",
+      "require": "./dist/vue-simple-keyboard-index.umd.js"
     },
     "./style.css": "./dist/vue-simple-keyboard.css"
   },
