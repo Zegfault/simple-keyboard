@@ -26,7 +26,7 @@ export default {
     drawingOptions: {
       type: Object,
       default: () => ({
-        drawingGrid: false,
+        drawingGrid: true,
         strokeColor: 'black'
       })
     },
@@ -97,7 +97,7 @@ export default {
     return {
       allKeys: [],
       keyboard: null,
-      drawingBoard: new HanziLookup(),
+      drawingBoard: null,
       defaultLanguageMapping: {
         '{lang_en}': 'enUS',
         '{lang_cn}': 'zhCN',
@@ -217,9 +217,8 @@ export default {
       })
     },
     async initHanzi () {
-      this.drawingBoard.options = _.merge(this.drawingBoard.options, this.drawingOptions || {})
       const data = await import(`./hanzi/${this.localeForHandwriting}.json`)
-      this.drawingBoard.init(this.localeForHandwriting, {substrokes: data.substrokes, chars: data.chars})
+      HanziLookup.init(this.localeForHandwriting, {substrokes: data.substrokes, chars: data.chars})
     },
     getLayoutCandidates () {
       if (_.get(this.layoutCandidatesInternal, 'length', 0) > 0) {
@@ -345,8 +344,12 @@ export default {
       if (_.isNull(elem) || _.isUndefined(elem)) {
         return
       }
+      HanziLookup.options = _.merge(
+        HanziLookup.options,
+        this.drawingOptions || {}
+      )
+      this.drawingBoard = new HanziLookup.DrawingBoard(elem, this.lookup)
       await this.initHanzi()
-      this.drawingBoard = this.drawingBoard.DrawingBoard(elem, this.lookup)
     },
     onInit () {
       this.$emit('onInit')
@@ -498,11 +501,11 @@ export default {
       if (_.get(strokes, 'length', 0) === 1 && _.get(strokes, '[0].length', 0) === 2) {
         strokes = []
       }
-      const analyzedChar = this.drawingBoard.AnalyzedCharacter(strokes)
+      const analyzedChar = new HanziLookup.AnalyzedCharacter(strokes)
       const looseness = this.layoutName === 'hand' ? this.handwritingLooseness : 1
-      const matcher = this.drawingBoard.Matcher(this.localeForHandwriting, looseness)
+      const matcher = new HanziLookup.Matcher(this.localeForHandwriting, looseness)
       this.showResults([])
-      matcher.doMatch(analyzedChar, this.suggestionsLimit, matches => {
+      matcher.match(analyzedChar, this.suggestionsLimit, matches => {
         this.showResults(matches)
       })
     },
