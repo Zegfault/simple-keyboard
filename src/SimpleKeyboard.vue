@@ -201,10 +201,14 @@ export default {
       if (!suggestionArea) {
         return
       }
-      if (_.get(suggestions, 'length', 0) === 0) {
+      // Filter out empty or whitespace-only suggestions
+      const filteredSuggestions = _.filter(suggestions, s => _.trim(s).length > 0)
+      if (_.get(filteredSuggestions, 'length', 0) === 0) {
         suggestionArea.classList.remove('displayed')
         suggestionArea.classList.remove('expanded')
         this.suggestionsExpanded = false
+        suggestionArea.innerHTML = ''
+        return
       } else {
         suggestionArea.classList.add('displayed')
       }
@@ -212,7 +216,7 @@ export default {
       const suggestionMenu = document.createElement('div')
       suggestionMenu.className = 'hg-suggestion_area-menu'
       suggestionArea.appendChild(suggestionMenu)
-      _.each(suggestions, (item) => {
+      _.each(filteredSuggestions, (item) => {
         this.createSuggestionElement(suggestionMenu, () => {}, item)
       })
     },
@@ -310,12 +314,15 @@ export default {
         return
       }
       const pinyin = this.previewPinyin
-      if (!pinyin) {
+      if (!pinyin || _.trim(pinyin) === '') {
         this.setLayoutCandidates([])
         return this.$emit('onSuggestionsUpdate', [])
       }
       const candidates = this.getLayoutCandidates() || []
-      const filtered = _.split(_.join(_.compact(_.map(candidates, (val, key) => _.startsWith(key, pinyin) ? val : false)), ' '), ' ')
+      const filtered = _.filter(
+        _.split(_.join(_.compact(_.map(candidates, (val, key) => _.startsWith(key, pinyin) ? val : false)), ' '), ' '),
+        s => _.trim(s).length > 0
+      )
       this.setLayoutCandidates(filtered)
       this.$emit('onSuggestionsUpdate', filtered)
     },

@@ -26568,11 +26568,17 @@ const Ld = (c, s) => {
       const h = s.querySelector(".hg-button-suggestion_area");
       if (!h)
         return;
-      w.get(c, "length", 0) === 0 ? (h.classList.remove("displayed"), h.classList.remove("expanded"), this.suggestionsExpanded = !1) : h.classList.add("displayed"), h.innerHTML = "";
-      const u = document.createElement("div");
-      u.className = "hg-suggestion_area-menu", h.appendChild(u), w.each(c, (d) => {
-        this.createSuggestionElement(u, () => {
-        }, d);
+      const u = w.filter(c, (k) => w.trim(k).length > 0);
+      if (w.get(u, "length", 0) === 0) {
+        h.classList.remove("displayed"), h.classList.remove("expanded"), this.suggestionsExpanded = !1, h.innerHTML = "";
+        return;
+      } else
+        h.classList.add("displayed");
+      h.innerHTML = "";
+      const d = document.createElement("div");
+      d.className = "hg-suggestion_area-menu", h.appendChild(d), w.each(u, (k) => {
+        this.createSuggestionElement(d, () => {
+        }, k);
       });
     },
     async initHanzi() {
@@ -26632,9 +26638,12 @@ const Ld = (c, s) => {
       if (!w.includes(["zhCN", "zhHT"], this.layoutName))
         return;
       const c = this.previewPinyin;
-      if (!c)
+      if (!c || w.trim(c) === "")
         return this.setLayoutCandidates([]), this.$emit("onSuggestionsUpdate", []);
-      const s = this.getLayoutCandidates() || [], h = w.split(w.join(w.compact(w.map(s, (u, d) => w.startsWith(d, c) ? u : !1)), " "), " ");
+      const s = this.getLayoutCandidates() || [], h = w.filter(
+        w.split(w.join(w.compact(w.map(s, (u, d) => w.startsWith(d, c) ? u : !1)), " "), " "),
+        (u) => w.trim(u).length > 0
+      );
       this.setLayoutCandidates(h), this.$emit("onSuggestionsUpdate", h);
     },
     onChange(c) {
