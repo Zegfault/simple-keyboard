@@ -1,6 +1,8 @@
 import SimpleKeyboard from './SimpleKeyboard.vue'
 
-// Export the component and plugin install function as named exports only
+// Default export for ESM compatibility
+export default SimpleKeyboard
+// Named export for named import usage
 export { SimpleKeyboard }
 
 export const install = (app) => {
