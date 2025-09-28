@@ -1,58 +1,64 @@
 import AnalyzedStroke from './AnalyzedStroke'
 import SubStroke from './SubStroke'
 
-function AnalyzedCharacter (rawStrokes) {
-  'use strict'
-  let MIN_SEGMENT_LENGTH = 12.5
-  let MAX_LOCAL_LENGTH_RATIO = 1.1
-  let MAX_RUNNING_LENGTH_RATIO = 1.09
-  let _top = Number.MAX_SAFE_INTEGER
-  let _bottom = Number.MIN_SAFE_INTEGER
-  let _left = Number.MAX_SAFE_INTEGER
-  let _right = Number.MIN_SAFE_INTEGER
-  let _analyzedStrokes = []
-  let _subStrokeCount = 0
-  getBoundingRect(rawStrokes)
-  buildAnalyzedStrokes(rawStrokes)
-  this.top = _top <= 256 ? _top : 0
-  this.bottom = _bottom >= 0 ? _bottom : 256
-  this.left = _left <= 256 ? _left : 0
-  this.right = _right >= 0 ? _right : 256
-  this.analyzedStrokes = _analyzedStrokes
-  this.subStrokeCount = _subStrokeCount
+class AnalyzedCharacter {
+  constructor (rawStrokes) {
+    const MIN_SEGMENT_LENGTH = 12.5
+    const MAX_LOCAL_LENGTH_RATIO = 1.1
+    const MAX_RUNNING_LENGTH_RATIO = 1.09
+    this._top = Number.MAX_SAFE_INTEGER
+    this._bottom = Number.MIN_SAFE_INTEGER
+    this._left = Number.MAX_SAFE_INTEGER
+    this._right = Number.MIN_SAFE_INTEGER
+    this._analyzedStrokes = []
+    this._subStrokeCount = 0
 
-  function getBoundingRect (rawStrokes) {
+    this._getBoundingRect(rawStrokes)
+    this._buildAnalyzedStrokes(rawStrokes)
+
+    this.top = this._top <= 256 ? this._top : 0
+    this.bottom = this._bottom >= 0 ? this._bottom : 256
+    this.left = this._left <= 256 ? this._left : 0
+    this.right = this._right >= 0 ? this._right : 256
+    this.analyzedStrokes = this._analyzedStrokes
+    this.subStrokeCount = this._subStrokeCount
+    this.MIN_SEGMENT_LENGTH = MIN_SEGMENT_LENGTH
+    this.MAX_LOCAL_LENGTH_RATIO = MAX_LOCAL_LENGTH_RATIO
+    this.MAX_RUNNING_LENGTH_RATIO = MAX_RUNNING_LENGTH_RATIO
+  }
+
+  _getBoundingRect (rawStrokes) {
     for (let i = 0; i != rawStrokes.length; ++i) {
       for (let j = 0; j != rawStrokes[i].length; ++j) {
         let pt = rawStrokes[i][j]
-        if (pt[0] < _left) _left = pt[0]
-        if (pt[0] > _right) _right = pt[0]
-        if (pt[1] < _top) _top = pt[1]
-        if (pt[1] > _bottom) _bottom = pt[1]
+        if (pt[0] < this._left) this._left = pt[0]
+        if (pt[0] > this._right) this._right = pt[0]
+        if (pt[1] < this._top) this._top = pt[1]
+        if (pt[1] > this._bottom) this._bottom = pt[1]
       }
     }
   }
 
-  function dist (a, b) {
+  _dist (a, b) {
     let dx = a[0] - b[0]
     let dy = a[1] - b[1]
     return Math.sqrt(dx * dx + dy * dy)
   }
 
-  function normDist (a, b) {
-    let width = _right - _left
-    let height = _bottom - _top
+  _normDist (a, b) {
+    let width = this._right - this._left
+    let height = this._bottom - this._top
     let dimensionSquared = width > height ? width * width : height * height
     let normalizer = Math.sqrt(dimensionSquared + dimensionSquared)
-    let distanceNormalized = dist(a, b) / normalizer
+    let distanceNormalized = this._dist(a, b) / normalizer
     return Math.min(distanceNormalized, 1)
   }
 
-  function dir (a, b) {
+  _dir (a, b) {
     return Math.PI - Math.atan2(a[1] - b[1], a[0] - b[0])
   }
 
-  function getPivotIndexes (points) {
+  _getPivotIndexes (points) {
     let markers = []
     for (let i = 0; i != points.length; ++i) {
       markers.push(false)
@@ -61,17 +67,17 @@ function AnalyzedCharacter (rawStrokes) {
     let firstPtIx = 0
     let pivotPtIx = 1
     markers[0] = true
-    let localLength = dist(points[firstPtIx], points[pivotPtIx])
+    let localLength = this._dist(points[firstPtIx], points[pivotPtIx])
     let runningLength = localLength
     for (let i = 2; i < points.length; ++i) {
       let nextPoint = points[i]
-      let pivotLength = dist(points[pivotPtIx], nextPoint)
+      let pivotLength = this._dist(points[pivotPtIx], nextPoint)
       localLength += pivotLength
       runningLength += pivotLength
-      let distFromPrevious = dist(points[prevPtIx], nextPoint)
-      let distFromFirst = dist(points[firstPtIx], nextPoint)
-      if (localLength > MAX_LOCAL_LENGTH_RATIO * distFromPrevious || runningLength > MAX_RUNNING_LENGTH_RATIO * distFromFirst) {
-        if (markers[prevPtIx] && dist(points[prevPtIx], points[pivotPtIx]) < MIN_SEGMENT_LENGTH) {
+      let distFromPrevious = this._dist(points[prevPtIx], nextPoint)
+      let distFromFirst = this._dist(points[firstPtIx], nextPoint)
+      if (localLength > this.MAX_LOCAL_LENGTH_RATIO * distFromPrevious || runningLength > this.MAX_RUNNING_LENGTH_RATIO * distFromFirst) {
+        if (markers[prevPtIx] && this._dist(points[prevPtIx], points[pivotPtIx]) < this.MIN_SEGMENT_LENGTH) {
           markers[prevPtIx] = false
         }
         markers[pivotPtIx] = true
@@ -83,7 +89,7 @@ function AnalyzedCharacter (rawStrokes) {
       pivotPtIx = i
     }
     markers[pivotPtIx] = true
-    if (markers[prevPtIx] && dist(points[prevPtIx], points[pivotPtIx]) < MIN_SEGMENT_LENGTH && prevPtIx != 0) {
+    if (markers[prevPtIx] && this._dist(points[prevPtIx], points[pivotPtIx]) < this.MIN_SEGMENT_LENGTH && prevPtIx != 0) {
       markers[prevPtIx] = false
     }
     let res = []
@@ -95,26 +101,26 @@ function AnalyzedCharacter (rawStrokes) {
     return res
   }
 
-  function getNormCenter (a, b) {
+  _getNormCenter (a, b) {
     let x = (a[0] + b[0]) / 2
     let y = (a[1] + b[1]) / 2
     let side
-    if (_right - _left > _bottom - _top) {
-      side = _right - _left
-      let height = _bottom - _top
-      x = x - _left
-      y = y - _top + (side - height) / 2
+    if (this._right - this._left > this._bottom - this._top) {
+      side = this._right - this._left
+      let height = this._bottom - this._top
+      x = x - this._left
+      y = y - this._top + (side - height) / 2
     } else {
-      side = _bottom - _top
-      let width = _right - _left
-      x = x - _left + (side - width) / 2
-      y = y - _top
+      side = this._bottom - this._top
+      let width = this._right - this._left
+      x = x - this._left + (side - width) / 2
+      y = y - this._top
     }
     return [x / side, y / side]
   }
 
   // Builds array of substrokes from stroke's points, pivots, and character's bounding rectangle
-  function buildSubStrokes (points, pivotIndexes) {
+  _buildSubStrokes (points, pivotIndexes) {
     let res = []
     let prevIx = 0
     for (let i = 0; i != pivotIndexes.length; ++i) {
@@ -122,12 +128,12 @@ function AnalyzedCharacter (rawStrokes) {
       if (ix == prevIx) {
         continue
       }
-      let direction = dir(points[prevIx], points[ix])
+      let direction = this._dir(points[prevIx], points[ix])
       direction = Math.round((direction * 256.0) / Math.PI / 2.0)
       if (direction == 256) direction = 0
-      let normLength = normDist(points[prevIx], points[ix])
+      let normLength = this._normDist(points[prevIx], points[ix])
       normLength = Math.round(normLength * 255)
-      let center = getNormCenter(points[prevIx], points[ix])
+      let center = this._getNormCenter(points[prevIx], points[ix])
       center[0] = Math.round(center[0] * 15)
       center[1] = Math.round(center[1] * 15)
       res.push(new SubStroke(direction, normLength, center[0], center[1]))
@@ -136,12 +142,12 @@ function AnalyzedCharacter (rawStrokes) {
     return res
   }
 
-  function buildAnalyzedStrokes (rawStrokes) {
+  _buildAnalyzedStrokes (rawStrokes) {
     for (let i = 0; i != rawStrokes.length; ++i) {
-      const pivotIndexes = getPivotIndexes(rawStrokes[i])
-      const subStrokes = buildSubStrokes(rawStrokes[i], pivotIndexes)
-      _subStrokeCount += subStrokes.length
-      _analyzedStrokes.push(new AnalyzedStroke(rawStrokes[i], pivotIndexes, subStrokes))
+      const pivotIndexes = this._getPivotIndexes(rawStrokes[i])
+      const subStrokes = this._buildSubStrokes(rawStrokes[i], pivotIndexes)
+      this._subStrokeCount += subStrokes.length
+      this._analyzedStrokes.push(new AnalyzedStroke(rawStrokes[i], pivotIndexes, subStrokes))
     }
   }
 }

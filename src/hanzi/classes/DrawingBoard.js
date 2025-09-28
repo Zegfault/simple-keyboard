@@ -1,276 +1,282 @@
-function DrawingBoard (options, elmHost, strokeFinished) {
-  'use strict'
-  let _elmHost = elmHost
-  let _strokeFinised = strokeFinished
-  let _canvas
-  let _ctx
-  let strokeWidth = 5
-  let clicking = false
-  let lastTouchX = -1
-  let lastTouchY = -1
-  let tstamp
-  let lastPt
-  let _rawStrokes = []
-  let _currentStroke = null
-  let _overlay = null
-  let _showSubstrokes = false
-  let _showBoundary = false
-  let _showControlMedians = false
-  _canvas = _elmHost.querySelector('canvas')
-  if (!_canvas) {
-    _canvas = document.createElement('canvas')
-    _canvas.className = 'stroke-input-canvas'
-    _canvas.width = _elmHost.clientWidth
-    _canvas.height = _elmHost.clientHeight
-    _elmHost.appendChild(_canvas)
-  } else {
-    _canvas.width = _elmHost.clientWidth
-    _canvas.height = _elmHost.clientHeight
-  }
-  _ctx = _canvas.getContext('2d')
 
-  const getXY = function (e) {
-    const rect = _canvas.getBoundingClientRect()
+class DrawingBoard {
+  constructor (options, elmHost, strokeFinished) {
+    this.options = options
+    this._elmHost = elmHost
+    this._strokeFinished = strokeFinished
+    this.strokeWidth = 5
+    this.clicking = false
+    this.lastTouchX = -1
+    this.lastTouchY = -1
+    this.tstamp = null
+    this.lastPt = null
+    this._rawStrokes = []
+    this._currentStroke = null
+    this._overlay = null
+    this._showSubstrokes = false
+    this._showBoundary = false
+    this._showControlMedians = false
+
+    this._canvas = this._elmHost.querySelector('canvas')
+    if (!this._canvas) {
+      this._canvas = document.createElement('canvas')
+      this._canvas.className = 'stroke-input-canvas'
+      this._canvas.width = this._elmHost.clientWidth
+      this._canvas.height = this._elmHost.clientHeight
+      this._elmHost.appendChild(this._canvas)
+    } else {
+      this._canvas.width = this._elmHost.clientWidth
+      this._canvas.height = this._elmHost.clientHeight
+    }
+    this._ctx = this._canvas.getContext('2d')
+
+    this._canvas.addEventListener('mousemove', (e) => {
+      if (!this.clicking) return
+      const { x, y } = this.getXY(e)
+      this.dragClick(x, y)
+    })
+    this._canvas.addEventListener('mousedown', (e) => {
+      const { x, y } = this.getXY(e)
+      this.startClick(x, y)
+    })
+    this._canvas.addEventListener('mouseup', (e) => {
+      const { x, y } = this.getXY(e)
+      this.endClick(x, y)
+    })
+    this._canvas.addEventListener('touchmove', (e) => {
+      if (!this.clicking) return
+      e.preventDefault()
+      const rect = this._canvas.getBoundingClientRect()
+      const x = e.touches[0].clientX - rect.left
+      this.lastTouchX = x
+      const y = e.touches[0].clientY - rect.top
+      this.lastTouchY = y
+      this.dragClick(x, y)
+    })
+    this._canvas.addEventListener('touchstart', (e) => {
+      e.preventDefault()
+      document.activeElement.blur()
+      const { x, y } = this.getXY(e)
+      this.startClick(x, y)
+    })
+    this._canvas.addEventListener('touchend', (e) => {
+      e.preventDefault()
+      document.activeElement.blur()
+      this.endClick(this.lastTouchX, this.lastTouchY)
+      this.lastTouchX = this.lastTouchY = -1
+    })
+
+    this.drawClearCanvas()
+  }
+
+  getXY (e) {
+    const rect = this._canvas.getBoundingClientRect()
     const x = e.clientX - rect.left
     const y = e.clientY - rect.top
     return { x, y }
   }
-  _canvas.addEventListener('mousemove', function (e) {
-    if (!clicking) return
-    const { x, y } = getXY(e)
-    dragClick(x, y)
-  })
-  _canvas.addEventListener('mousedown', function (e) {
-    const { x, y } = getXY(e)
-    startClick(x, y)
-  })
-  _canvas.addEventListener('mouseup', function (e) {
-    const { x, y } = getXY(e)
-    endClick(x, y)
-  })
-  _canvas.addEventListener('touchmove', function (e) {
-    if (!clicking) return
-    e.preventDefault()
-    const rect = _canvas.getBoundingClientRect()
-    const x = e.touches[0].clientX - rect.left
-    lastTouchX = x
-    const y = e.touches[0].clientY - rect.top
-    lastTouchY = y
-    dragClick(x, y)
-  })
-  _canvas.addEventListener('touchstart', function (e) {
-    e.preventDefault()
-    document.activeElement.blur()
-    const { x, y } = getXY(e)
-    startClick(x, y)
-  })
-  _canvas.addEventListener('touchend', function (e) {
-    e.preventDefault()
-    document.activeElement.blur()
-    endClick(lastTouchX, lastTouchY)
-    lastTouchX = lastTouchY = -1
-  })
 
-  drawClearCanvas()
-  function drawClearCanvas () {
-    _ctx.clearRect(0, 0, _ctx.canvas.width, _ctx.canvas.height)
-    if (options.drawingGrid) {
-      _ctx.setLineDash([1, 1])
-      _ctx.lineWidth = 0.5
-      _ctx.strokeStyle = 'grey'
-      _ctx.beginPath()
-      _ctx.moveTo(0, 0)
-      _ctx.lineTo(_ctx.canvas.width, 0)
-      _ctx.lineTo(_ctx.canvas.width, _ctx.canvas.height)
-      _ctx.lineTo(0, _ctx.canvas.height)
-      _ctx.lineTo(0, 0)
-      _ctx.stroke()
-      _ctx.beginPath()
-      _ctx.moveTo(0, 0)
-      _ctx.lineTo(_ctx.canvas.width, _ctx.canvas.height)
-      _ctx.stroke()
-      _ctx.beginPath()
-      _ctx.moveTo(_ctx.canvas.width, 0)
-      _ctx.lineTo(0, _ctx.canvas.height)
-      _ctx.stroke()
-      _ctx.beginPath()
-      _ctx.moveTo(_ctx.canvas.width / 2, 0)
-      _ctx.lineTo(_ctx.canvas.width / 2, _ctx.canvas.height)
-      _ctx.stroke()
-      _ctx.beginPath()
-      _ctx.moveTo(0, _ctx.canvas.height / 2)
-      _ctx.lineTo(_ctx.canvas.width, _ctx.canvas.height / 2)
-      _ctx.stroke()
+  drawClearCanvas () {
+    this._ctx.clearRect(0, 0, this._ctx.canvas.width, this._ctx.canvas.height)
+    if (this.options.drawingGrid) {
+      this._ctx.setLineDash([1, 1])
+      this._ctx.lineWidth = 0.5
+      this._ctx.strokeStyle = 'grey'
+      this._ctx.beginPath()
+      this._ctx.moveTo(0, 0)
+      this._ctx.lineTo(this._ctx.canvas.width, 0)
+      this._ctx.lineTo(this._ctx.canvas.width, this._ctx.canvas.height)
+      this._ctx.lineTo(0, this._ctx.canvas.height)
+      this._ctx.lineTo(0, 0)
+      this._ctx.stroke()
+      this._ctx.beginPath()
+      this._ctx.moveTo(0, 0)
+      this._ctx.lineTo(this._ctx.canvas.width, this._ctx.canvas.height)
+      this._ctx.stroke()
+      this._ctx.beginPath()
+      this._ctx.moveTo(this._ctx.canvas.width, 0)
+      this._ctx.lineTo(0, this._ctx.canvas.height)
+      this._ctx.stroke()
+      this._ctx.beginPath()
+      this._ctx.moveTo(this._ctx.canvas.width / 2, 0)
+      this._ctx.lineTo(this._ctx.canvas.width / 2, this._ctx.canvas.height)
+      this._ctx.stroke()
+      this._ctx.beginPath()
+      this._ctx.moveTo(0, this._ctx.canvas.height / 2)
+      this._ctx.lineTo(this._ctx.canvas.width, this._ctx.canvas.height / 2)
+      this._ctx.stroke()
     }
   }
 
-  function startClick (x, y) {
-    clicking = true
-    _currentStroke = []
-    lastPt = [x, y]
-    _currentStroke.push(lastPt)
-    _ctx.strokeStyle = options.strokeColor
-    _ctx.setLineDash([])
-    _ctx.lineWidth = strokeWidth
-    _ctx.beginPath()
-    _ctx.moveTo(x, y)
-    tstamp = new Date()
+  startClick (x, y) {
+    this.clicking = true
+    this._currentStroke = []
+    this.lastPt = [x, y]
+    this._currentStroke.push(this.lastPt)
+    this._ctx.strokeStyle = this.options.strokeColor
+    this._ctx.setLineDash([])
+    this._ctx.lineWidth = this.strokeWidth
+    this._ctx.beginPath()
+    this._ctx.moveTo(x, y)
+    this.tstamp = new Date()
   }
 
-  function dragClick (x, y) {
-    if (new Date().getTime() - tstamp < 50) {
+  dragClick (x, y) {
+    if (new Date().getTime() - this.tstamp < 50) {
       return
     }
-    tstamp = new Date()
+    this.tstamp = new Date()
     let pt = [x, y]
-    if (pt[0] == lastPt[0] && pt[1] == lastPt[1]) {
+    if (pt[0] == this.lastPt[0] && pt[1] == this.lastPt[1]) {
       return
     }
-    _currentStroke.push(pt)
-    lastPt = pt
-    _ctx.lineTo(x, y)
-    _ctx.stroke()
+    this._currentStroke.push(pt)
+    this.lastPt = pt
+    this._ctx.lineTo(x, y)
+    this._ctx.stroke()
   }
 
-  function endClick (x, y) {
-    clicking = false
+  endClick (x, y) {
+    this.clicking = false
     if (x == -1) {
       return
     }
-    _ctx.lineTo(x, y)
-    _ctx.stroke()
-    _currentStroke.push([x, y])
-    _rawStrokes.push(_currentStroke)
-    _currentStroke = []
-    if (_strokeFinised) {
-      _strokeFinised()
+    this._ctx.lineTo(x, y)
+    this._ctx.stroke()
+    this._currentStroke.push([x, y])
+    this._rawStrokes.push(this._currentStroke)
+    this._currentStroke = []
+    if (this._strokeFinished) {
+      this._strokeFinished()
     }
   }
 
-  function redrawInput () {
-    for (let i1 in _rawStrokes) {
-      _ctx.strokeStyle = options.strokeColor
-      _ctx.setLineDash([])
-      _ctx.lineWidth = strokeWidth
-      _ctx.beginPath()
-      _ctx.moveTo(_rawStrokes[i1][0][0], _rawStrokes[i1][0][1])
-      let len = _rawStrokes[i1].length
+  redrawInput () {
+    for (let i1 in this._rawStrokes) {
+      this._ctx.strokeStyle = this.options.strokeColor
+      this._ctx.setLineDash([])
+      this._ctx.lineWidth = this.strokeWidth
+      this._ctx.beginPath()
+      this._ctx.moveTo(this._rawStrokes[i1][0][0], this._rawStrokes[i1][0][1])
+      let len = this._rawStrokes[i1].length
       for (let i2 = 0; i2 < len - 1; i2++) {
-        _ctx.lineTo(_rawStrokes[i1][i2][0], _rawStrokes[i1][i2][1])
-        _ctx.stroke()
+        this._ctx.lineTo(this._rawStrokes[i1][i2][0], this._rawStrokes[i1][i2][1])
+        this._ctx.stroke()
       }
-      _ctx.lineTo(_rawStrokes[i1][len - 1][0], _rawStrokes[i1][len - 1][1])
-      _ctx.stroke()
+      this._ctx.lineTo(this._rawStrokes[i1][len - 1][0], this._rawStrokes[i1][len - 1][1])
+      this._ctx.stroke()
     }
-    if (!_overlay) {
+    if (!this._overlay) {
       return
     }
-    if (_showBoundary) {
-      _ctx.strokeStyle = 'blue'
-      _ctx.setLineDash([1, 1])
-      _ctx.lineWidth = 0.5
-      _ctx.beginPath()
-      _ctx.moveTo(_overlay.left, _overlay.top)
-      _ctx.lineTo(_overlay.right, _overlay.top)
-      _ctx.stroke()
-      _ctx.lineTo(_overlay.right, _overlay.bottom)
-      _ctx.stroke()
-      _ctx.lineTo(_overlay.left, _overlay.bottom)
-      _ctx.stroke()
-      _ctx.lineTo(_overlay.left, _overlay.top)
-      _ctx.stroke()
+    if (this._showBoundary) {
+      this._ctx.strokeStyle = 'blue'
+      this._ctx.setLineDash([1, 1])
+      this._ctx.lineWidth = 0.5
+      this._ctx.beginPath()
+      this._ctx.moveTo(this._overlay.left, this._overlay.top)
+      this._ctx.lineTo(this._overlay.right, this._overlay.top)
+      this._ctx.stroke()
+      this._ctx.lineTo(this._overlay.right, this._overlay.bottom)
+      this._ctx.stroke()
+      this._ctx.lineTo(this._overlay.left, this._overlay.bottom)
+      this._ctx.stroke()
+      this._ctx.lineTo(this._overlay.left, this._overlay.top)
+      this._ctx.stroke()
     }
-    if (_showSubstrokes) {
-      for (let six = 0; six != _overlay.xStrokes.length; ++six) {
-        let xstroke = _overlay.xStrokes[six]
-        _ctx.strokeStyle = 'red'
-        _ctx.setLineDash([])
-        _ctx.lineWidth = 1
-        _ctx.beginPath()
-        _ctx.moveTo(xstroke[0][0], xstroke[0][1])
-        _ctx.arc(xstroke[0][0], xstroke[0][1], 3, 0, 2 * Math.PI, true)
-        _ctx.fillStyle = 'red'
-        _ctx.fill()
+    if (this._showSubstrokes) {
+      for (let six = 0; six != this._overlay.xStrokes.length; ++six) {
+        let xstroke = this._overlay.xStrokes[six]
+        this._ctx.strokeStyle = 'red'
+        this._ctx.setLineDash([])
+        this._ctx.lineWidth = 1
+        this._ctx.beginPath()
+        this._ctx.moveTo(xstroke[0][0], xstroke[0][1])
+        this._ctx.arc(xstroke[0][0], xstroke[0][1], 3, 0, 2 * Math.PI, true)
+        this._ctx.fillStyle = 'red'
+        this._ctx.fill()
         for (let i = 1; i < xstroke.length; ++i) {
-          _ctx.lineTo(xstroke[i][0], xstroke[i][1])
-          _ctx.stroke()
-          _ctx.beginPath()
-          _ctx.arc(xstroke[i][0], xstroke[i][1], 3, 0, 2 * Math.PI, true)
-          _ctx.fillStyle = 'red'
-          _ctx.fill()
+          this._ctx.lineTo(xstroke[i][0], xstroke[i][1])
+          this._ctx.stroke()
+          this._ctx.beginPath()
+          this._ctx.arc(xstroke[i][0], xstroke[i][1], 3, 0, 2 * Math.PI, true)
+          this._ctx.fillStyle = 'red'
+          this._ctx.fill()
         }
       }
     }
-    if (_showControlMedians && _overlay.yStrokes) {
-      for (let six = 0; six != _overlay.yStrokes.length; ++six) {
-        let ystroke = _overlay.yStrokes[six]
-        _ctx.strokeStyle = '#e6cee6'
-        _ctx.setLineDash([])
-        _ctx.lineWidth = strokeWidth
-        _ctx.beginPath()
-        _ctx.moveTo(ystroke[0][0], ystroke[0][1])
+    if (this._showControlMedians && this._overlay.yStrokes) {
+      for (let six = 0; six != this._overlay.yStrokes.length; ++six) {
+        let ystroke = this._overlay.yStrokes[six]
+        this._ctx.strokeStyle = '#e6cee6'
+        this._ctx.setLineDash([])
+        this._ctx.lineWidth = this.strokeWidth
+        this._ctx.beginPath()
+        this._ctx.moveTo(ystroke[0][0], ystroke[0][1])
         for (let i = 1; i < ystroke.length; ++i) {
-          _ctx.lineTo(ystroke[i][0], ystroke[i][1])
-          _ctx.stroke()
+          this._ctx.lineTo(ystroke[i][0], ystroke[i][1])
+          this._ctx.stroke()
         }
       }
     }
-    if (_overlay.zStrokes) {
-      for (let six = 0; six != _overlay.zStrokes.length; ++six) {
-        let xstroke = _overlay.zStrokes[six]
-        _ctx.strokeStyle = 'green'
-        _ctx.setLineDash([])
-        _ctx.lineWidth = 1
-        _ctx.beginPath()
-        _ctx.moveTo(xstroke[0][0], xstroke[0][1])
-        _ctx.arc(xstroke[0][0], xstroke[0][1], 3, 0, 2 * Math.PI, true)
-        _ctx.fillStyle = 'green'
-        _ctx.fill()
+    if (this._overlay.zStrokes) {
+      for (let six = 0; six != this._overlay.zStrokes.length; ++six) {
+        let xstroke = this._overlay.zStrokes[six]
+        this._ctx.strokeStyle = 'green'
+        this._ctx.setLineDash([])
+        this._ctx.lineWidth = 1
+        this._ctx.beginPath()
+        this._ctx.moveTo(xstroke[0][0], xstroke[0][1])
+        this._ctx.arc(xstroke[0][0], xstroke[0][1], 3, 0, 2 * Math.PI, true)
+        this._ctx.fillStyle = 'green'
+        this._ctx.fill()
         for (let i = 1; i < xstroke.length; ++i) {
-          _ctx.lineTo(xstroke[i][0], xstroke[i][1])
-          _ctx.stroke()
-          _ctx.beginPath()
-          _ctx.arc(xstroke[i][0], xstroke[i][1], 3, 0, 2 * Math.PI, true)
-          _ctx.fillStyle = 'green'
-          _ctx.fill()
+          this._ctx.lineTo(xstroke[i][0], xstroke[i][1])
+          this._ctx.stroke()
+          this._ctx.beginPath()
+          this._ctx.arc(xstroke[i][0], xstroke[i][1], 3, 0, 2 * Math.PI, true)
+          this._ctx.fillStyle = 'green'
+          this._ctx.fill()
         }
       }
     }
   }
 
-  return {
-    clearCanvas: function () {
-      _rawStrokes.length = 0
-    },
-    undoStroke: function () {
-      if (_rawStrokes.length == 0) {
-        return
-      }
-      _rawStrokes.length = _rawStrokes.length - 1
-    },
-    cloneStrokes: function () {
-      let res = []
-      for (let i = 0; i != _rawStrokes.length; ++i) {
-        let stroke = []
-        for (let j = 0; j != _rawStrokes[i].length; ++j) {
-          stroke.push([_rawStrokes[i][j][0], _rawStrokes[i][j][1]])
-        }
-        res.push(stroke)
-      }
-      return res
-    },
-    redraw: function () {
-      drawClearCanvas()
-      redrawInput()
-    },
-    enrich: function (overlay, showSubstrokes, showBoundary, showControlMedians) {
-      _overlay = overlay
-      _showBoundary = showBoundary
-      _showSubstrokes = showSubstrokes
-      _showControlMedians = showControlMedians
-      drawClearCanvas()
-      redrawInput()
+  clearCanvas () {
+    this._rawStrokes.length = 0
+  }
+
+  undoStroke () {
+    if (this._rawStrokes.length == 0) {
+      return
     }
+    this._rawStrokes.length = this._rawStrokes.length - 1
+  }
+
+  cloneStrokes () {
+    let res = []
+    for (let i = 0; i != this._rawStrokes.length; ++i) {
+      let stroke = []
+      for (let j = 0; j != this._rawStrokes[i].length; ++j) {
+        stroke.push([this._rawStrokes[i][j][0], this._rawStrokes[i][j][1]])
+      }
+      res.push(stroke)
+    }
+    return res
+  }
+
+  redraw () {
+    this.drawClearCanvas()
+    this.redrawInput()
+  }
+
+  enrich (overlay, showSubstrokes, showBoundary, showControlMedians) {
+    this._overlay = overlay
+    this._showBoundary = showBoundary
+    this._showSubstrokes = showSubstrokes
+    this._showControlMedians = showControlMedians
+    this.drawClearCanvas()
+    this.redrawInput()
   }
 }
 
