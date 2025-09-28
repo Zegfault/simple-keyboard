@@ -34,7 +34,8 @@ export default defineConfig({
         globals: {
           vue: 'Vue',
           'simple-keyboard': 'SimpleKeyboard'
-        }
+        },
+        exports: 'named'
       },
       plugins: [
         strip({

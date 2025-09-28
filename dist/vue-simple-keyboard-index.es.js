@@ -26831,5 +26831,6 @@ const Od = /* @__PURE__ */ Ld(Rd, [["render", Id]]), Nd = (c) => {
 };
 export {
   Od as SimpleKeyboard,
+  Od as default,
   Nd as install
 };
