@@ -26669,7 +26669,7 @@ const Ld = (c, s) => {
       const c = this.$refs.keyboardContainer;
       if (!c)
         return;
-      this.suggestionsExpanded = !1, this.layoutCandidatesInternal = [];
+      this.suggestionsExpanded = !1, this.layoutCandidatesInternal = [], this.setPreviewPinyin(" ");
       const s = {};
       w.forOwn(Hn, (d, k) => {
         const x = w.get(d, "layout", w.get(Hn, `${k}.layout`, void 0)), S = w.merge(w.get(d, "layoutCandidates", void 0), w.get(this.layouts, `${k}.layoutCandidates`, void 0));

@@ -20,7 +20,8 @@
     "build": "vite build",
     "dev": "vite serve examples --config examples/vite.config.js",
     "preview": "vite preview",
-    "lint": "eslint --ext .js,.vue --ignore-pattern .gitignore --fix src"
+    "lint": "eslint --ext .js,.vue --ignore-pattern .gitignore --fix src",
+    "prepare": "husky install"
   },
   "repository": {
     "type": "git",
@@ -58,6 +59,7 @@
     "@vitejs/plugin-vue": "^6.0.1",
     "eslint": "^9.22.0",
     "eslint-plugin-vue": "^9.27.0",
+    "husky": "^8.0.0",
     "rollup-plugin-visualizer": "^6.0.3",
     "terser": "^5.44.0",
     "vite": "^7.1.6",
