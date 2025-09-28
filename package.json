@@ -1,5 +1,5 @@
 {
-  "name": "vue-simple-keyboard-component",
+  "name": "vue-simple-keyboard",
   "version": "1.0.0",
   "description": "A Vue 3 component wrapper for simple-keyboard virtual keyboard library",
   "main": "dist/vue-simple-keyboard.umd.js",
