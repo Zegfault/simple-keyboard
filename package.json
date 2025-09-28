@@ -6,13 +6,15 @@
   "module": "dist/vue-simple-keyboard.es.js",
   "files": [
     "dist",
+    "dist/vue-simple-keyboard.css",
     "src"
   ],
   "exports": {
     ".": {
       "import": "./dist/vue-simple-keyboard.es.js",
       "require": "./dist/vue-simple-keyboard.umd.js"
-    }
+    },
+    "./style.css": "./dist/vue-simple-keyboard.css"
   },
   "scripts": {
     "build": "vite build",
