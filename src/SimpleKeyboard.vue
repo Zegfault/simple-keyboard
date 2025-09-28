@@ -348,7 +348,7 @@ export default {
         HanziLookup.options,
         this.drawingOptions || {}
       )
-      this.drawingBoard = new HanziLookup.DrawingBoard(elem, this.lookup)
+      this.drawingBoard = new HanziLookup.DrawingBoard(HanziLookup.options, elem, this.lookup)
       await this.initHanzi()
     },
     onInit () {
