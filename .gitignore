@@ -11,8 +11,8 @@ yarn.lock
 pnpm-lock.yaml
 
 # Build outputs
-dist/
-build/
+# dist/
+# build/
 lib/
 coverage/
 
