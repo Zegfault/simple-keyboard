@@ -370,6 +370,7 @@ export default {
       }
       this.suggestionsExpanded = false
       this.layoutCandidatesInternal = []
+      this.setPreviewPinyin(' ')
       const mergedLayouts = {}
       _.forOwn(layouts, (layoutObj, langKey) => {
         const baseLayout = _.get(layoutObj, 'layout', _.get(layouts, `${langKey}.layout`, undefined))
