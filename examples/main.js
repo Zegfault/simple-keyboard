@@ -34,6 +34,7 @@ const app = createApp({
   data () {
     return {
       inputText: '',
+      selectedInputElement: this.$refs.input,
       selectedTheme: 'hg-theme-default',
       selectedLayout: 'enUS',
       layouts: {
@@ -42,7 +43,13 @@ const app = createApp({
       layoutCandidates: undefined
     }
   },
+  mounted () {
+    this.$refs.input.focus()
+  },
   methods: {
+    onFocus (event) {
+      this.selectedInputElement = event.target
+    },
     onLayoutChange (layoutName) {
       this.selectedLayout = layoutName
       // console.log('Layout changed to:', layoutName)

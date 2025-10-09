@@ -15,6 +15,7 @@ export default {
   name: 'SimpleKeyboard',
   props: {
     // Layout & Display
+    inputElement: { type: [String, Object], default: undefined },
     layouts: { type: Object, default: undefined },
     languageMapping: { type: Object, default: undefined },
     layoutName: { type: String, default: 'default' },
@@ -152,6 +153,8 @@ export default {
   },
   mounted () {
     this.initializeKeyboard()
+    // Listen for focus events on the document to track the focused input
+    document.addEventListener('focusin', this.handleDocumentFocus, true)
   },
   beforeUnmount () {
     this.destroy()
@@ -284,14 +287,10 @@ export default {
             }
           }
         }
-        if (button === '{bksp}') {
-          // If previewPinyin is not empty, remove last character from previewPinyin
-          if (_.trim(this.previewPinyin).length > 0) {
-            return this.setPreviewPinyin(this.previewPinyin.length > 1 ? this.previewPinyin.slice(0, -1) : ' ')
-          }
-          // If previewPinyin is empty, fall through to default behavior (remove from input)
+        if (button === '{bksp}' && _.trim(this.previewPinyin).length > 0) {
+          return this.setPreviewPinyin(this.previewPinyin.length > 1 ? this.previewPinyin.slice(0, -1) : ' ')
         }
-        // Only add to input if button is a capitalized letter (A-Z)
+        // For zhCN/zhHT, always add a-z or A-Z keys to pinyinPreview, never to input
         if (!_.startsWith(button, '{') && !_.endsWith(button, '}')) {
           if (/^[A-Z]$/.test(button)) {
             const currentInput = this.keyboard.getInput()
@@ -326,11 +325,11 @@ export default {
       this.setLayoutCandidates(filtered)
       this.$emit('onSuggestionsUpdate', filtered)
     },
-    onChange (input) {
-      if (_.includes(['zhCN', 'zhHT'], this.layoutName) && /[a-z]+$/.test(input)) {
+    onChange (input, force = false) {
+      if (!force && _.includes(['zhCN', 'zhHT'], this.layoutName) && /[a-z]/.test(input)) {
         return
       }
-      this.$emit('onChange', input)
+      this.$emit('onChange', input, this.keyboard.getCaretPosition())
       this.$emit('update:modelValue', input)
     },
     onChangeAll (inputs) {
@@ -370,7 +369,7 @@ export default {
       }
       this.$emit('beforeInputUpdate', input, inputName)
     },
-    initializeKeyboard () {
+    initializeKeyboard (inputVal = '', caretPos = 0) {
       const container = this.$refs.keyboardContainer
       if (!container) {
         return
@@ -404,8 +403,13 @@ export default {
       }
       options.layoutName = _.includes(['default', 'shift', 'alt', 'alt-shift'], options.layoutName) ? options.layoutName : 'default'
       this.keyboard = new Keyboard(container, options)
-      if (!_.isUndefined(this.modelValue)) {
+      // Restore input and caret position if provided
+      if (inputVal) {
+        this.keyboard.setInput(inputVal)
+        this.keyboard.setCaretPosition(Math.min(caretPos, inputVal.length))
+      } else if (!_.isUndefined(this.modelValue)) {
         this.keyboard.setInput(this.modelValue)
+        this.keyboard.setCaretPosition(this.modelValue.length)
       }
       this.allKeys = this.getLayoutKeys()
       if (_.isFunction(_.get(this.keyboard, 'candidateBox.renderPage', false)) && !_.isEmpty(currentLayoutObj.layoutCandidates)) {
@@ -417,22 +421,27 @@ export default {
       this.singleShiftActive = false
       this.$emit('onLayoutChange', newLayoutName)
     },
+    setCursorPosition () {
+      setTimeout(() => {
+        this.inputElement.focus()
+        const val = this.keyboard.getCaretPosition()
+        this.inputElement.setSelectionRange(val, val)
+      }, 100)
+    },
     moveCursorLeft () {
       if (this.keyboard) {
         this.keyboard.setCaretPosition(Math.max(0, this.keyboard.getCaretPosition() - 1))
+        this.setCursorPosition()
       }
     },
     moveCursorRight () {
       if (this.keyboard) {
-        const currentInput = this.keyboard.getInput()
-        this.keyboard.setCaretPosition(Math.min(currentInput.length, this.keyboard.getCaretPosition() + 1))
+        this.keyboard.setCaretPosition(Math.min(this.keyboard.getInput().length, this.keyboard.getCaretPosition() + 1))
+        this.setCursorPosition()
       }
     },
     handleShift () {
-      if (!this.keyboard) {
-        return
-      }
-      if (!this.capsLockActive) {
+      if (this.keyboard && !this.capsLockActive) {
         const currentLayout = this.keyboard.options.layoutName
         this.singleShiftActive = currentLayout === 'default'
         this.keyboard.setOptions({ layoutName: currentLayout === 'default' ? 'shift' : 'default' })
@@ -444,11 +453,7 @@ export default {
       }
       this.capsLockActive = !this.capsLockActive
       this.singleShiftActive = false
-      if (this.capsLockActive) {
-        this.keyboard.setOptions({ layoutName: 'shift' })
-      } else {
-        this.keyboard.setOptions({ layoutName: 'default' })
-      }
+      this.keyboard.setOptions({ layoutName: this.capsLockActive ? 'shift' : 'default' })
     },
     setInput (input, inputName) {
       if (this.keyboard) {
@@ -498,9 +503,16 @@ export default {
     },
     reinitKeyboard () {
       if (this.keyboard) {
+        // Save caret position and input value before destroying
+        let caretPos = 0
+        let inputVal = ''
+        if (this.keyboard) {
+          inputVal = this.keyboard.getInput()
+          caretPos = this.keyboard.getCaretPosition()
+        }
         this.destroy()
         this.$nextTick(() => {
-          this.initializeKeyboard()
+          this.initializeKeyboard(inputVal, caretPos)
         })
       }
     },
@@ -543,7 +555,9 @@ export default {
         this.setPreviewPinyin(' ')
         if (_.includes(['zhCN', 'zhHT'], this.layoutName)) {
           const currentInput = this.keyboard.getInput()
-          this.onChange(currentInput + candidateListItem)
+          const caretPosition = this.keyboard.getCaretPosition()
+          const test = currentInput.slice(0, caretPosition) + candidateListItem + currentInput.slice(caretPosition)
+          this.onChange(test, true)
         }
         if (this.keyboard) {
           this.shouldEmptyPinyinPreview = true
